@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface EarningsRow {
@@ -21,9 +20,7 @@ interface EarningsData {
 }
 
 export default function EarningsPage() {
-  const router = useRouter();
   const [data, setData] = useState<EarningsData | null>(null);
-  const [payoutLoading, setPayoutLoading] = useState(false);
 
   useEffect(() => {
     fetch("/api/mommy/earnings")
@@ -33,14 +30,8 @@ export default function EarningsPage() {
   }, []);
 
   async function requestPayout() {
-    setPayoutLoading(true);
-    try {
-      const res = await fetch("/api/stripe/create-portal", { method: "POST" });
-      const d = await res.json();
-      if (d.url) router.push(d.url);
-    } finally {
-      setPayoutLoading(false);
-    }
+    // Payout requests handled via email — no payment portal
+    window.location.href = "mailto:payouts@replymommy.com?subject=Payout Request&body=Please include your earnings statement ID.";
   }
 
   const fmt = (n: number) =>
@@ -65,9 +56,9 @@ export default function EarningsPage() {
             variant="gold"
             className="w-full mt-4 h-11 rounded-full text-xs"
             onClick={requestPayout}
-            disabled={payoutLoading || !data?.available}
+            disabled={!data?.available}
           >
-            {payoutLoading ? "Opening..." : "Request Payout"}
+            Request Payout
           </Button>
         </div>
         <div className="p-6 rounded-2xl bg-smoke border border-champagne/10">

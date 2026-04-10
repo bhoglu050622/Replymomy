@@ -1,6 +1,6 @@
 import { Camera, Edit, Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { MEMBER_PRICES } from "@/lib/stripe/prices";
+import { MEMBER_PRICES } from "@/lib/dodo/prices";
 import { ProfileEditDialog } from "./profile-edit-dialog";
 
 export default async function ProfilePage() {

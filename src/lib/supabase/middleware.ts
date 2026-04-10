@@ -37,7 +37,8 @@ export async function updateSession(request: NextRequest) {
   const isPublic =
     publicRoutes.some((r) => pathname === r) ||
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/api/stripe/webhook") ||
+    pathname.startsWith("/api/dodo/webhook") ||
+    pathname.startsWith("/api/concierge/") ||
     pathname.startsWith("/api/verification/webhook") ||
     pathname.startsWith("/api/cron/") ||
     pathname.startsWith("/api/invitation/") ||

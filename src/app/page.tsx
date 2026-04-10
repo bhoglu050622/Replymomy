@@ -50,6 +50,11 @@ const BecomeAMommy = dynamic(
   { ssr: false }
 );
 
+const MemberFootfall = dynamic(
+  () => import("@/components/landing/member-footfall").then((mod) => mod.MemberFootfall),
+  { ssr: false }
+);
+
 export default function Home() {
   return (
     <>
@@ -81,6 +86,7 @@ export default function Home() {
       </main>
 
       <Footer />
+      <MemberFootfall />
     </>
   );
 }

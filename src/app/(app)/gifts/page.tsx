@@ -65,14 +65,14 @@ export default function GiftsPage() {
         // Insufficient tokens — fall through to Stripe
       }
 
-      // Route to Stripe for IRL gifts or when tokens are insufficient
-      const res = await fetch("/api/stripe/purchase-gift", {
+      // Route to DodoPayments for IRL gifts or when tokens are insufficient
+      const res = await fetch("/api/dodo/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          productId: selectedGift.id,
+          mode: "payment",
           giftId: selected,
-          recipientId: PLACEHOLDER_RECIPIENT,
-          message,
         }),
       });
       const data = await res.json();
@@ -80,8 +80,9 @@ export default function GiftsPage() {
         toast.error(data.error ?? "Something went wrong. Try again.");
         return;
       }
-      // For a full implementation, use Stripe.js to confirm the PaymentIntent
-      // For now, acknowledge the intent was created
+      if (data.url) {
+        window.location.href = data.url;
+      }
       toast.success("Sent.");
       setSelected(null);
       setMessage("");

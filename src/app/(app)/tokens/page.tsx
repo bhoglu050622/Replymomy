@@ -5,27 +5,24 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/stores/user-store";
-
-const TOKEN_PACKS = [
-  { id: "pack_5", amount: 5, price: 5, label: "Intro" },
-  { id: "pack_12", amount: 12, price: 10, label: "Standard", savings: "Save 17%" },
-  { id: "pack_30", amount: 30, price: 20, label: "Premium", featured: true, savings: "Save 33%" },
-  { id: "pack_100", amount: 100, price: 60, label: "Power", savings: "Save 40%" },
-];
+import { TOKEN_PACKS } from "@/lib/dodo/prices";
 
 export default function TokensPage() {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const tokenBalance = useUserStore((s) => s.tokenBalance);
 
-  async function purchase(packId: string) {
-    setLoading(packId);
-
+  async function purchase(pack: typeof TOKEN_PACKS[number]) {
+    setLoading(pack.id);
     try {
-      const res = await fetch("/api/stripe/purchase-tokens", {
+      const res = await fetch("/api/dodo/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packId }),
+        body: JSON.stringify({
+          productId: pack.productId,
+          mode: "payment",
+          tokenAmount: pack.tokens,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -54,7 +51,7 @@ export default function TokensPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {TOKEN_PACKS.map((pack) => (
           <div
             key={pack.id}
@@ -70,21 +67,17 @@ export default function TokensPage() {
               </div>
             )}
             <div className="text-label text-champagne mb-3">{pack.label}</div>
-            <div className="font-headline text-5xl text-ivory mb-2">
-              {pack.amount}
-            </div>
+            <div className="font-headline text-5xl text-ivory mb-2">{pack.tokens}</div>
             <div className="text-label text-ivory/40 mb-1">tokens</div>
-            <div className="font-headline text-2xl text-champagne mt-4">
-              ${pack.price}
-            </div>
-            {pack.savings && (
+            <div className="font-headline text-2xl text-champagne mt-4">${pack.price}</div>
+            {"savings" in pack && pack.savings && (
               <div className="text-label text-rose mt-1">{pack.savings}</div>
             )}
             <Button
               variant={pack.featured ? "gold" : "gold-outline"}
               className="w-full mt-6 h-11 rounded-full text-xs"
               disabled={loading === pack.id}
-              onClick={() => purchase(pack.id)}
+              onClick={() => purchase(pack)}
             >
               {loading === pack.id ? "Redirecting..." : "Buy"}
             </Button>

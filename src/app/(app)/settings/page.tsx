@@ -1,14 +1,30 @@
 import Link from "next/link";
-import { CreditCard, Lock, Bell, ChevronRight } from "lucide-react";
+import { CreditCard, Lock, Bell, ChevronRight, Sparkles } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/shared/sign-out-button";
 
-const SECTIONS = [
-  { href: "/settings/subscription", icon: CreditCard, label: "Membership", desc: "Manage your plan." },
-  { href: "/settings/privacy", icon: Lock, label: "Privacy", desc: "Control what others see" },
-  { href: "/settings/notifications", icon: Bell, label: "Notifications", desc: "Your preferences." },
-];
+export default async function SettingsPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: userRecord } = await supabase
+    .from("users")
+    .select("member_tier")
+    .eq("id", user!.id)
+    .single();
 
-export default function SettingsPage() {
+  const isPrincipal = userRecord?.member_tier === "black_card";
+
+  const SECTIONS = [
+    { href: "/settings/subscription", icon: CreditCard, label: "Membership", desc: "Manage your plan." },
+    { href: "/settings/privacy", icon: Lock, label: "Privacy", desc: "Control what others see." },
+    { href: "/settings/notifications", icon: Bell, label: "Notifications", desc: "Your preferences." },
+    ...(isPrincipal
+      ? [{ href: "/settings/concierge", icon: Sparkles, label: "Personal Liaison", desc: "Your 24/7 concierge." }]
+      : []),
+  ];
+
   return (
     <div className="px-6 lg:px-12 py-10 lg:py-16 max-w-2xl mx-auto">
       <h1 className="text-display-lg text-ivory mb-10">

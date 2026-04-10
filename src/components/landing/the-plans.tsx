@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { motion, useMotionTemplate, useMotionValue, useSpring } from "motion/react";
 import { Check } from "lucide-react";
 import { ScrollReveal } from "@/components/animations/scroll-reveal";
@@ -9,12 +9,13 @@ import { Button } from "@/components/ui/button";
 import { TextScramble } from "@/components/animations/text-scramble";
 import { MagneticText } from "@/components/animations/magnetic-text";
 import { cn } from "@/lib/utils";
+import { useRegionalPrices } from "@/hooks/use-regional-price";
 
 const PLANS = [
   {
+    id: "gold" as const,
     name: "Patron",
     tagline: "Enter the guild.",
-    price: 99,
     accent: "from-smoke to-smoke",
     border: "border-champagne/20",
     features: [
@@ -25,9 +26,9 @@ const PLANS = [
     ],
   },
   {
+    id: "platinum" as const,
     name: "Fellow",
     tagline: "The standard.",
-    price: 299,
     accent: "from-burgundy/20 via-smoke to-smoke",
     border: "border-champagne/40",
     featured: true,
@@ -40,9 +41,9 @@ const PLANS = [
     ],
   },
   {
+    id: "black_card" as const,
     name: "Principal",
     tagline: "No ceiling.",
-    price: 999,
     accent: "from-smoke via-smoke to-champagne/10",
     border: "border-champagne",
     features: [
@@ -50,7 +51,7 @@ const PLANS = [
       "Exclusive IRL experiences.",
       "100 Rose Tokens monthly.",
       "Private direct line.",
-      "Dedicated guild host.",
+      "Personal Liaison. 24/7.",
     ],
   },
 ];
@@ -143,7 +144,7 @@ function HolographicCard({
   );
 }
 
-function PlanCard({ plan }: { plan: (typeof PLANS)[number] }) {
+function PlanCard({ plan, price, isRegional }: { plan: (typeof PLANS)[number]; price: string; isRegional: boolean }) {
   return (
     <HolographicCard
       className={cn(
@@ -166,9 +167,12 @@ function PlanCard({ plan }: { plan: (typeof PLANS)[number] }) {
 
       <div className="mb-8">
         <span className="font-headline text-5xl text-champagne">
-          ${plan.price}
+          {price}
         </span>
         <span className="text-body-sm text-ivory/50 ml-2">/month</span>
+        {isRegional && (
+          <div className="mt-1 text-[10px] text-champagne/50 uppercase tracking-widest">Locally priced</div>
+        )}
       </div>
 
       <ul className="space-y-3 mb-10 flex-1">
@@ -222,6 +226,9 @@ function PlanCardBack({ name }: { name: string }) {
 }
 
 export function ThePlans() {
+  const { prices, isRegional } = useRegionalPrices();
+  const priceMap = { gold: prices.gold, platinum: prices.platinum, black_card: prices.black_card };
+
   return (
     <section
       id="standing"
@@ -266,7 +273,7 @@ export function ThePlans() {
               delay={i * 0.2}
               className="aspect-[3/4] md:aspect-auto md:min-h-[560px]"
               front={<PlanCardBack name={plan.name} />}
-              back={<PlanCard plan={plan} />}
+              back={<PlanCard plan={plan} price={priceMap[plan.id]} isRegional={isRegional} />}
             />
           ))}
         </div>
