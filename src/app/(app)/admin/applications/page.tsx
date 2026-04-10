@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, X, Copy, Clock, MapPin, Instagram, ExternalLink } from "lucide-react";
+import { Check, X, Copy, Clock, MapPin, AtSign, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -149,7 +149,7 @@ export default function AdminApplicationsPage() {
                         </span>
                         {app.instagram && (
                           <span className="flex items-center gap-1">
-                            <Instagram className="size-3" />{app.instagram}
+                            <AtSign className="size-3" />{app.instagram}
                           </span>
                         )}
                         <span className="flex items-center gap-1">
