@@ -54,7 +54,7 @@ export default function GiftsPage() {
 
         if (res.ok && data.success) {
           if ("tokens" in selectedGift && selectedGift.tokens) {
-            useUserStore.getState().decrementTokens(selectedGift.tokens);
+            useUserStore.getState().decrementTokens(selectedGift.tokens as number);
           }
           toast.success("Sent.");
           setSelected(null);
