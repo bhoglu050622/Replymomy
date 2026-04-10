@@ -1,0 +1,45 @@
+@theme {
+  /* ========== COLOR PALETTE ========== */
+  --color-obsidian: #0A0A0A;
+  --color-champagne: #C9A84C;
+  --color-ivory: #F5F0E8;
+  --color-burgundy: #4A0E1A;
+  --color-smoke: #1A1A1A;
+  --color-rose: #E8C4B0;
+
+  /* Champagne scale */
+  --color-champagne-50: #FBF7EC;
+  --color-champagne-100: #F5ECCD;
+  --color-champagne-200: #EBD99B;
+  --color-champagne-300: #DFC368;
+  --color-champagne-400: #C9A84C;
+  --color-champagne-500: #B8943A;
+  --color-champagne-600: #9A7830;
+  --color-champagne-700: #7C5E28;
+  --color-champagne-800: #5E4620;
+  --color-champagne-900: #3F2F18;
+
+  /* Burgundy scale */
+  --color-burgundy-50: #FDF2F4;
+  --color-burgundy-100: #F5D0D8;
+  --color-burgundy-200: #E8A1B0;
+  --color-burgundy-300: #D47189;
+  --color-burgundy-400: #8B1E35;
+  --color-burgundy-500: #4A0E1A;
+  --color-burgundy-600: #3D0B16;
+  --color-burgundy-700: #300912;
+
+  /* ========== FONTS ========== */
+  --font-headline: var(--font-cormorant), "Cormorant Garamond", serif;
+  --font-body: var(--font-inter), "Inter", sans-serif;
+  --font-accent: var(--font-playfair), "Playfair Display", serif;
+
+  /* ========== SHADOWS ========== */
+  --shadow-gold-sm: 0 2px 8px rgba(201, 168, 76, 0.08);
+  --shadow-gold-md: 0 4px 16px rgba(201, 168, 76, 0.12);
+  --shadow-gold-lg: 0 8px 32px rgba(201, 168, 76, 0.16);
+  --shadow-gold-glow: 0 0 40px rgba(201, 168, 76, 0.25);
+
+  /* ========== EASING ========== */
+  --ease-luxury: cubic-bezier(0.16, 1, 0.3, 1);
+}

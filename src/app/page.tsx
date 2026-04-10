@@ -1,65 +1,86 @@
-import Image from "next/image";
+"use client";
+
+import dynamic from "next/dynamic";
+import { Navbar } from "@/components/shared/navbar";
+import { Footer } from "@/components/landing/footer";
+
+// Dynamically import components with heavy animations to avoid SSR issues
+const GoldCursorTrail = dynamic(
+  () => import("@/components/animations/gold-cursor-trail").then((mod) => mod.GoldCursorTrail),
+  { ssr: false }
+);
+
+const VelvetCurtain = dynamic(
+  () => import("@/components/animations/velvet-curtain").then((mod) => mod.VelvetCurtain),
+  { ssr: false }
+);
+
+const Hero = dynamic(
+  () => import("@/components/landing/hero").then((mod) => mod.Hero),
+  { ssr: false }
+);
+
+const WhoAreTheMommies = dynamic(
+  () => import("@/components/landing/who-are-the-mommies").then((mod) => mod.WhoAreTheMommies),
+  { ssr: false }
+);
+
+const WhoGetsIn = dynamic(
+  () => import("@/components/landing/who-gets-in").then((mod) => mod.WhoGetsIn),
+  { ssr: false }
+);
+
+const TheExperience = dynamic(
+  () => import("@/components/landing/the-experience").then((mod) => mod.TheExperience),
+  { ssr: false }
+);
+
+const ThePlans = dynamic(
+  () => import("@/components/landing/the-plans").then((mod) => mod.ThePlans),
+  { ssr: false }
+);
+
+const WaitlistCta = dynamic(
+  () => import("@/components/landing/waitlist-cta").then((mod) => mod.WaitlistCta),
+  { ssr: false }
+);
+
+const BecomeAMommy = dynamic(
+  () => import("@/components/landing/become-a-mommy").then((mod) => mod.BecomeAMommy),
+  { ssr: false }
+);
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <>
+      {/* Skip to content for keyboard/screen reader users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-full focus:bg-champagne focus:text-obsidian focus:text-label"
+      >
+        Skip to content
+      </a>
+
+      {/* Global cursor trail effect - client only */}
+      <GoldCursorTrail />
+
+      {/* Navigation */}
+      <Navbar />
+
+      {/* Main content with velvet curtain entrance */}
+      <main id="main-content">
+        <VelvetCurtain>
+          <Hero />
+          <WhoAreTheMommies />
+          <WhoGetsIn />
+          <TheExperience />
+          <ThePlans />
+          <BecomeAMommy />
+          <WaitlistCta />
+        </VelvetCurtain>
       </main>
-    </div>
+
+      <Footer />
+    </>
   );
 }

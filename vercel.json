@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/daily-matches",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-spotlight",
+      "schedule": "0 0 * * 1"
+    }
+  ]
+}
