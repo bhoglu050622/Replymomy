@@ -79,7 +79,7 @@ export function WhoAreTheMommies() {
 
             {/* Editorial stats */}
             <div className="mt-8 border-t border-champagne/15">
-              <div className="grid grid-cols-3 divide-x divide-champagne/10">
+              <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x divide-champagne/10 divide-y sm:divide-y-0">
                 {[
                   { value: "Founding", label: "Cohort now accepting applications" },
                   { value: "Verified", label: "Every member approved by hand" },
@@ -87,7 +87,7 @@ export function WhoAreTheMommies() {
                 ].map((stat, i) => (
                   <div
                     key={stat.label}
-                    className={["py-5", i === 0 ? "pr-5" : i === 2 ? "pl-5" : "px-5"].join(" ")}
+                    className="py-5 px-0 sm:px-5 first:sm:pl-0 last:sm:pr-0"
                   >
                     <p className="font-headline text-[2.2rem] leading-none tracking-tight text-champagne">
                       {stat.value}

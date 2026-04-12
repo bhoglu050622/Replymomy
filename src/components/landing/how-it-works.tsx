@@ -88,7 +88,7 @@ export function HowItWorks() {
                 </div>
 
                 <h3 className="text-display-sm text-ivory mb-3">{step.title}</h3>
-                <p className="text-body-sm text-ivory/52 font-light leading-relaxed max-w-[18ch] mx-auto">
+                <p className="text-body-sm text-ivory/52 font-light leading-relaxed max-w-[22ch] mx-auto">
                   {step.body}
                 </p>
               </motion.div>

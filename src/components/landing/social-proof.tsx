@@ -65,7 +65,7 @@ export function SocialProof() {
 
         {/* Comparison */}
         <LuxuryScrollTrigger delay={0.28}>
-          <div className="mt-14 mx-auto max-w-xl">
+          <div className="mt-14 mx-auto max-w-xl w-full">
             {/* Column headers */}
             <div className="grid grid-cols-[1fr_20px_1fr] items-center mb-5 px-1">
               <p className="text-label text-ivory/35 text-center">Other apps</p>
@@ -83,14 +83,14 @@ export function SocialProof() {
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.09 }}
                 >
-                  <div className="luxury-glass rounded-2xl px-4 py-3 flex items-center gap-2.5">
+                  <div className="luxury-glass rounded-2xl px-3 py-3 flex items-center gap-2 min-w-0">
                     <X className="size-3 text-ivory/25 shrink-0" />
-                    <span className="text-body-sm text-ivory/38">{row.old}</span>
+                    <span className="text-body-sm text-ivory/38 truncate">{row.old}</span>
                   </div>
-                  <div className="size-1.5 rounded-full bg-champagne/25 mx-auto" />
-                  <div className="luxury-glass rounded-2xl px-4 py-3 flex items-center gap-2.5 border border-champagne/[0.18]">
+                  <div className="size-1.5 rounded-full bg-champagne/25 mx-auto shrink-0" />
+                  <div className="luxury-glass rounded-2xl px-3 py-3 flex items-center gap-2 border border-champagne/[0.18] min-w-0">
                     <Check className="size-3 text-champagne shrink-0" />
-                    <span className="text-body-sm text-ivory/85">{row.next}</span>
+                    <span className="text-body-sm text-ivory/85 truncate">{row.next}</span>
                   </div>
                 </motion.div>
               ))}

@@ -94,7 +94,7 @@ export function TheExperience() {
           </div>
         </LuxuryScrollTrigger>
 
-        <div className="mt-14 grid gap-6 lg:grid-cols-[1.12fr_0.88fr]">
+        <div className="mt-14 grid gap-6 grid-cols-1 lg:grid-cols-[1.12fr_0.88fr]">
           {/* Left panel — tab-based viewer */}
           <LuxuryScrollTrigger>
             <motion.div

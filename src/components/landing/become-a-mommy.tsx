@@ -152,7 +152,7 @@ export function BecomeAMommy() {
         05
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12">
+      <div className="relative z-10 container mx-auto">
         {/* Section header with ornamental divider */}
         <LuxuryScrollTrigger>
           <div className="text-center mb-16">
@@ -175,7 +175,7 @@ export function BecomeAMommy() {
           </div>
         </LuxuryScrollTrigger>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           {/* Left — perks */}
           <div className="space-y-8">
             {PERKS.map((perk, i) => (
@@ -253,7 +253,7 @@ export function BecomeAMommy() {
               ) : (
                 <motion.div
                   key="form"
-                  className="luxury-glass-deep p-8 rounded-3xl relative overflow-hidden"
+                  className="luxury-glass-deep p-5 sm:p-8 rounded-3xl relative overflow-hidden"
                   style={{
                     boxShadow:
                       "0 0 0 1px rgba(232,194,123,0.11), 0 24px 64px rgba(0,0,0,0.42)",
@@ -316,7 +316,7 @@ export function BecomeAMommy() {
                         exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div className="col-span-2">
                             <label className="text-label text-ivory/38 mb-1.5 block">
                               Full Name
