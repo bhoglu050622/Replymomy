@@ -52,14 +52,16 @@ export function IcebreakerDialog({ matchId }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          variant="gold-outline"
-          className="w-full h-12 rounded-full mt-3 text-xs gap-2"
-        >
-          <Sparkles className="size-4" />
-          Get conversation starters
-        </Button>
+      <DialogTrigger
+        render={
+          <Button
+            variant="gold-outline"
+            className="w-full h-12 rounded-full mt-3 text-xs gap-2"
+          />
+        }
+      >
+        <Sparkles className="size-4" />
+        Get conversation starters
       </DialogTrigger>
 
       <DialogContent className="bg-obsidian border-champagne/20 max-w-md">
