@@ -139,7 +139,7 @@ export default function ChannelPage({
   async function editMessage(messageId: string, newText: string) {
     if (!channel || !newText.trim()) return;
     try {
-      await channel.updateMessage({
+      await client!.updateMessage({
         id: messageId,
         text: newText.trim(),
       });
