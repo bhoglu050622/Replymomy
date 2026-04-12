@@ -42,7 +42,8 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/api/verification/webhook") ||
     pathname.startsWith("/api/cron/") ||
     pathname.startsWith("/api/invitation/") ||
-    pathname.startsWith("/api/mommy/apply");
+    pathname.startsWith("/api/mommy/apply") ||
+    pathname.startsWith("/api/member/apply");
 
   // Auth routes that authenticated users can be on during onboarding
   const authRoutes = [
