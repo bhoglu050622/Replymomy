@@ -312,7 +312,7 @@ export default function ChannelPage({
           const isOwn = msg.user?.id === userId;
           const isActive = activeMessageId === msg.id;
           const isEditing = editingMessageId === msg.id;
-          const msgReactions = Object.values(msg.reactions || {});
+          const msgReactions = msg.latest_reactions || [];
 
           return (
             <div
