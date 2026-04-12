@@ -115,6 +115,54 @@ Base primarily on the motivation statement's authenticity, specificity, and alig
 }
 
 // ---------------------------------------------------------------------------
+// Feature 1b — Member Application Review
+// ---------------------------------------------------------------------------
+
+export interface MemberApplicationInput {
+  full_name: string;
+  age: number;
+  city: string;
+  occupation: string;
+  income_bracket: string;
+  motivation: string;
+}
+
+export async function reviewMemberApplication(app: MemberApplicationInput): Promise<AiApplicationReview> {
+  const bracketLabel: Record<string, string> = {
+    "200k_500k": "$200k–$500k",
+    "500k_1m": "$500k–$1M",
+    "1m_plus": "$1M+",
+  };
+  const income = bracketLabel[app.income_bracket] ?? app.income_bracket;
+
+  const prompt = `You are a discerning concierge for ReplyMommy, a luxury private dating platform.
+Evaluate this male member application and return a structured quality assessment for an admin reviewer.
+Be concise, tasteful, and professional. Return only valid JSON.
+
+Application:
+- Name: ${app.full_name}, Age: ${app.age}, City: ${app.city}
+- Occupation: ${app.occupation}
+- Income bracket: ${income}
+- Motivation: "${app.motivation}"
+
+Return this exact JSON structure:
+{
+  "quality_score": <integer 0-100>,
+  "strengths": [<up to 3 strings, max 12 words each>],
+  "red_flags": [<0-3 concerns, empty array if none>],
+  "suggested_tags": [<2-5 short CRM label strings>],
+  "admin_summary": "<one sentence, max 30 words>"
+}
+
+Score guide: 80-100 strong candidate, 60-79 promising with caveats, 40-59 borderline, below 40 not recommended.
+Base primarily on the motivation statement's authenticity, specificity, and alignment with a luxury platform.
+Consider occupation and income bracket as credibility signals.`;
+
+  const result = await model.generateContent(prompt);
+  return parseGeminiJson(result.response.text(), isAiApplicationReview);
+}
+
+// ---------------------------------------------------------------------------
 // Feature 2 — Match Introduction
 // ---------------------------------------------------------------------------
 

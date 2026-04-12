@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   LayoutDashboard,
   Users,
+  ClipboardList,
   FileCheck,
   Wallet,
   Mail,
@@ -18,6 +19,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/crm/users", label: "Users CRM", icon: Users, exact: false },
+  { href: "/admin/crm/applicants", label: "Applicants CRM", icon: ClipboardList, exact: false },
   { href: "/admin/applications", label: "Applications", icon: FileCheck, exact: false },
   { href: "/admin/payouts", label: "Payouts", icon: Wallet, exact: false },
   { href: "/admin/invitations", label: "Invitations", icon: Mail, exact: false },

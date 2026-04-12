@@ -60,6 +60,11 @@ const WaitlistCta = dynamic(
   { ssr: false }
 );
 
+const BecomeAMember = dynamic(
+  () => import("@/components/landing/become-a-member").then((mod) => mod.BecomeAMember),
+  { ssr: false }
+);
+
 const BecomeAMommy = dynamic(
   () => import("@/components/landing/become-a-mommy").then((mod) => mod.BecomeAMommy),
   { ssr: false }
@@ -91,6 +96,7 @@ export default function Home() {
         <WhoAreTheMommies />
         <HowItWorks />
         <TheExperience />
+        <BecomeAMember />
         <BecomeAMommy />
         <ThePlans />
         <Testimonials />

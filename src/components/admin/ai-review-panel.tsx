@@ -16,9 +16,10 @@ function scoreLabel(score: number): { label: string; color: string } {
 interface Props {
   applicationId: string;
   existingReview: AiApplicationReview | null;
+  type?: "mommy" | "member";
 }
 
-export function AiReviewPanel({ applicationId, existingReview }: Props) {
+export function AiReviewPanel({ applicationId, existingReview, type = "mommy" }: Props) {
   const [review, setReview] = useState<AiApplicationReview | null>(existingReview);
   const [loading, setLoading] = useState(false);
 
@@ -28,7 +29,7 @@ export function AiReviewPanel({ applicationId, existingReview }: Props) {
       const res = await fetch("/api/admin/applications/ai-review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ applicationId }),
+        body: JSON.stringify({ applicationId, type }),
       });
       const data = await res.json();
       if (!res.ok) {

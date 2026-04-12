@@ -27,7 +27,8 @@ export async function GET() {
     { count: totalUsers },
     { count: activeMembers },
     { count: mommyCount },
-    { count: pendingApplications },
+    { count: pendingMommyApps },
+    { count: pendingMemberApps },
     { count: newUsersThisWeek },
     { data: pendingPayouts },
     { data: recentApps },
@@ -44,6 +45,10 @@ export async function GET() {
       .eq("role", "mommy"),
     admin
       .from("mommy_applications")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "pending"),
+    admin
+      .from("member_applications")
       .select("*", { count: "exact", head: true })
       .eq("status", "pending"),
     admin
@@ -75,7 +80,9 @@ export async function GET() {
     totalUsers: totalUsers ?? 0,
     activeMembers: activeMembers ?? 0,
     mommyCount: mommyCount ?? 0,
-    pendingApplications: pendingApplications ?? 0,
+    pendingApplications: (pendingMommyApps ?? 0) + (pendingMemberApps ?? 0),
+    pendingMommyApplications: pendingMommyApps ?? 0,
+    pendingMemberApplications: pendingMemberApps ?? 0,
     newUsersThisWeek: newUsersThisWeek ?? 0,
     pendingPayoutsTotal,
     recentApplications: recentApps ?? [],

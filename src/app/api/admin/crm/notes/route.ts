@@ -41,7 +41,7 @@ export async function GET(req: Request) {
 }
 
 const createSchema = z.object({
-  entity_type: z.enum(["user", "application"]),
+  entity_type: z.enum(["user", "application", "member_application", "mommy_application"]),
   entity_id: z.string().uuid(),
   content: z.string().min(1).max(5000),
 });

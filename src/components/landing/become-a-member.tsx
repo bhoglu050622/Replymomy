@@ -1,37 +1,43 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
-import { DollarSign, Shield, Star, ChevronRight, Camera, X, Check } from "lucide-react";
+import { Crown, Shield, Sparkles, ChevronRight, Camera, X, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { GoldCtaButton } from "@/components/shared/gold-cta-button";
 import { LuxuryScrollTrigger } from "@/components/animations/luxury-scroll-trigger";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import Image from "next/image";
 
 const PERKS = [
   {
-    icon: DollarSign,
-    title: "Earn exclusive perks",
-    desc: "Receive gifts, gallery unlocks, and spotlight rewards. On your schedule, on your terms, with no pressure.",
+    icon: Crown,
+    title: "Curated introductions",
+    desc: "Every match is handpicked by our concierge team — no algorithms, no endless swiping. Just quality introductions that respect your time.",
   },
   {
     icon: Shield,
-    title: "Control your visibility",
-    desc: "You decide what's shared and with whom. Your profile is never public and you can pause anytime.",
+    title: "Verified women only",
+    desc: "Every Mommy on the platform has been personally reviewed, identity-verified, and approved before joining. Your time is protected.",
   },
   {
-    icon: Star,
-    title: "Verified members only",
-    desc: "Every person you connect with has been identity-verified and personally approved before joining.",
+    icon: Sparkles,
+    title: "Absolute discretion",
+    desc: "Your profile is never public. Connections are made privately, and your information is never shared without your explicit consent.",
   },
+];
+
+const INCOME_OPTIONS = [
+  { value: "200k_500k", label: "$200k – $500k" },
+  { value: "500k_1m", label: "$500k – $1M" },
+  { value: "1m_plus", label: "$1M+" },
 ];
 
 type Step = 1 | 2 | 3;
 
-export function BecomeAMommy() {
+export function BecomeAMember() {
   const [step, setStep] = useState<Step>(1);
   const [state, setState] = useState<"idle" | "success">("idle");
 
@@ -39,17 +45,19 @@ export function BecomeAMommy() {
   const [email, setEmail] = useState("");
   const [age, setAge] = useState("");
   const [city, setCity] = useState("");
-  const [instagram, setInstagram] = useState("");
+  const [occupation, setOccupation] = useState("");
 
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
-  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
+  const [incomeBracket, setIncomeBracket] = useState("");
+  const [referralSource, setReferralSource] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const [motivation, setMotivation] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  async function handlePhotoClick(idx: number) {
-    if (photoUrls[idx]) {
-      setPhotoUrls((prev) => prev.filter((_, i) => i !== idx));
+  async function handlePhotoClick() {
+    if (photoUrl) {
+      setPhotoUrl(null);
       return;
     }
 
@@ -58,11 +66,11 @@ export function BecomeAMommy() {
 
     if (!cloudName || !uploadPreset) {
       const url = prompt("Enter image URL (dev mode):");
-      if (url) setPhotoUrls((prev) => [...prev, url]);
+      if (url) setPhotoUrl(url);
       return;
     }
 
-    setUploadingIdx(idx);
+    setUploading(true);
     try {
       const formData = new FormData();
       formData.append("upload_preset", uploadPreset);
@@ -71,45 +79,38 @@ export function BecomeAMommy() {
       input.accept = "image/*";
       input.onchange = async (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
-        if (!file) {
-          setUploadingIdx(null);
-          return;
-        }
+        if (!file) { setUploading(false); return; }
         formData.append("file", file);
         const res = await fetch(
           `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
           { method: "POST", body: formData }
         );
         const data = await res.json();
-        if (data.secure_url) {
-          setPhotoUrls((prev) => {
-            const next = [...prev];
-            next[idx] = data.secure_url;
-            return next;
-          });
-        }
-        setUploadingIdx(null);
+        if (data.secure_url) setPhotoUrl(data.secure_url);
+        setUploading(false);
       };
       input.click();
     } catch {
-      setUploadingIdx(null);
+      setUploading(false);
     }
   }
 
   async function handleSubmit() {
     setSubmitting(true);
     try {
-      const res = await fetch("/api/mommy/apply", {
+      const res = await fetch("/api/member/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
           full_name: fullName,
           age: parseInt(age),
-          instagram: instagram || undefined,
           city,
+          occupation,
+          income_bracket: incomeBracket,
           motivation,
-          photo_urls: photoUrls,
+          photo_url: photoUrl ?? undefined,
+          referral_source: referralSource || undefined,
         }),
       });
       const data = await res.json();
@@ -127,20 +128,25 @@ export function BecomeAMommy() {
   }
 
   const canProceedStep1 =
-    fullName.trim() && email.includes("@") && parseInt(age) >= 18 && city.trim();
-  const canProceedStep2 = photoUrls.length >= 1;
+    fullName.trim() &&
+    email.includes("@") &&
+    parseInt(age) >= 21 &&
+    parseInt(age) <= 75 &&
+    city.trim() &&
+    occupation.trim();
+  const canProceedStep2 = !!incomeBracket;
   const canSubmit = motivation.trim().length >= 20;
 
   return (
     <section
-      id="become-a-mommy"
+      id="become-a-member"
       className="luxury-section overflow-hidden bg-obsidian-soft"
     >
       <div
         className="absolute inset-0 z-0"
         style={{
           background:
-            "radial-gradient(ellipse at 30% 50%, rgba(74, 14, 26, 0.3) 0%, transparent 60%), radial-gradient(ellipse at 70% 50%, rgba(232, 194, 123, 0.1) 0%, transparent 60%)",
+            "radial-gradient(ellipse at 70% 50%, rgba(74, 14, 26, 0.25) 0%, transparent 60%), radial-gradient(ellipse at 30% 50%, rgba(232, 194, 123, 0.08) 0%, transparent 60%)",
         }}
       />
 
@@ -149,11 +155,10 @@ export function BecomeAMommy() {
         aria-hidden="true"
         className="section-numeral absolute -right-8 top-16 pointer-events-none hidden sm:block"
       >
-        06
+        05
       </div>
 
       <div className="relative z-10 container mx-auto">
-        {/* Section header with ornamental divider */}
         <LuxuryScrollTrigger>
           <div className="text-center mb-16">
             <div className="flex items-center justify-center gap-4 mb-5">
@@ -161,15 +166,15 @@ export function BecomeAMommy() {
               <span className="text-champagne/40 text-[11px]">✦</span>
               <div className="h-px w-10 bg-gradient-to-l from-transparent to-champagne/35" />
             </div>
-            <p className="text-kicker mb-4">For Our Mommies</p>
+            <p className="text-kicker mb-4">For Our Members</p>
             <h2 className="text-display-lg text-ivory mb-4">
-              Join our founding{" "}
-              <em className="text-gradient-gold not-italic font-accent">Mommies</em>
+              Request your{" "}
+              <em className="text-gradient-gold not-italic font-accent">invitation</em>
             </h2>
             <p className="text-body-lg text-ivory/58 font-light max-w-2xl mx-auto">
-              We&apos;re building a founding community of confident women who
-              want to date on their own terms — with respect, privacy, and
-              zero compromises.
+              We&apos;re accepting a founding cohort of discerning men who value
+              substance over noise — curated introductions, absolute privacy, and
+              connections worth keeping.
             </p>
           </div>
         </LuxuryScrollTrigger>
@@ -216,11 +221,11 @@ export function BecomeAMommy() {
                 className="font-accent italic text-ivory/80 leading-[1.45] relative z-10"
                 style={{ fontSize: "clamp(1rem, 1.8vw, 1.35rem)" }}
               >
-                The atmosphere is completely different from anything else I've
-                tried. Every person I've met has been genuine.
+                The quality of introductions is unlike anything I&apos;ve experienced.
+                Every meeting has been with someone genuinely remarkable.
               </p>
               <cite className="text-label text-champagne/56 mt-4 block not-italic">
-                — A founding member, New York
+                — A founding member, London
               </cite>
               <div className="mt-5 h-px bg-gradient-to-r from-champagne/18 to-transparent" />
             </motion.div>
@@ -299,7 +304,7 @@ export function BecomeAMommy() {
                       {step === 1
                         ? "Identity"
                         : step === 2
-                          ? "Photo selection"
+                          ? "Background"
                           : "Your story"}
                     </span>
                   </div>
@@ -348,8 +353,8 @@ export function BecomeAMommy() {
                               value={age}
                               onChange={(e) => setAge(e.target.value)}
                               placeholder="Age"
-                              min="18"
-                              max="65"
+                              min="21"
+                              max="75"
                               className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5"
                             />
                           </div>
@@ -366,13 +371,12 @@ export function BecomeAMommy() {
                           </div>
                           <div>
                             <label className="text-label text-ivory/38 mb-1.5 block">
-                              Instagram{" "}
-                              <span className="text-ivory/20">(optional)</span>
+                              Occupation
                             </label>
                             <Input
-                              value={instagram}
-                              onChange={(e) => setInstagram(e.target.value)}
-                              placeholder="@handle"
+                              value={occupation}
+                              onChange={(e) => setOccupation(e.target.value)}
+                              placeholder="e.g. Founder, Partner, Director"
                               className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5"
                             />
                           </div>
@@ -398,50 +402,83 @@ export function BecomeAMommy() {
                         transition={{ duration: 0.3 }}
                       >
                         <div>
-                          <p className="text-body-sm text-ivory/48 mb-4">
-                            Add 1–5 photos. Your first photo is your introduction.
-                          </p>
-                          <div className="grid grid-cols-5 gap-2">
-                            {Array.from({ length: 5 }).map((_, i) => (
+                          <label className="text-label text-ivory/38 mb-1.5 block">
+                            Annual Income
+                          </label>
+                          <div className="grid grid-cols-3 gap-2">
+                            {INCOME_OPTIONS.map((opt) => (
                               <button
-                                key={i}
+                                key={opt.value}
                                 type="button"
-                                onClick={() => handlePhotoClick(i)}
-                                disabled={
-                                  uploadingIdx === i ||
-                                  (!photoUrls[i] && i > photoUrls.length)
-                                }
+                                onClick={() => setIncomeBracket(opt.value)}
                                 className={cn(
-                                  "aspect-square rounded-xl border-2 border-dashed flex items-center justify-center transition-colors relative overflow-hidden",
-                                  photoUrls[i]
-                                    ? "border-champagne"
-                                    : i === photoUrls.length
-                                      ? "border-champagne/30 hover:border-champagne/60"
-                                      : "border-champagne/10 opacity-40"
+                                  "py-2.5 px-3 rounded-xl border text-label transition-all text-center",
+                                  incomeBracket === opt.value
+                                    ? "bg-champagne/15 border-champagne text-champagne"
+                                    : "bg-obsidian/40 border-champagne/15 text-ivory/50 hover:border-champagne/40"
                                 )}
                               >
-                                {photoUrls[i] ? (
-                                  <>
-                                    <Image
-                                      src={photoUrls[i]}
-                                      alt=""
-                                      fill
-                                      className="object-cover rounded-xl"
-                                      sizes="(max-width: 768px) 33vw, 150px"
-                                    />
-                                    <div className="absolute inset-0 flex items-center justify-center bg-obsidian/60 opacity-0 hover:opacity-100 transition-opacity">
-                                      <X className="size-3 text-ivory" />
-                                    </div>
-                                  </>
-                                ) : uploadingIdx === i ? (
-                                  <div className="size-3.5 rounded-full border-2 border-champagne/40 border-t-champagne animate-spin" />
-                                ) : (
-                                  <Camera className="size-4 text-champagne/30" />
-                                )}
+                                {opt.label}
                               </button>
                             ))}
                           </div>
                         </div>
+
+                        {/* Optional photo */}
+                        <div>
+                          <label className="text-label text-ivory/38 mb-1.5 block">
+                            Photo{" "}
+                            <span className="text-ivory/20">(optional)</span>
+                          </label>
+                          <button
+                            type="button"
+                            onClick={handlePhotoClick}
+                            disabled={uploading}
+                            className={cn(
+                              "w-full aspect-video rounded-xl border-2 border-dashed flex items-center justify-center transition-colors relative overflow-hidden",
+                              photoUrl
+                                ? "border-champagne"
+                                : "border-champagne/20 hover:border-champagne/50"
+                            )}
+                          >
+                            {photoUrl ? (
+                              <>
+                                <Image
+                                  src={photoUrl}
+                                  alt=""
+                                  fill
+                                  className="object-cover rounded-xl"
+                                  sizes="400px"
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center bg-obsidian/60 opacity-0 hover:opacity-100 transition-opacity">
+                                  <X className="size-5 text-ivory" />
+                                </div>
+                              </>
+                            ) : uploading ? (
+                              <div className="size-5 rounded-full border-2 border-champagne/40 border-t-champagne animate-spin" />
+                            ) : (
+                              <div className="flex flex-col items-center gap-2 text-ivory/30">
+                                <Camera className="size-6" />
+                                <span className="text-label">Add a photo</span>
+                              </div>
+                            )}
+                          </button>
+                        </div>
+
+                        {/* Optional referral */}
+                        <div>
+                          <label className="text-label text-ivory/38 mb-1.5 block">
+                            How did you hear about us?{" "}
+                            <span className="text-ivory/20">(optional)</span>
+                          </label>
+                          <Input
+                            value={referralSource}
+                            onChange={(e) => setReferralSource(e.target.value)}
+                            placeholder="Friend, press, social media..."
+                            className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5"
+                          />
+                        </div>
+
                         <div className="flex gap-3">
                           <button
                             onClick={() => setStep(1)}
