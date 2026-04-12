@@ -50,7 +50,7 @@ export default async function ProfilePage() {
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="aspect-[3/4] rounded-2xl bg-gradient-to-b from-burgundy/30 to-smoke border border-champagne/20 overflow-hidden flex items-center justify-center"
+            className="relative aspect-[3/4] rounded-2xl bg-gradient-to-b from-burgundy/30 to-smoke border border-champagne/20 overflow-hidden flex items-center justify-center"
           >
             {profile?.photo_urls?.[i] ? (
               <Image

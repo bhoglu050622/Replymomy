@@ -13,6 +13,26 @@ const VARIANTS = {
     headline: "Nothing here yet.",
     description: "Photos will appear as connections form.",
   },
+  chat: {
+    headline: "No conversations yet.",
+    description: "Accept a match to begin chatting.",
+  },
+  knowledge: {
+    headline: "No articles available.",
+    description: "The knowledge hub is being curated.",
+  },
+  gifts: {
+    headline: "No gifts yet.",
+    description: "Send or receive gifts through your matches.",
+  },
+  notifications: {
+    headline: "No notifications.",
+    description: "You're all caught up.",
+  },
+  tokens: {
+    headline: "No token history.",
+    description: "Your token transactions will appear here.",
+  },
 };
 
 interface EmptyStateProps {

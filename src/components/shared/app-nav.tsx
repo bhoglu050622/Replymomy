@@ -36,8 +36,6 @@ const MOMMY_NAV_ITEMS = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-// Keep BASE_NAV_ITEMS for mobile nav (uses slice)
-const BASE_NAV_ITEMS = MEMBER_NAV_ITEMS;
 
 export function AppNav() {
   const pathname = usePathname();
@@ -83,11 +81,20 @@ export function AppNav() {
 
 export function MobileNav() {
   const pathname = usePathname();
+  const role = useUserStore((s) => s.role);
+
+  const baseItems = role === "mommy" ? MOMMY_NAV_ITEMS : MEMBER_NAV_ITEMS;
+  const mobileItems = role === "admin"
+    ? [...MEMBER_NAV_ITEMS, { href: "/admin", label: "Admin", icon: ShieldCheck }]
+    : baseItems;
 
   return (
-    <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-obsidian/95 backdrop-blur-xl border-t border-champagne/10 z-40">
+    <nav
+      className="lg:hidden fixed bottom-0 inset-x-0 bg-obsidian/95 backdrop-blur-xl border-t border-champagne/10 z-40"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
       <div className="grid grid-cols-5 gap-1 px-2 py-3">
-        {BASE_NAV_ITEMS.slice(0, 5).map((item) => {
+        {mobileItems.slice(0, 5).map((item) => {
           const active =
             pathname === item.href || pathname.startsWith(item.href + "/");
           return (

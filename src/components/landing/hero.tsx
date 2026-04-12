@@ -15,7 +15,7 @@ const MARQUEE_ITEMS = [
   "Private Beta 2026",
   "Manually Reviewed Applications",
   "Verified Members Only",
-  "Invitation Preferred",
+  "Invitation Only",
   "No Public Sign-Up",
   "Real People. Real Conversations.",
 ];
@@ -81,7 +81,16 @@ export function Hero() {
     >
       {/* Background layers */}
       <div className="absolute inset-0">
-        <motion.div className="absolute inset-0 will-change-transform" style={{ y: layerY }}>
+        {/* CSS Fallback background - always visible behind iframe */}
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at 30% 20%, rgba(74, 14, 26, 0.4) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(232, 194, 123, 0.15) 0%, transparent 50%), linear-gradient(to bottom, #0A0A0A 0%, #1A1A1A 100%)",
+          }}
+        />
+
+        <motion.div className="absolute inset-0 will-change-transform z-10" style={{ y: layerY }}>
           <iframe
             src="https://www.unicorn.studio/embed/yGkBPF6rvy3oxuiGYvBf"
             className="w-full h-full border-0"
@@ -96,7 +105,7 @@ export function Hero() {
           />
         </motion.div>
 
-        {reduced && <AuroraBackground className="absolute inset-0 z-0 opacity-40" />}
+        {reduced && <AuroraBackground className="absolute inset-0 z-20 opacity-40" />}
 
         <motion.div
           className="absolute inset-0 bg-gradient-to-b from-obsidian/50 via-obsidian/30 to-obsidian"
@@ -144,7 +153,7 @@ export function Hero() {
               transition={{ type: "spring", stiffness: 320, damping: 22 }}
             >
               <GoldCtaButton className="h-12 px-8 text-xs w-full sm:w-auto" onClick={scrollToWaitlist}>
-                Apply for Early Access <ArrowDownRight className="size-4" />
+                Request Invitation <ArrowDownRight className="size-4" />
               </GoldCtaButton>
             </motion.div>
 
@@ -153,7 +162,7 @@ export function Hero() {
               className="h-12 rounded-full border-champagne/25 px-7 text-xs text-ivory/78 hover:text-champagne"
               onClick={scrollToMembership}
             >
-              Join Founding Cohort
+              Explore Membership
             </Button>
           </div>
 

@@ -19,6 +19,15 @@ const badgeVariants = cva(
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
+        // Luxury tier variants
+        classic:
+          "bg-champagne/10 text-champagne border-champagne/20 [a]:hover:bg-champagne/20",
+        plus:
+          "bg-champagne/20 text-champagne border-champagne/40 [a]:hover:bg-champagne/30",
+        elite:
+          "bg-gradient-to-r from-champagne-600 to-champagne text-obsidian border-champagne/50 shadow-[0_0_12px_rgba(232,194,123,0.3)] [a]:hover:shadow-[0_0_16px_rgba(232,194,123,0.5)]",
+        principal:
+          "bg-burgundy/30 text-ivory border-burgundy/50 [a]:hover:bg-burgundy/40",
       },
     },
     defaultVariants: {

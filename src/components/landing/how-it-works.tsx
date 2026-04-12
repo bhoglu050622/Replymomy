@@ -6,8 +6,8 @@ import { LuxuryScrollTrigger } from "@/components/animations/luxury-scroll-trigg
 const STEPS = [
   {
     number: "01",
-    title: "Apply",
-    body: "Every application is reviewed by hand to protect the quality of the community.",
+    title: "Request Access",
+    body: "Every request is reviewed by hand to protect the quality of the community.",
   },
   {
     number: "02",
@@ -29,7 +29,7 @@ const STEPS = [
 export function HowItWorks() {
   return (
     <section
-      id="experience"
+      id="how-it-works"
       className="luxury-section bg-gradient-to-b from-obsidian-soft to-obsidian"
     >
       <div className="absolute inset-0 pointer-events-none">

@@ -66,7 +66,7 @@ export function WhoGetsIn() {
               />
             </h2>
             <p className="mt-6 text-body-lg text-ivory/68 font-light">
-              No bots. No open sign-up. The people you meet here cleared
+              No bots. Invitation-only. The people you meet here cleared
               the same bar you did.
             </p>
           </div>

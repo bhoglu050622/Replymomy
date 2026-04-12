@@ -165,7 +165,6 @@ export function BecomeAMommy() {
             <h2 className="text-display-lg text-ivory mb-4">
               Join our founding{" "}
               <em className="text-gradient-gold not-italic font-accent">Mommies</em>
-              {" "}💌
             </h2>
             <p className="text-body-lg text-ivory/58 font-light max-w-2xl mx-auto">
               We&apos;re building a founding community of confident women who
@@ -243,7 +242,7 @@ export function BecomeAMommy() {
                   </div>
                   <div>
                     <h3 className="text-display-md text-ivory mb-2">
-                      Application received.
+                      Request received.
                     </h3>
                     <p className="text-body-md text-ivory/50 max-w-xs">
                       We review every application personally. Expect a response within 48 hours.
@@ -499,7 +498,7 @@ export function BecomeAMommy() {
                             disabled={!canSubmit || submitting}
                             onClick={handleSubmit}
                           >
-                            {submitting ? "Submitting..." : "Submit Application"}
+                            {submitting ? "Submitting..." : "Request Invitation"}
                           </GoldCtaButton>
                         </div>
                       </motion.div>

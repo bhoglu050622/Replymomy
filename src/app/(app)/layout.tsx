@@ -35,7 +35,7 @@ export default function AppLayout({
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <main id="app-content" className="flex-1 pb-24 lg:pb-0">
+        <main id="app-content" className="flex-1 pb-24 lg:pb-0" style={{ paddingBottom: "calc(6rem + env(safe-area-inset-bottom))" }}>
           <PageTransition>{children}</PageTransition>
         </main>
 

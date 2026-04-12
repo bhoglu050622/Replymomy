@@ -2,13 +2,16 @@
 
 import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Send, Gift } from "lucide-react";
+import { ArrowLeft, Send, Gift, MoreVertical, Trash2, Edit2, Smile, X, Check, Image as ImageIcon } from "lucide-react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useStreamChatContext } from "@/components/providers/stream-provider";
 import type { Channel, LocalMessage } from "stream-chat";
 import { formatDistanceToNow } from "date-fns";
+
+const REACTIONS = ["❤️", "🔥", "👍", "😂", "😮", "🙏"];
 
 export default function ChannelPage({
   params,
@@ -28,6 +31,17 @@ export default function ChannelPage({
   const [otherOnline, setOtherOnline] = useState(false);
   const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Message actions state
+  const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [showReactions, setShowReactions] = useState<string | null>(null);
+
+  // Image attachment state
+  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!connected || !client || !userId) return;
@@ -109,6 +123,164 @@ export default function ChannelPage({
     channel?.keystroke().catch(() => {});
   }
 
+  // Message actions
+  async function deleteMessage(messageId: string) {
+    if (!channel) return;
+    try {
+      await channel.deleteMessage(messageId);
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      toast.success("Message deleted");
+    } catch {
+      toast.error("Failed to delete message");
+    }
+    setActiveMessageId(null);
+  }
+
+  async function editMessage(messageId: string, newText: string) {
+    if (!channel || !newText.trim()) return;
+    try {
+      await channel.updateMessage({
+        id: messageId,
+        text: newText.trim(),
+      });
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId ? { ...m, text: newText.trim() } : m
+        )
+      );
+      toast.success("Message updated");
+    } catch {
+      toast.error("Failed to edit message");
+    }
+    setEditingMessageId(null);
+    setEditText("");
+    setActiveMessageId(null);
+  }
+
+  async function addReaction(messageId: string, reaction: string) {
+    if (!channel) return;
+    try {
+      await channel.sendReaction(messageId, { type: reaction });
+      toast.success("Reaction added");
+    } catch {
+      toast.error("Failed to add reaction");
+    }
+    setShowReactions(null);
+    setActiveMessageId(null);
+  }
+
+  function startEditing(msg: LocalMessage) {
+    setEditingMessageId(msg.id);
+    setEditText(msg.text || "");
+    setActiveMessageId(null);
+  }
+
+  function cancelEditing() {
+    setEditingMessageId(null);
+    setEditText("");
+  }
+
+  // Close actions menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".message-actions-menu")) {
+        setActiveMessageId(null);
+        setShowReactions(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Image upload handlers
+  function handleImageClick() {
+    fileInputRef.current?.click();
+  }
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+
+    setUploadingImage(true);
+
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || !uploadPreset) {
+      // Dev mode: use FileReader to get base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAttachedImage(reader.result as string);
+        setUploadingImage(false);
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("upload_preset", uploadPreset);
+      formData.append("file", file);
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        { method: "POST", body: formData }
+      );
+      const data = await res.json();
+
+      if (data.secure_url) {
+        setAttachedImage(data.secure_url);
+      } else {
+        toast.error("Failed to upload image");
+      }
+    } catch {
+      toast.error("Failed to upload image");
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
+  function removeAttachedImage() {
+    setAttachedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
+  async function sendImageMessage() {
+    if (!attachedImage || !channel || sending) return;
+
+    setSending(true);
+    try {
+      await channel.sendMessage({
+        text: input.trim() || "",
+        attachments: [
+          {
+            type: "image",
+            image_url: attachedImage,
+            fallback: "Image",
+          },
+        ],
+      });
+      setInput("");
+      setAttachedImage(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch {
+      toast.error("Failed to send image");
+    } finally {
+      setSending(false);
+    }
+  }
+
   return (
     <div className="flex flex-col h-[100dvh] lg:h-screen bg-obsidian">
       {/* Header */}
@@ -138,32 +310,181 @@ export default function ChannelPage({
         )}
         {messages.map((msg) => {
           const isOwn = msg.user?.id === userId;
+          const isActive = activeMessageId === msg.id;
+          const isEditing = editingMessageId === msg.id;
+          const msgReactions = Object.values(msg.reactions || {});
+
           return (
             <div
               key={msg.id}
-              className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+              className={`flex ${isOwn ? "justify-end" : "justify-start"} group`}
             >
-              <div
-                className={`max-w-[75%] px-4 py-3 rounded-2xl text-body-md ${
-                  isOwn
-                    ? "bg-gradient-to-br from-champagne-600 to-champagne text-obsidian rounded-br-md"
-                    : "bg-smoke text-ivory border border-champagne/20 rounded-bl-md"
-                }`}
-              >
-                <p className="leading-relaxed">{msg.text}</p>
-                {msg.created_at && (
-                  <p
-                    className={`text-[10px] mt-1 ${
-                      isOwn ? "text-obsidian/60" : "text-ivory/40"
-                    }`}
+              <div className="relative flex items-end gap-2">
+                {/* Message actions button (visible on hover or active) */}
+                <button
+                  onClick={() => setActiveMessageId(isActive ? null : msg.id)}
+                  className={`transition-opacity ${
+                    isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                  } ${isOwn ? "order-last" : "order-first"}`}
+                >
+                  <MoreVertical className="size-4 text-ivory/40 hover:text-champagne" />
+                </button>
+
+                <div
+                  className={`max-w-[75%] px-4 py-3 rounded-2xl text-body-md relative ${
+                    isOwn
+                      ? "bg-gradient-to-br from-champagne-600 to-champagne text-obsidian rounded-br-md"
+                      : "bg-smoke text-ivory border border-champagne/20 rounded-bl-md"
+                  }`}
+                >
+                  {isEditing ? (
+                    // Edit mode
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            editMessage(msg.id, editText);
+                          } else if (e.key === "Escape") {
+                            cancelEditing();
+                          }
+                        }}
+                        className={`flex-1 bg-transparent border-b ${
+                          isOwn ? "border-obsidian/30" : "border-champagne/30"
+                        } focus:outline-none px-1`}
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => editMessage(msg.id, editText)}
+                        className={`${isOwn ? "text-obsidian/60" : "text-ivory/60"}`}
+                      >
+                        <Check className="size-4" />
+                      </button>
+                      <button
+                        onClick={cancelEditing}
+                        className={`${isOwn ? "text-obsidian/60" : "text-ivory/60"}`}
+                      >
+                        <X className="size-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    // View mode
+                    <>
+                      <p className="leading-relaxed">{msg.text}</p>
+                      {/* Image attachments */}
+                      {msg.attachments && msg.attachments.length > 0 && (
+                        <div className="mt-2 space-y-2">
+                          {msg.attachments.map((attachment, idx) =>
+                            attachment.type === "image" && attachment.image_url ? (
+                              <div
+                                key={idx}
+                                className="relative rounded-xl overflow-hidden max-w-[200px]"
+                              >
+                                <Image
+                                  src={attachment.image_url}
+                                  alt="Shared image"
+                                  width={200}
+                                  height={150}
+                                  className="object-cover rounded-xl"
+                                />
+                              </div>
+                            ) : null
+                          )}
+                        </div>
+                      )}
+                      {/* Reactions */}
+                      {msgReactions.length > 0 && (
+                        <div className="flex gap-1 mt-2 flex-wrap">
+                          {msgReactions.map((reaction, idx) => (
+                            <span
+                              key={idx}
+                              className={`text-xs px-2 py-0.5 rounded-full ${
+                                isOwn
+                                  ? "bg-obsidian/20"
+                                  : "bg-champagne/10 border border-champagne/20"
+                              }`}
+                            >
+                              {reaction.type}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Timestamp */}
+                  {msg.created_at && !isEditing && (
+                    <p
+                      className={`text-[10px] mt-1 ${
+                        isOwn ? "text-obsidian/60" : "text-ivory/40"
+                      }`}
+                    >
+                      {formatDistanceToNow(
+                        msg.created_at instanceof Date
+                          ? msg.created_at
+                          : new Date(msg.created_at as string),
+                        { addSuffix: true }
+                      )}
+                      {msg.updated_at && msg.updated_at !== msg.created_at && " (edited)"}
+                    </p>
+                  )}
+                </div>
+
+                {/* Message actions dropdown */}
+                {isActive && !isEditing && (
+                  <div
+                    className={`message-actions-menu absolute z-50 ${
+                      isOwn ? "right-8" : "left-8"
+                    } bottom-0 mb-8`}
                   >
-                    {formatDistanceToNow(
-                      msg.created_at instanceof Date
-                        ? msg.created_at
-                        : new Date(msg.created_at as string),
-                      { addSuffix: true }
+                    <div className="bg-smoke border border-champagne/20 rounded-xl shadow-lg overflow-hidden min-w-[140px]">
+                      {/* React option */}
+                      <button
+                        onClick={() => setShowReactions(showReactions === msg.id ? null : msg.id)}
+                        className="w-full px-4 py-2 text-left text-body-sm text-ivory hover:bg-champagne/10 flex items-center gap-2"
+                      >
+                        <Smile className="size-4 text-champagne" />
+                        React
+                      </button>
+                      {isOwn && (
+                        <>
+                          <button
+                            onClick={() => startEditing(msg)}
+                            className="w-full px-4 py-2 text-left text-body-sm text-ivory hover:bg-champagne/10 flex items-center gap-2"
+                          >
+                            <Edit2 className="size-4 text-champagne" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => deleteMessage(msg.id)}
+                            className="w-full px-4 py-2 text-left text-body-sm text-red-400 hover:bg-red-400/10 flex items-center gap-2"
+                          >
+                            <Trash2 className="size-4" />
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Reactions picker */}
+                    {showReactions === msg.id && (
+                      <div className="mt-2 bg-smoke border border-champagne/20 rounded-xl shadow-lg p-2">
+                        <div className="flex gap-1">
+                          {REACTIONS.map((reaction) => (
+                            <button
+                              key={reaction}
+                              onClick={() => addReaction(msg.id, reaction)}
+                              className="text-xl hover:scale-125 transition-transform p-1"
+                            >
+                              {reaction}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     )}
-                  </p>
+                  </div>
                 )}
               </div>
             </div>
@@ -200,7 +521,51 @@ export default function ChannelPage({
 
       {/* Input */}
       <div className="px-6 py-4 border-t border-champagne/10 bg-obsidian/95 backdrop-blur-xl shrink-0">
+        {/* Attached image preview */}
+        {attachedImage && (
+          <div className="mb-3 flex items-center gap-2">
+            <div className="relative">
+              <Image
+                src={attachedImage}
+                alt="Attached image"
+                width={60}
+                height={60}
+                className="rounded-lg object-cover"
+              />
+              <button
+                onClick={removeAttachedImage}
+                className="absolute -top-1 -right-1 size-5 bg-smoke border border-champagne/30 rounded-full flex items-center justify-center text-ivory/60 hover:text-ivory"
+              >
+                <X className="size-3" />
+              </button>
+            </div>
+            <span className="text-body-sm text-ivory/50">Image attached</span>
+          </div>
+        )}
+
         <div className="flex items-end gap-3">
+          {/* Image upload */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            className="hidden"
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-ivory/40 hover:text-champagne shrink-0"
+            onClick={handleImageClick}
+            disabled={uploadingImage || !!attachedImage}
+          >
+            {uploadingImage ? (
+              <div className="size-4 border-2 border-champagne/40 border-t-champagne rounded-full animate-spin" />
+            ) : (
+              <ImageIcon className="size-5" />
+            )}
+          </Button>
+
           <Button
             variant="ghost"
             size="icon"
@@ -212,8 +577,17 @@ export default function ChannelPage({
           <textarea
             value={input}
             onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Say something..."
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                if (attachedImage) {
+                  sendImageMessage();
+                } else {
+                  sendMessage();
+                }
+              }
+            }}
+            placeholder={attachedImage ? "Add a message (optional)..." : "Say something..."}
             rows={1}
             className="flex-1 bg-smoke border border-champagne/20 text-ivory rounded-2xl px-4 py-3 text-body-md resize-none focus:outline-none focus:border-champagne/50 transition-colors placeholder:text-ivory/30"
             style={{ minHeight: "48px", maxHeight: "120px" }}
@@ -222,8 +596,8 @@ export default function ChannelPage({
             variant="gold"
             size="icon"
             className="rounded-full shrink-0"
-            onClick={sendMessage}
-            disabled={!input.trim() || sending || !channel}
+            onClick={attachedImage ? sendImageMessage : sendMessage}
+            disabled={(!input.trim() && !attachedImage) || sending || !channel}
           >
             <Send className="size-4" />
           </Button>

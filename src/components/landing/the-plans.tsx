@@ -159,7 +159,7 @@ export function ThePlans() {
                       ?.scrollIntoView({ behavior: "smooth" })
                   }
                 >
-                  Apply for {plan.name}
+                  Request Invitation
                 </Button>
               </motion.article>
             </LuxuryScrollTrigger>

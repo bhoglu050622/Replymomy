@@ -12,9 +12,9 @@ export function GoldCtaButton({
   return (
     <Button
       variant="gold"
-      size="lg"
+      size="primary"
       className={cn(
-        "h-12 px-8 text-sm rounded-full animate-gold-pulse",
+        "px-8 rounded-full animate-gold-pulse",
         className
       )}
       {...props}

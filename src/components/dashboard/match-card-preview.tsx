@@ -9,6 +9,15 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { ProfilePlaceholder } from "@/components/shared/profile-placeholder";
 
+// Image shimmer loader component
+function ImageLoader({ className }: { className?: string }) {
+  return (
+    <div className={cn("animate-pulse bg-gradient-to-br from-smoke to-burgundy/20", className)}>
+      <div className="w-full h-full bg-[linear-gradient(90deg,transparent,rgba(201,168,76,0.1),transparent)] animate-[shimmer_2s_infinite]" />
+    </div>
+  );
+}
+
 interface MatchCardPreviewProps {
   matchId: string;
   name: string;
@@ -35,6 +44,7 @@ export function MatchCardPreview({
   const router = useRouter();
   const [revealed, setRevealed] = useState(false);
   const [responding, setResponding] = useState<"accept" | "decline" | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   async function respond(action: "accepted" | "declined") {
     setResponding(action === "accepted" ? "accept" : "decline");
@@ -62,11 +72,20 @@ export function MatchCardPreview({
         whileHover={{ y: -4 }}
         transition={{ duration: 0.3 }}
       >
-        {photoUrl ? (
-          <Image src={photoUrl} alt={name} fill className="object-cover" />
-        ) : (
-          <ProfilePlaceholder seed={matchId} width={300} height={400} className="w-full h-full" />
-        )}
+      {photoUrl ? (
+        <>
+          {!imageLoaded && <ImageLoader className="absolute inset-0" />}
+          <Image
+            src={photoUrl}
+            alt={name}
+            fill
+            className={cn("object-cover transition-opacity duration-500", imageLoaded ? "opacity-100" : "opacity-0")}
+            onLoad={() => setImageLoaded(true)}
+          />
+        </>
+      ) : (
+        <ProfilePlaceholder seed={matchId} width={300} height={400} className="w-full h-full" />
+      )}
         <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-transparent" />
         <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-champagne text-obsidian text-label">
           Mutual
@@ -105,12 +124,20 @@ export function MatchCardPreview({
       transition={{ duration: 0.3 }}
     >
       {photoUrl ? (
-        <Image
-          src={photoUrl}
-          alt={revealed ? name : "Tonight's match"}
-          fill
-          className={cn("object-cover transition-all duration-700", !revealed && "blur-xl")}
-        />
+        <>
+          {!imageLoaded && <ImageLoader className="absolute inset-0" />}
+          <Image
+            src={photoUrl}
+            alt={revealed ? name : "Tonight's match"}
+            fill
+            className={cn(
+              "object-cover transition-all duration-700",
+              !revealed && "blur-xl",
+              imageLoaded ? "opacity-100" : "opacity-0"
+            )}
+            onLoad={() => setImageLoaded(true)}
+          />
+        </>
       ) : (
         <ProfilePlaceholder
           seed={matchId}

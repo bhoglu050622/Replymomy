@@ -98,7 +98,7 @@ export default function ChatPage() {
                 href={`/chat/${channel.id}`}
                 className="flex items-center gap-4 p-5 rounded-2xl bg-smoke border border-champagne/10 hover:border-champagne/30 transition-all"
               >
-                <div className="size-14 rounded-full bg-gradient-to-br from-burgundy to-smoke border border-champagne/30 shrink-0 overflow-hidden">
+                <div className="relative size-14 rounded-full bg-gradient-to-br from-burgundy to-smoke border border-champagne/30 shrink-0 overflow-hidden">
                   {other?.image && (
                     <Image
                       src={other.image}

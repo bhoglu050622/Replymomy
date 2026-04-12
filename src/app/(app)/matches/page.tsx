@@ -53,7 +53,7 @@ export default async function MatchesPage() {
               href={`/matches/${m.id}`}
               className="flex items-center gap-4 p-5 rounded-2xl bg-smoke border border-champagne/10 hover:border-champagne/30 transition-all"
             >
-              <div className="size-14 rounded-full bg-gradient-to-br from-burgundy to-smoke border border-champagne/30 overflow-hidden shrink-0">
+              <div className="relative size-14 rounded-full bg-gradient-to-br from-burgundy to-smoke border border-champagne/30 overflow-hidden shrink-0">
                 {m.profiles?.photo_urls?.[0] && (
                   <Image
                     src={m.profiles.photo_urls[0]}

@@ -73,6 +73,26 @@
   --ease-luxury: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-glide: cubic-bezier(0.22, 1, 0.36, 1);
 
+  /* ========== ANIMATION DURATIONS ========== */
+  --duration-instant: 0ms;
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --duration-slower: 700ms;
+  --duration-slowest: 1000ms;
+  --duration-shimmer: 2000ms;
+  --duration-breathe: 4000ms;
+  --duration-ambient: 8000ms;
+
+  /* ========== BORDER TOKENS ========== */
+  --border-subtle: rgba(201, 168, 76, 0.10);
+  --border-default: rgba(201, 168, 76, 0.20);
+  --border-prominent: rgba(201, 168, 76, 0.30);
+  --border-strong: rgba(201, 168, 76, 0.40);
+  --border-burgundy-subtle: rgba(74, 14, 26, 0.30);
+  --border-burgundy-default: rgba(74, 14, 26, 0.50);
+  --border-burgundy-strong: rgba(74, 14, 26, 0.70);
+
   /* ========== GRADIENT TEXT ========== */
   --gradient-text-gold: linear-gradient(135deg, #C9A84C 0%, #F5ECCD 35%, #DFC368 55%, #C9A84C 100%);
 

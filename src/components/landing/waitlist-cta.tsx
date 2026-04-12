@@ -132,7 +132,7 @@ export function WaitlistCta() {
           {/* Ornamental kicker */}
           <div className="flex items-center justify-center gap-4 mb-5">
             <div className="h-px w-8 bg-gradient-to-r from-transparent to-champagne/35" />
-            <p className="text-kicker">Get Early Access</p>
+            <p className="text-kicker">Request Access</p>
             <div className="h-px w-8 bg-gradient-to-l from-transparent to-champagne/35" />
           </div>
 
@@ -143,7 +143,7 @@ export function WaitlistCta() {
           </h2>
 
           <p className="mx-auto mt-7 max-w-2xl text-body-lg text-ivory/60 font-light">
-            Join the founding cohort today. We review every application personally —
+            Membership is by invitation only. We review every request personally —
             if you&apos;re a good fit, you&apos;ll hear from us within 48 hours.
           </p>
         </LuxuryScrollTrigger>
