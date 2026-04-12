@@ -127,7 +127,7 @@ export default function ChannelPage({
   async function deleteMessage(messageId: string) {
     if (!channel) return;
     try {
-      await channel.deleteMessage(messageId);
+      await client!.deleteMessage(messageId);
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
       toast.success("Message deleted");
     } catch {
