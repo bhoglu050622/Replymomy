@@ -115,7 +115,10 @@ export async function POST(req: Request) {
     }
 
     if (matchRows.length > 0) {
-      await admin.from("matches").insert(matchRows);
+      const { data: insertedMatches } = await admin
+        .from("matches")
+        .insert(matchRows)
+        .select("id, member_id, mommy_id");
 
       // Send match notification emails for this page batch (non-blocking)
       if (isConfigured.resend) {
@@ -147,6 +150,49 @@ export async function POST(req: Request) {
             );
           } catch {
             // Email failure is non-blocking
+          }
+        })();
+      }
+
+      // Generate AI match intros (non-blocking)
+      if (isConfigured.gemini && insertedMatches?.length) {
+        void (async () => {
+          try {
+            const { generateMatchIntro } = await import("@/lib/ai/gemini");
+            const memberMap = new Map(normalizedMembers.map((m) => [m.id, m]));
+            const mommyMap = new Map(normalizedMommies.map((m) => [m.id, m]));
+            const results = await Promise.allSettled(
+              insertedMatches.map(async (row) => {
+                const member = memberMap.get(row.member_id);
+                const mommy = mommyMap.get(row.mommy_id);
+                if (!member || !mommy) return null;
+                const intro = await generateMatchIntro(
+                  {
+                    displayName: member.profile?.display_name ?? "Member",
+                    bio: member.profile?.bio ?? null,
+                    desires: member.profile?.desires ?? null,
+                    locationCity: member.profile?.location_city ?? null,
+                  },
+                  {
+                    displayName: mommy.profile?.display_name ?? "Your match",
+                    bio: mommy.profile?.bio ?? null,
+                    desires: mommy.profile?.desires ?? null,
+                    locationCity: mommy.profile?.location_city ?? null,
+                  }
+                );
+                return { id: row.id, intro };
+              })
+            );
+            for (const r of results) {
+              if (r.status === "fulfilled" && r.value) {
+                await admin
+                  .from("matches")
+                  .update({ match_intro: r.value.intro })
+                  .eq("id", r.value.id);
+              }
+            }
+          } catch {
+            // AI intro failure is non-blocking
           }
         })();
       }

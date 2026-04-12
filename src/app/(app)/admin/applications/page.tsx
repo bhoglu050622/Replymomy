@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Check, X, Copy, Clock, MapPin, AtSign, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AiReviewPanel } from "@/components/admin/ai-review-panel";
+import type { AiApplicationReview } from "@/lib/ai/gemini";
 
 interface Application {
   id: string;
@@ -18,6 +20,7 @@ interface Application {
   photo_urls: string[];
   status: "pending" | "approved" | "rejected";
   invitation_code: string | null;
+  ai_review: AiApplicationReview | null;
   created_at: string;
 }
 
@@ -191,6 +194,9 @@ export default function AdminApplicationsPage() {
                       </button>
                     )}
                   </div>
+
+                  {/* AI Review */}
+                  <AiReviewPanel applicationId={app.id} existingReview={app.ai_review} />
 
                   {/* Approved: show code */}
                   {app.status === "approved" && app.invitation_code && (

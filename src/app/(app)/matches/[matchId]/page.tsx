@@ -18,7 +18,7 @@ export default async function MatchDetailPage({
     .select(`
       id, status, expires_at, match_score, stream_channel_id,
       member_id, mommy_id, member_response, mommy_response,
-      member_responded, mommy_responded,
+      member_responded, mommy_responded, match_intro,
       mommy_profile:profiles!matches_mommy_id_fkey(
         display_name, date_of_birth, location_city, bio, desires, photo_urls, mommy_tier
       )
@@ -64,6 +64,7 @@ export default async function MatchDetailPage({
       streamChannelId={match.stream_channel_id}
       alreadyResponded={!!alreadyResponded}
       isMember={isMember}
+      matchIntro={(match as unknown as { match_intro: string | null }).match_intro ?? null}
       profile={{
         displayName: profile?.display_name ?? "Anonymous",
         age,

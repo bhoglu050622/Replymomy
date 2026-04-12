@@ -6,6 +6,7 @@ import { Heart, X, Gift, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ExpiryCountdown } from "@/components/matches/expiry-countdown";
+import { IcebreakerDialog } from "@/components/matches/icebreaker-dialog";
 import Image from "next/image";
 
 interface Props {
@@ -15,6 +16,7 @@ interface Props {
   streamChannelId: string | null;
   alreadyResponded: boolean;
   isMember: boolean;
+  matchIntro: string | null;
   profile: {
     displayName: string;
     age: number;
@@ -33,6 +35,7 @@ export function MatchDetailClient({
   streamChannelId,
   alreadyResponded,
   isMember,
+  matchIntro,
   profile,
 }: Props) {
   const router = useRouter();
@@ -139,16 +142,27 @@ export function MatchDetailClient({
         </div>
       )}
 
+      {/* AI Match Intro */}
+      {matchIntro && isMember && (
+        <div className="mb-8 p-5 rounded-2xl bg-champagne/5 border border-champagne/20">
+          <p className="text-label text-champagne mb-2 uppercase tracking-widest">Why you matched</p>
+          <p className="text-body-sm text-ivory/70 italic leading-relaxed">{matchIntro}</p>
+        </div>
+      )}
+
       {/* Actions */}
       {status === "mutual" && streamChannelId ? (
-        <Button
-          variant="gold"
-          className="w-full h-14 rounded-full"
-          onClick={() => router.push(`/chat/${streamChannelId}`)}
-        >
-          <MessageCircle className="size-4 mr-2" />
-          Go to Chat
-        </Button>
+        <div className="space-y-3">
+          <Button
+            variant="gold"
+            className="w-full h-14 rounded-full"
+            onClick={() => router.push(`/chat/${streamChannelId}`)}
+          >
+            <MessageCircle className="size-4 mr-2" />
+            Go to Chat
+          </Button>
+          {isMember && <IcebreakerDialog matchId={matchId} />}
+        </div>
       ) : alreadyResponded ? (
         <div className="text-center text-label text-ivory/40 py-4">
           You&apos;ve responded. Waiting for her.
