@@ -25,10 +25,14 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // Refresh session
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Refresh session — if Supabase is misconfigured treat as unauthenticated
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // env vars missing or Supabase unreachable; allow public routes through
+  }
 
   const pathname = request.nextUrl.pathname;
 
