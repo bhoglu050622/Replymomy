@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 import { Webhook } from "standardwebhooks";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { activateConcierge } from "@/lib/stream/concierge";
+import { isConfigured } from "@/lib/env";
 
 export async function POST(req: Request) {
-  // Stub mode
-  const secret = process.env.DODO_WEBHOOK_SECRET ?? "";
-  if (!secret || secret === "placeholder") {
+  if (!isConfigured.dodoWebhook) {
+    if (process.env.NODE_ENV !== "development") {
+      console.error("[dodo/webhook] DODO_WEBHOOK_SECRET is not set — all payment events are being silently dropped. Set this in production!");
+    }
     return NextResponse.json({ received: true, mode: "stub" });
   }
+  const secret = process.env.DODO_WEBHOOK_SECRET!;
 
   const rawBody = await req.text();
   const webhookId = req.headers.get("webhook-id") ?? "";
@@ -62,12 +66,9 @@ export async function POST(req: Request) {
       }
       // Activate concierge for Principal tier
       if (tier === "black_card") {
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-        void fetch(`${siteUrl}/api/concierge/activate`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }),
-        }).catch(() => {});
+        void activateConcierge(userId).catch((err) => {
+          console.error("[dodo/webhook] concierge activation failed", err);
+        });
       }
       break;
     }

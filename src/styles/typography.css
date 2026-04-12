@@ -1,42 +1,46 @@
 @utility text-display-xl {
   font-family: var(--font-headline);
-  font-size: clamp(3.5rem, 8vw, 7.5rem);
-  line-height: 0.95;
-  letter-spacing: -0.02em;
-  font-weight: 300;
+  font-size: clamp(3rem, 7.5vw, 7.2rem);
+  line-height: 0.92;
+  letter-spacing: -0.028em;
+  font-weight: 400;
 }
 
 @utility text-display-lg {
   font-family: var(--font-headline);
-  font-size: clamp(2.5rem, 5vw, 4rem);
-  line-height: 1.05;
-  letter-spacing: -0.01em;
+  font-size: clamp(2.3rem, 4.6vw, 4.4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
   font-weight: 400;
 }
 
 @utility text-display-md {
   font-family: var(--font-headline);
-  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
-  line-height: 1.15;
+  font-size: clamp(1.65rem, 3.2vw, 2.65rem);
+  line-height: 1.08;
   font-weight: 400;
+  letter-spacing: -0.012em;
 }
 
 @utility text-body-lg {
   font-family: var(--font-body);
-  font-size: 1.125rem;
-  line-height: 1.7;
+  font-size: clamp(1.02rem, 1.2vw, 1.16rem);
+  line-height: 1.78;
+  letter-spacing: 0.005em;
 }
 
 @utility text-body-md {
   font-family: var(--font-body);
   font-size: 1rem;
-  line-height: 1.6;
+  line-height: 1.72;
+  letter-spacing: 0.003em;
 }
 
 @utility text-body-sm {
   font-family: var(--font-body);
   font-size: 0.875rem;
-  line-height: 1.5;
+  line-height: 1.64;
+  letter-spacing: 0.004em;
 }
 
 @utility text-accent-quote {
@@ -50,15 +54,31 @@
   font-family: var(--font-body);
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  font-weight: 500;
+  letter-spacing: 0.18em;
+  font-weight: 600;
 }
 
 @utility text-display-sm {
   font-family: var(--font-headline);
-  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
-  line-height: 1.2;
-  font-weight: 300;
+  font-size: clamp(1.25rem, 2.4vw, 1.86rem);
+  line-height: 1.16;
+  font-weight: 400;
+}
+
+@utility text-kicker {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: rgba(232, 194, 123, 0.84);
+}
+
+@utility text-luxe-quote {
+  font-family: var(--font-accent);
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  line-height: 1.38;
+  font-style: italic;
+  color: rgba(245, 240, 232, 0.86);
 }
 
 /* Legal page prose */

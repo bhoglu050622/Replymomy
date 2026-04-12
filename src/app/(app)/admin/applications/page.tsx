@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Check, X, Copy, Clock, MapPin, AtSign, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
@@ -127,13 +128,15 @@ export default function AdminApplicationsPage() {
                 {/* Photos */}
                 <div className="flex gap-1.5 flex-shrink-0">
                   {app.photo_urls.slice(0, 3).map((url, i) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      key={i}
-                      src={url}
-                      alt=""
-                      className="size-16 rounded-xl object-cover border border-champagne/10"
-                    />
+                    <div key={i} className="size-16 rounded-xl overflow-hidden relative border border-champagne/10 shrink-0">
+                      <Image
+                        src={url}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="64px"
+                      />
+                    </div>
                   ))}
                 </div>
 

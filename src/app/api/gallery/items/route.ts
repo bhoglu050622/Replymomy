@@ -20,7 +20,7 @@ export async function GET() {
     .eq("owner_id", user!.id)
     .order("created_at", { ascending: false });
 
-  if (error) return NextResponse.json({ items: [] });
+  if (error) return NextResponse.json({ error: "Failed to load gallery" }, { status: 500 });
   return NextResponse.json({ items: data ?? [] });
 }
 

@@ -13,7 +13,8 @@ export async function GET(request: NextRequest) {
   let fontData: ArrayBuffer | null = null;
   try {
     fontData = await fetch(
-      "https://fonts.gstatic.com/s/cormorantgaramond/v22/co3YmX5slCNuHLi8bLeY9MK7whWMhyjornFLsS6V7w.woff"
+      "https://fonts.gstatic.com/s/cormorantgaramond/v22/co3YmX5slCNuHLi8bLeY9MK7whWMhyjornFLsS6V7w.woff",
+      { signal: AbortSignal.timeout(4000) }
     ).then((r) => r.arrayBuffer());
   } catch {
     // Font CDN unreachable — render with system sans-serif

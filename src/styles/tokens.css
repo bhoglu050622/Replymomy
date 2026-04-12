@@ -1,11 +1,17 @@
 @theme {
   /* ========== COLOR PALETTE ========== */
   --color-obsidian: #0A0A0A;
+  --color-obsidian-soft: #111215;
+  --color-obsidian-rich: #08090d;
   --color-champagne: #C9A84C;
+  --color-gold: #E8C27B;
   --color-ivory: #F5F0E8;
   --color-burgundy: #4A0E1A;
   --color-smoke: #1A1A1A;
+  --color-smoke-soft: #23242b;
   --color-rose: #E8C4B0;
+  --color-graphite: #2A2B33;
+  --color-emerald-luxe: #6E8D7A;
 
   /* Champagne scale */
   --color-champagne-50: #FBF7EC;
@@ -29,6 +35,15 @@
   --color-burgundy-600: #3D0B16;
   --color-burgundy-700: #300912;
 
+  /* Graphite scale */
+  --color-graphite-100: #E8E8EB;
+  --color-graphite-200: #CFCFD6;
+  --color-graphite-300: #9FA0AE;
+  --color-graphite-400: #6E6F7E;
+  --color-graphite-500: #2A2B33;
+  --color-graphite-600: #22232A;
+  --color-graphite-700: #191A1F;
+
   /* ========== FONTS ========== */
   --font-headline: var(--font-cormorant), "Cormorant Garamond", serif;
   --font-body: var(--font-inter), "Inter", sans-serif;
@@ -39,7 +54,32 @@
   --shadow-gold-md: 0 4px 16px rgba(201, 168, 76, 0.12);
   --shadow-gold-lg: 0 8px 32px rgba(201, 168, 76, 0.16);
   --shadow-gold-glow: 0 0 40px rgba(201, 168, 76, 0.25);
+  --shadow-luxe-sm: 0 12px 32px rgba(0, 0, 0, 0.22);
+  --shadow-luxe-md: 0 20px 48px rgba(0, 0, 0, 0.34);
+  --shadow-luxe-lg: 0 28px 70px rgba(0, 0, 0, 0.45);
+
+  /* ========== PREMIUM SURFACES ========== */
+  --gradient-luxe-base: linear-gradient(145deg, rgba(25, 26, 31, 0.95), rgba(10, 10, 10, 0.88));
+  --gradient-luxe-border: linear-gradient(
+    135deg,
+    rgba(232, 194, 123, 0.55) 0%,
+    rgba(232, 194, 123, 0.1) 45%,
+    rgba(232, 194, 123, 0.4) 100%
+  );
+  --glass-surface: rgba(17, 18, 21, 0.58);
+  --glass-stroke: rgba(232, 194, 123, 0.2);
 
   /* ========== EASING ========== */
   --ease-luxury: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-glide: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ========== GRADIENT TEXT ========== */
+  --gradient-text-gold: linear-gradient(135deg, #C9A84C 0%, #F5ECCD 35%, #DFC368 55%, #C9A84C 100%);
+
+  /* ========== REFINED GLASS VARIANTS ========== */
+  --glass-surface-deep: rgba(10, 10, 10, 0.72);
+  --glass-stroke-bright: rgba(232, 194, 123, 0.32);
+
+  /* ========== SECTION NUMERAL ========== */
+  --section-numeral-size: clamp(10rem, 22vw, 20rem);
 }

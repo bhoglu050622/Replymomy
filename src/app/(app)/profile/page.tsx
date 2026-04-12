@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Camera, Edit, Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { MEMBER_PRICES } from "@/lib/dodo/prices";
@@ -52,11 +53,12 @@ export default async function ProfilePage() {
             className="aspect-[3/4] rounded-2xl bg-gradient-to-b from-burgundy/30 to-smoke border border-champagne/20 overflow-hidden flex items-center justify-center"
           >
             {profile?.photo_urls?.[i] ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={profile.photo_urls[i]}
                 alt={`Photo ${i + 1}`}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 33vw, 200px"
               />
             ) : (
               <Camera className="size-6 text-champagne/30" />

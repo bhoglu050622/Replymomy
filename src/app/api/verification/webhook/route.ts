@@ -10,7 +10,16 @@ export async function POST(req: Request) {
   const signature = req.headers.get("Persona-Signature");
   const secret = process.env.PERSONA_WEBHOOK_SECRET;
 
-  if (secret && signature) {
+  if (!secret) {
+    if (process.env.NODE_ENV !== "development") {
+      console.error("[verification/webhook] PERSONA_WEBHOOK_SECRET is not set — rejecting all Persona webhooks in production.");
+      return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
+    }
+    // In dev without a secret, allow through for local testing.
+  } else {
+    if (!signature) {
+      return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+    }
     const parts = Object.fromEntries(
       signature.split(",").map((p) => p.split("=") as [string, string])
     );

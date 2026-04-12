@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Plus, X, Lock, Unlock } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -140,8 +141,7 @@ export function GalleryUploader() {
         <div className="grid grid-cols-3 gap-3">
           {items.map((item) => (
             <div key={item.id} className="aspect-square rounded-xl overflow-hidden relative group border border-champagne/20">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={item.url} alt="" className="w-full h-full object-cover" />
+              <Image src={item.url} alt="" fill className="object-cover" sizes="(max-width: 768px) 33vw, 200px" />
               <div className="absolute inset-0 bg-obsidian/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                 <button
                   onClick={() => togglePremium(item)}

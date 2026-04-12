@@ -1,286 +1,174 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useMotionTemplate, useMotionValue, useSpring } from "motion/react";
-import { Check } from "lucide-react";
-import { ScrollReveal } from "@/components/animations/scroll-reveal";
-import { CardFlip } from "@/components/animations/card-flip";
+import { motion } from "motion/react";
+import { Check, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TextScramble } from "@/components/animations/text-scramble";
-import { MagneticText } from "@/components/animations/magnetic-text";
+import { LuxuryScrollTrigger } from "@/components/animations/luxury-scroll-trigger";
 import { cn } from "@/lib/utils";
-import { useRegionalPrices } from "@/hooks/use-regional-price";
 
 const PLANS = [
   {
     id: "gold" as const,
-    name: "Patron",
-    tagline: "Enter the guild.",
-    accent: "from-smoke to-smoke",
-    border: "border-champagne/20",
+    name: "Classic",
+    tagline: "Curated matches + messaging.",
     features: [
-      "One curated introduction daily.",
-      "Verified member profiles.",
-      "5 Rose Tokens monthly.",
-      "Direct encrypted messaging.",
+      "Curated weekly introductions",
+      "Verified member profiles",
+      "Encrypted direct messaging",
+      "Priority support within 24h",
     ],
   },
   {
     id: "platinum" as const,
-    name: "Fellow",
-    tagline: "The standard.",
-    accent: "from-burgundy/20 via-smoke to-smoke",
-    border: "border-champagne/40",
+    name: "Plus",
+    tagline: "Priority visibility + unlimited intros.",
     featured: true,
     features: [
-      "Unlimited daily introductions.",
-      "Priority queue access.",
-      "20 Rose Tokens monthly.",
-      "Private event invitations.",
-      "Concierge introductions.",
+      "Unlimited curated introductions",
+      "Priority matching queue",
+      "Concierge-assisted introductions",
+      "Member-only event invitations",
+      "Preferred support response",
     ],
   },
   {
     id: "black_card" as const,
-    name: "Principal",
-    tagline: "No ceiling.",
-    accent: "from-smoke via-smoke to-champagne/10",
-    border: "border-champagne",
+    name: "Elite",
+    tagline: "Concierge matchmaking + premium perks.",
     features: [
-      "Personal matchmaking service.",
-      "Exclusive IRL experiences.",
-      "100 Rose Tokens monthly.",
-      "Private direct line.",
-      "Personal Liaison. 24/7.",
+      "Dedicated personal liaison",
+      "Personal matchmaking strategy",
+      "Exclusive event placement",
+      "Direct founder-level escalation",
+      "24/7 premium support channel",
     ],
   },
 ];
 
-function HolographicCard({
-  children,
-  className,
-  featured = false,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  featured?: boolean;
-}) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    mouseX.set(x);
-    mouseY.set(y);
-  };
-
-  const handleMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
-  };
-
-  // Holographic shimmer follows mouse
-  const background = useMotionTemplate`
-    radial-gradient(
-      400px circle at ${mouseX}px ${mouseY}px,
-      rgba(201, 168, 76, 0.15),
-      transparent 80%
-    )
-  `;
-
-  // Spring-animated shine position
-  const shineX = useSpring(mouseX, { stiffness: 300, damping: 30 });
-  const shineY = useSpring(mouseY, { stiffness: 300, damping: 30 });
-
-  const shineGradient = useMotionTemplate`
-    linear-gradient(
-      105deg,
-      transparent 40%,
-      rgba(255, 255, 255, 0.05) 45%,
-      rgba(201, 168, 76, 0.1) 50%,
-      rgba(255, 255, 255, 0.05) 55%,
-      transparent 60%
-    )
-  `;
-
-  return (
-    <motion.div
-      ref={cardRef}
-      className={cn(
-        "relative h-full rounded-2xl overflow-hidden",
-        featured && "ring-1 ring-champagne/50",
-        className
-      )}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      whileHover={{ y: -8, transition: { duration: 0.3 } }}
-    >
-      {/* Holographic overlay */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none z-10"
-        style={{ background }}
-      />
-
-      {/* Shine sweep */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ background: shineGradient }}
-      />
-
-      {/* Border glow effect */}
-      <div
-        className={cn(
-          "absolute inset-0 rounded-2xl pointer-events-none z-30",
-          featured && "shadow-[0_0_40px_rgba(201,168,76,0.2)]"
-        )}
-      />
-
-      {children}
-    </motion.div>
-  );
-}
-
-function PlanCard({ plan, price, isRegional }: { plan: (typeof PLANS)[number]; price: string; isRegional: boolean }) {
-  return (
-    <HolographicCard
-      className={cn(
-        "h-full p-8 lg:p-10 bg-gradient-to-b",
-        plan.accent,
-        plan.border,
-        "border"
-      )}
-      featured={plan.featured}
-    >
-      {/* Featured badge */}
-      {plan.featured && (
-        <div className="text-label text-champagne mb-4 tracking-widest uppercase">
-          Most chosen.
-        </div>
-      )}
-
-      <div className="mb-2 text-label text-ivory/40">{plan.tagline}</div>
-      <h3 className="font-headline text-4xl text-ivory mb-6">{plan.name}</h3>
-
-      <div className="mb-8">
-        <span className="font-headline text-5xl text-champagne">
-          {price}
-        </span>
-        <span className="text-body-sm text-ivory/50 ml-2">/month</span>
-        {isRegional && (
-          <div className="mt-1 text-[10px] text-champagne/50 uppercase tracking-widest">Locally priced</div>
-        )}
-      </div>
-
-      <ul className="space-y-3 mb-10 flex-1">
-        {plan.features.map((f) => (
-          <li
-            key={f}
-            className="flex items-start gap-3 text-body-sm text-ivory/80"
-          >
-            <Check className="size-4 text-champagne shrink-0 mt-0.5" />
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
-
-      <Button
-        variant={plan.featured ? "gold" : "gold-outline"}
-        className={cn(
-          "w-full h-11 rounded-full text-xs",
-          plan.featured && "animate-breathe-glow"
-        )}
-        onClick={() => document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth" })}
-      >
-        Apply for {plan.name}
-      </Button>
-    </HolographicCard>
-  );
-}
-
-function PlanCardBack({ name }: { name: string }) {
-  return (
-    <div className="h-full rounded-2xl bg-gradient-to-br from-burgundy via-smoke to-obsidian border border-champagne/40 flex items-center justify-center overflow-hidden">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div
-          className="w-full h-full"
-          style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, rgba(201,168,76,0.3) 1px, transparent 0)`,
-            backgroundSize: "20px 20px",
-          }}
-        />
-      </div>
-
-      <div className="relative text-center">
-        <div className="font-headline text-6xl text-champagne/80 italic">
-          {name}
-        </div>
-        <div className="mt-4 text-label text-ivory/40">Flip to reveal</div>
-      </div>
-    </div>
-  );
-}
-
 export function ThePlans() {
-  const { prices, isRegional } = useRegionalPrices();
-  const priceMap = { gold: prices.gold, platinum: prices.platinum, black_card: prices.black_card };
-
   return (
     <section
-      id="standing"
-      className="relative py-32 lg:py-48 px-6 lg:px-12 bg-gradient-to-b from-obsidian via-smoke to-obsidian overflow-hidden"
+      id="membership"
+      className="luxury-section bg-gradient-to-b from-obsidian to-obsidian-soft"
     >
-      {/* Background effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-1/2 h-full bg-gradient-to-b from-champagne/5 to-transparent blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(232,194,123,0.16),transparent_42%)]" />
+      </div>
+
+      {/* Decorative section numeral — peers behind heading */}
+      <div
+        aria-hidden="true"
+        className="section-numeral absolute left-1/2 -translate-x-1/2 -top-6 pointer-events-none hidden md:block"
+        style={{ opacity: 0.4 }}
+      >
+        04
       </div>
 
       <div className="container mx-auto relative">
-        {/* Header */}
-        <ScrollReveal>
-          <div className="text-center mb-20">
-            <div className="text-label text-champagne mb-6 tracking-widest uppercase">
-              <TextScramble text="Membership" delay={0.1} />
-            </div>
-            <h2 className="text-display-lg text-ivory mb-6">
-              Choose your{" "}
-              <MagneticText
-                as="span"
-                className="italic text-champagne"
-                strength={6}
-                radius={80}
-                staggerDelay={0.03}
-                initialDelay={0.2}
-              >
-                standing.
-              </MagneticText>
+        {/* Heading */}
+        <LuxuryScrollTrigger>
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-kicker">Membership</p>
+            <h2 className="mt-5 text-display-lg text-ivory">
+              Exclusive by design.
             </h2>
-            <p className="text-body-lg text-ivory/60 max-w-xl mx-auto">
-              Three tiers. One is yours.
+            <p className="mt-6 text-body-lg text-ivory/66 font-light">
+              Every member is reviewed by hand to maintain the quality of the
+              community. We care more about who joins than how many. Pricing
+              is shared after acceptance.
             </p>
           </div>
-        </ScrollReveal>
+        </LuxuryScrollTrigger>
 
-        {/* Plans grid with card flip */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+        {/* Plans — mobile horizontal snap scroll, desktop grid */}
+        <div
+          className="mx-auto mt-12
+            flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-none
+            md:grid md:max-w-6xl md:gap-6 md:grid-cols-3 md:overflow-visible md:pb-0"
+        >
           {PLANS.map((plan, i) => (
-            <CardFlip
+            <LuxuryScrollTrigger
               key={plan.name}
-              delay={i * 0.2}
-              className="aspect-[3/4] md:aspect-auto md:min-h-[560px]"
-              front={<PlanCardBack name={plan.name} />}
-              back={<PlanCard plan={plan} price={priceMap[plan.id]} isRegional={isRegional} />}
-            />
+              delay={i * 0.08}
+              className="snap-center shrink-0 w-[82vw] sm:w-[60vw] md:w-auto"
+            >
+              <motion.article
+                className={cn(
+                  "h-full rounded-3xl p-7 md:p-8",
+                  plan.id === "black_card"
+                    ? "luxury-glass-deep shimmer-border-gold"
+                    : plan.featured
+                      ? "luxury-surface ring-1 ring-champagne/35"
+                      : "luxury-glass"
+                )}
+                whileHover={{ y: plan.featured ? -14 : -7 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                style={
+                  plan.featured
+                    ? {
+                        boxShadow:
+                          "0 0 70px rgba(201, 168, 76, 0.09), 0 0 140px rgba(201, 168, 76, 0.04)",
+                      }
+                    : undefined
+                }
+              >
+                {/* Tier badges */}
+                {plan.featured && (
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-champagne/30 px-3 py-1.5 text-label text-champagne">
+                    <ShieldCheck className="size-3.5" />
+                    Most selected
+                  </div>
+                )}
+                {plan.id === "black_card" && (
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-champagne/20 px-3 py-1.5 text-label text-champagne/65">
+                    <span className="size-1.5 rounded-full bg-champagne/55" />
+                    Concierge Access
+                  </div>
+                )}
+
+                <p className="text-label text-ivory/40">{plan.tagline}</p>
+                <h3 className="mt-3 text-display-md text-ivory">{plan.name}</h3>
+
+                <div className="mt-6 border-t border-champagne/[0.08] pt-5">
+                  <p className="text-body-sm text-ivory/40 font-light italic">
+                    Pricing disclosed upon acceptance
+                  </p>
+                </div>
+
+                <ul className="mt-7 space-y-3">
+                  {plan.features.map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-start gap-2.5 text-body-sm text-ivory/72"
+                    >
+                      <Check className="mt-0.5 size-4 shrink-0 text-champagne" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button
+                  variant={plan.featured ? "gold" : "gold-outline"}
+                  className={cn(
+                    "mt-8 h-11 w-full rounded-full text-xs",
+                    plan.featured && "animate-breathe-glow"
+                  )}
+                  onClick={() =>
+                    document
+                      .getElementById("waitlist")
+                      ?.scrollIntoView({ behavior: "smooth" })
+                  }
+                >
+                  Apply for {plan.name}
+                </Button>
+              </motion.article>
+            </LuxuryScrollTrigger>
           ))}
         </div>
 
-        {/* Trust indicators */}
-        <ScrollReveal delay={0.4}>
-          <div className="mt-16 flex flex-wrap items-center justify-center gap-6 text-label text-ivory/40">
+        {/* Footer promise */}
+        <LuxuryScrollTrigger delay={0.25}>
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-label text-ivory/40">
             <span className="flex items-center gap-2">
               <Check className="size-3 text-champagne" />
               Cancel anytime
@@ -293,10 +181,10 @@ export function ThePlans() {
             <span className="size-1 rounded-full bg-champagne/40" />
             <span className="flex items-center gap-2">
               <Check className="size-3 text-champagne" />
-              Satisfaction guaranteed
+              Concierge support included
             </span>
           </div>
-        </ScrollReveal>
+        </LuxuryScrollTrigger>
       </div>
     </section>
   );

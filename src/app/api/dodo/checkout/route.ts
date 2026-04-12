@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/supabase/require-auth";
+import { isConfigured } from "@/lib/env";
 
 const schema = z.object({
   productId: z.string(),
@@ -17,9 +18,7 @@ export async function POST(req: Request) {
   try {
     const body = schema.parse(await req.json());
 
-    // Stub mode when key is missing/placeholder
-    const key = process.env.DODO_SECRET_KEY ?? "";
-    if (!key || key === "placeholder") {
+    if (!isConfigured.dodo) {
       return NextResponse.json({
         url: "/settings/subscription?stub=success",
         session_id: "stub-session-id",

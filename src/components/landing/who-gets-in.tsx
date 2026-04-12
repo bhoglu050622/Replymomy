@@ -1,292 +1,178 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform, useInView } from "motion/react";
-import { Shield, Eye, Crown, Check } from "lucide-react";
-import { ScrollReveal } from "@/components/animations/scroll-reveal";
-import { TextScramble } from "@/components/animations/text-scramble";
-import { MagneticText } from "@/components/animations/magnetic-text";
+import { motion, useScroll, useTransform } from "motion/react";
+import { Shield, Eye, Crown, Check, LockKeyhole } from "lucide-react";
+import { LuxuryScrollTrigger } from "@/components/animations/luxury-scroll-trigger";
+import { LetterReveal } from "@/components/animations/letter-reveal";
 import { AuroraBackground } from "@/components/animations/aurora-background";
-import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 const CRITERIA = [
   {
     icon: Shield,
-    title: "Verified Excellence",
+    title: "Identity verified",
     description:
-      "Not wealth displayed, but impact proven. Annual revenue of $1M+, confirmed quietly through trusted partners.",
+      "We confirm who you are before anyone sees your profile. Real identity, real people — no catfishing, no guessing.",
   },
   {
     icon: Eye,
-    title: "Discretion Bond",
+    title: "Privacy protected",
     description:
-      "What happens here evaporates like morning fog. Your privacy isn't a feature—it's the foundation.",
+      "Every member signs a confidentiality agreement. Your profile is never public, and your data never leaves the platform.",
   },
   {
     icon: Crown,
-    title: "Sponsor Required",
+    title: "Genuine intent required",
     description:
-      "Someone already inside must vouch for you. That's how guilds work. That's how trust scales.",
+      "We look for people who are actually here to connect — not to collect matches or fill a feed.",
   },
 ];
 
-function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const reduced = useReducedMotion();
-
-  return (
-    <motion.span
-      ref={ref}
-      className="font-headline text-champagne text-5xl md:text-6xl"
-      initial={{ opacity: 0, y: 20 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-    >
-      {isInView && !reduced ? (
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          {value.toLocaleString()}
-          {suffix}
-        </motion.span>
-      ) : (
-        <span>0{suffix}</span>
-      )}
-    </motion.span>
-  );
-}
-
-function CriteriaCard({
-  criterion,
-  index,
-}: {
-  criterion: (typeof CRITERIA)[0];
-  index: number;
-}) {
-  const reduced = useReducedMotion();
-
-  return (
-    <ScrollReveal delay={index * 0.15}>
-      <motion.div
-        className="group relative h-full p-10 rounded-2xl bg-smoke border border-champagne/10 overflow-hidden"
-        whileHover={!reduced ? { borderColor: "rgba(201, 168, 76, 0.4)" } : {}}
-        transition={{ duration: 0.5 }}
-      >
-        {/* Animated gold glow on hover */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-br from-champagne/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-          initial={false}
-        />
-
-        {/* Metallic sheen sweep */}
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-          <div className="absolute inset-0 animate-metallic-sheen" />
-        </div>
-
-        <div className="relative">
-          {/* Icon with glow */}
-          <motion.div
-            className="size-14 rounded-full border border-champagne/30 flex items-center justify-center mb-6 group-hover:border-champagne/60 transition-colors duration-500"
-            whileHover={!reduced ? { scale: 1.1 } : {}}
-            transition={{ duration: 0.3 }}
-          >
-            <criterion.icon className="size-6 text-champagne group-hover:text-champagne-300 transition-colors duration-300" />
-          </motion.div>
-
-          <h3 className="text-display-md text-ivory mb-4 group-hover:text-ivory/90 transition-colors">
-            {criterion.title}
-          </h3>
-          <p className="text-body-md text-ivory/60 group-hover:text-ivory/70 transition-colors">
-            {criterion.description}
-          </p>
-        </div>
-
-        {/* Corner accent */}
-        <div className="absolute top-0 right-0 w-20 h-20 overflow-hidden rounded-tr-2xl">
-          <div className="absolute top-0 right-0 w-px h-12 bg-gradient-to-b from-champagne/40 to-transparent transform origin-top" />
-          <div className="absolute top-0 right-0 h-px w-12 bg-gradient-to-l from-champagne/40 to-transparent transform origin-right" />
-        </div>
-      </motion.div>
-    </ScrollReveal>
-  );
-}
-
 export function WhoGetsIn() {
   const sectionRef = useRef<HTMLElement>(null);
-  const reduced = useReducedMotion();
-
-  // Vault door scroll animation
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "center center"],
   });
 
-  const leftX = useTransform(scrollYProgress, [0.1, 0.9], ["0%", "-105%"]);
-  const rightX = useTransform(scrollYProgress, [0.1, 0.9], ["0%", "105%"]);
-  const contentOpacity = useTransform(scrollYProgress, [0.4, 0.95], [0, 1]);
-  const lockRotation = useTransform(scrollYProgress, [0.3, 0.6], [0, 360]);
+  const shieldScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.85, 1, 1.14]);
+  const shieldRotate = useTransform(scrollYProgress, [0, 1], [-8, 8]);
 
   return (
     <section
       ref={sectionRef}
-      id="access"
-      className="relative py-32 lg:py-48 px-6 lg:px-12 bg-gradient-to-b from-obsidian via-smoke to-obsidian overflow-hidden"
+      id="protocol"
+      className="luxury-section bg-gradient-to-b from-obsidian to-obsidian-soft"
     >
-      {/* Background — canvas aurora */}
       <AuroraBackground className="absolute inset-0 pointer-events-none" />
 
-      <div className="container mx-auto relative">
-        {/* Header */}
-        <ScrollReveal>
-          <div className="text-center mb-20">
-            <div className="text-label text-champagne mb-6 tracking-widest uppercase">
-              <TextScramble text="The 0.1% guild. Invitation only." delay={0.1} />
-            </div>
-            <h2 className="text-display-lg text-ivory mb-6">
-              <span className="block">Not everyone</span>
-              <MagneticText
-                as="span"
-                className="block italic text-champagne mt-1"
-                strength={8}
-                radius={100}
-                staggerDelay={0.04}
-                initialDelay={0.3}
-              >
-                gets invited.
-              </MagneticText>
+      {/* Decorative section numeral */}
+      <div
+        aria-hidden="true"
+        className="section-numeral absolute left-[-4%] top-1/2 -translate-y-1/2 pointer-events-none hidden sm:block"
+      >
+        02
+      </div>
+
+      <div className="container relative mx-auto">
+        {/* Centered heading */}
+        <LuxuryScrollTrigger>
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-kicker">How We Keep It Good</p>
+            <h2 className="mt-5 text-display-lg text-ivory">
+              <LetterReveal
+                text="We care more about who joins than how many."
+                stagger={0.018}
+              />
             </h2>
-            <p className="text-body-lg text-ivory/60 max-w-xl mx-auto">
-              A private guild for those who&apos;ve transcended ordinary networks.
-              Some doors don&apos;t have handles.
+            <p className="mt-6 text-body-lg text-ivory/68 font-light">
+              No bots. No open sign-up. The people you meet here cleared
+              the same bar you did.
             </p>
           </div>
-        </ScrollReveal>
+        </LuxuryScrollTrigger>
 
-        {/* Vault Door Animation Container */}
-        <div className="relative min-h-[600px] overflow-hidden mb-24">
-          {/* Content revealed behind vault doors */}
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center z-0"
-            style={{ opacity: reduced ? 1 : contentOpacity }}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 w-full max-w-6xl px-4">
-              {CRITERIA.map((criterion, i) => (
-                <CriteriaCard key={criterion.title} criterion={criterion} index={i} />
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Vault doors - only animate if not reduced motion */}
-          {!reduced && (
-            <>
-              {/* Left vault door half */}
-              <motion.div
-                className="absolute inset-y-0 left-0 w-1/2 z-10 pointer-events-none"
-                style={{
-                  x: leftX,
-                }}
+        <div className="mt-14 grid items-center gap-7 lg:grid-cols-[0.95fr_1.05fr]">
+          {/* Pull-quote card */}
+          <LuxuryScrollTrigger fromY={24}>
+            <motion.div
+              className="luxury-glass-deep relative overflow-hidden rounded-3xl p-8 md:p-10 border-l-2 border-champagne/25"
+              style={{ scale: shieldScale }}
+            >
+              {/* Decorative large open-quote mark */}
+              <span
+                aria-hidden="true"
+                className="absolute -top-4 left-3 font-headline text-[8rem] leading-none text-champagne/[0.07] select-none pointer-events-none"
               >
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 50%, #1a1a1a 100%)",
-                    borderRight: "1px solid rgba(201, 168, 76, 0.3)",
-                    boxShadow: "inset -20px 0 40px rgba(0,0,0,0.6)",
-                  }}
-                >
-                  {/* Metallic texture overlay */}
-                  <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_50%_50%,_rgba(201,168,76,0.1)_0%,_transparent_70%)]" />
+                &ldquo;
+              </span>
 
-                  {/* Lock mechanism */}
-                  <motion.div
-                    className="absolute right-4 top-1/2 -translate-y-1/2"
-                    style={{ rotate: lockRotation }}
-                  >
-                    <div className="size-16 rounded-full border-2 border-champagne/40 flex items-center justify-center bg-smoke/50 backdrop-blur-sm">
-                      <div className="size-3 rounded-full bg-champagne animate-pulse" />
-                    </div>
-                    {/* Lock handle */}
-                    <div className="absolute top-1/2 left-1/2 w-8 h-1 bg-champagne/60 -translate-x-1/2 -translate-y-1/2" />
-                  </motion.div>
-
-                  {/* Door frame detail */}
-                  <div className="absolute top-4 left-4 right-4 h-px bg-gradient-to-r from-champagne/20 to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4 h-px bg-gradient-to-r from-champagne/20 to-transparent" />
-                </div>
+              {/* Rotating lock icon */}
+              <motion.div
+                className="absolute -right-8 top-6 rounded-full border border-champagne/20 bg-smoke/70 p-4 backdrop-blur-md"
+                style={{ rotate: shieldRotate }}
+              >
+                <LockKeyhole className="size-7 text-champagne" />
               </motion.div>
 
-              {/* Right vault door half */}
-              <motion.div
-                className="absolute inset-y-0 right-0 w-1/2 z-10 pointer-events-none"
-                style={{
-                  x: rightX,
-                }}
+              <p
+                className="font-accent italic text-ivory/90 leading-[1.35] relative z-10"
+                style={{ fontSize: "clamp(1.45rem, 2.6vw, 2.1rem)" }}
               >
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background:
-                      "linear-gradient(225deg, #1a1a1a 0%, #0a0a0a 50%, #1a1a1a 100%)",
-                    borderLeft: "1px solid rgba(201, 168, 76, 0.3)",
-                    boxShadow: "inset 20px 0 40px rgba(0,0,0,0.6)",
-                  }}
-                >
-                  {/* Metallic texture overlay */}
-                  <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_50%_50%,_rgba(201,168,76,0.1)_0%,_transparent_70%)]" />
+                &ldquo;We didn&rsquo;t build another app. We built a place where the bar actually means something.&rdquo;
+              </p>
 
-                  {/* Lock mechanism */}
-                  <motion.div
-                    className="absolute left-4 top-1/2 -translate-y-1/2"
-                    style={{ rotate: lockRotation }}
-                  >
-                    <div className="size-16 rounded-full border-2 border-champagne/40 flex items-center justify-center bg-smoke/50 backdrop-blur-sm">
-                      <div className="size-3 rounded-full bg-champagne animate-pulse" />
+              <div className="mt-8 border-t border-champagne/15">
+                <div className="grid grid-cols-2 divide-x divide-champagne/10">
+                  {[
+                    { label: "Applications reviewed personally", value: "100%" },
+                    { label: "Typical decision window", value: "48h" },
+                    { label: "Identity verification steps", value: "7" },
+                    { label: "Confidentiality agreement required", value: "Always" },
+                  ].map((item, i) => (
+                    <div
+                      key={item.label}
+                      className={[
+                        "py-5",
+                        i % 2 === 0 ? "pr-6" : "pl-6",
+                        i >= 2 ? "border-t border-champagne/10" : "",
+                      ].join(" ")}
+                    >
+                      <p className="font-headline text-[2.6rem] leading-none tracking-tight text-champagne">
+                        {item.value}
+                      </p>
+                      <p className="mt-2 text-body-sm text-ivory/45 font-light leading-snug">
+                        {item.label}
+                      </p>
                     </div>
-                    {/* Lock handle */}
-                    <div className="absolute top-1/2 left-1/2 w-8 h-1 bg-champagne/60 -translate-x-1/2 -translate-y-1/2" />
-                  </motion.div>
-
-                  {/* Door frame detail */}
-                  <div className="absolute top-4 left-4 right-4 h-px bg-gradient-to-l from-champagne/20 to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4 h-px bg-gradient-to-l from-champagne/20 to-transparent" />
+                  ))}
                 </div>
-              </motion.div>
-            </>
-          )}
+              </div>
+            </motion.div>
+          </LuxuryScrollTrigger>
+
+          {/* Criteria cards with ordinal */}
+          <div className="space-y-4">
+            {CRITERIA.map((criterion, index) => (
+              <LuxuryScrollTrigger key={criterion.title} delay={index * 0.08}>
+                <article className="luxury-glass rounded-2xl p-6 relative overflow-hidden">
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-3 right-5 font-headline text-[3.5rem] leading-none text-champagne/[0.07] select-none pointer-events-none"
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+
+                  <div className="mb-4 inline-flex size-11 items-center justify-center rounded-2xl border border-champagne/30 bg-obsidian/60">
+                    <criterion.icon className="size-5 text-champagne" />
+                  </div>
+                  <h3 className="text-display-sm text-ivory">{criterion.title}</h3>
+                  <p className="mt-2 text-body-md text-ivory/64">{criterion.description}</p>
+                </article>
+              </LuxuryScrollTrigger>
+            ))}
+          </div>
         </div>
 
-        {/* Waitlist counter - outside vault */}
-        <ScrollReveal>
-          <motion.div
-            className="text-center py-12 px-8 rounded-2xl bg-smoke/50 border border-champagne/20 max-w-2xl mx-auto relative overflow-hidden"
-            whileHover={{ borderColor: "rgba(201, 168, 76, 0.4)" }}
-            transition={{ duration: 0.3 }}
-          >
-            {/* Subtle background animation */}
-            <div className="absolute inset-0 bg-gradient-to-r from-champagne/5 via-transparent to-champagne/5 opacity-0 hover:opacity-100 transition-opacity duration-500" />
-
-            <div className="relative flex items-baseline justify-center gap-3 mb-2">
-              <AnimatedCounter value={4872} />
-              <span className="text-body-md text-ivory/50">waiting.</span>
-            </div>
-            <div className="flex items-baseline justify-center gap-3">
-              <span className="font-headline text-burgundy-300 text-2xl italic">
-                312
+        {/* Trust badges */}
+        <LuxuryScrollTrigger delay={0.25}>
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-4 text-label text-ivory/40">
+            {[
+              "Invitation preferred",
+              "No public directory",
+              "End-to-end encrypted",
+              "Privacy by design",
+            ].map((item) => (
+              <span
+                key={item}
+                className="inline-flex items-center gap-2 rounded-full border border-champagne/20 px-4 py-2"
+              >
+                <Check className="size-3 text-champagne" />
+                {item}
               </span>
-              <span className="text-label text-ivory/40">accepted this season.</span>
-            </div>
-
-            {/* Status indicator */}
-            <div className="mt-6 flex items-center justify-center gap-2">
-              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-label text-ivory/40">Applications open</span>
-            </div>
-          </motion.div>
-        </ScrollReveal>
+            ))}
+          </div>
+        </LuxuryScrollTrigger>
       </div>
     </section>
   );

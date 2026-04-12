@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/supabase/require-auth";
+import { isConfigured } from "@/lib/env";
 
 export async function POST() {
   const { user, supabase, response } = await requireAuth();
   if (response) return response;
 
-  if (
-    !process.env.PERSONA_API_KEY ||
-    process.env.PERSONA_API_KEY === "your-persona-api-key"
-  ) {
+  if (!isConfigured.persona) {
     return NextResponse.json({
       inquiryId: "stub-inquiry-id",
       sessionToken: "stub-session-token",
@@ -18,6 +16,7 @@ export async function POST() {
   try {
     const res = await fetch("https://withpersona.com/api/v1/inquiries", {
       method: "POST",
+      signal: AbortSignal.timeout(8000),
       headers: {
         Authorization: `Bearer ${process.env.PERSONA_API_KEY}`,
         "Content-Type": "application/json",

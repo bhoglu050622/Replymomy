@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Edit, X, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -147,8 +148,7 @@ export function ProfileEditDialog({
                   >
                     {photoUrls[i] ? (
                       <>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={photoUrls[i]} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                        <Image src={photoUrls[i]} alt="" fill className="object-cover" sizes="(max-width: 768px) 25vw, 150px" />
                         <div className="absolute inset-0 flex items-center justify-center bg-obsidian/60 opacity-0 hover:opacity-100 transition-opacity">
                           <X className="size-4 text-ivory" />
                         </div>

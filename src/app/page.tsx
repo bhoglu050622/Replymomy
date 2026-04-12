@@ -4,14 +4,19 @@ import dynamic from "next/dynamic";
 import { Navbar } from "@/components/shared/navbar";
 import { Footer } from "@/components/landing/footer";
 
-// Dynamically import components with heavy animations to avoid SSR issues
-const GoldCursorTrail = dynamic(
-  () => import("@/components/animations/gold-cursor-trail").then((mod) => mod.GoldCursorTrail),
+// Heavy/animation components loaded client-side only
+const VelvetCurtain = dynamic(
+  () => import("@/components/animations/velvet-curtain").then((m) => m.VelvetCurtain),
   { ssr: false }
 );
 
-const VelvetCurtain = dynamic(
-  () => import("@/components/animations/velvet-curtain").then((mod) => mod.VelvetCurtain),
+const GrainOverlay = dynamic(
+  () => import("@/components/animations/grain-overlay").then((m) => m.GrainOverlay),
+  { ssr: false }
+);
+
+const GoldCursorTrail = dynamic(
+  () => import("@/components/animations/gold-cursor-trail").then((mod) => mod.GoldCursorTrail),
   { ssr: false }
 );
 
@@ -25,8 +30,18 @@ const WhoAreTheMommies = dynamic(
   { ssr: false }
 );
 
-const WhoGetsIn = dynamic(
-  () => import("@/components/landing/who-gets-in").then((mod) => mod.WhoGetsIn),
+const SocialProof = dynamic(
+  () => import("@/components/landing/social-proof").then((mod) => mod.SocialProof),
+  { ssr: false }
+);
+
+const HowItWorks = dynamic(
+  () => import("@/components/landing/how-it-works").then((mod) => mod.HowItWorks),
+  { ssr: false }
+);
+
+const Testimonials = dynamic(
+  () => import("@/components/landing/testimonials").then((mod) => mod.Testimonials),
   { ssr: false }
 );
 
@@ -50,15 +65,10 @@ const BecomeAMommy = dynamic(
   { ssr: false }
 );
 
-const MemberFootfall = dynamic(
-  () => import("@/components/landing/member-footfall").then((mod) => mod.MemberFootfall),
-  { ssr: false }
-);
-
 export default function Home() {
   return (
-    <>
-      {/* Skip to content for keyboard/screen reader users */}
+    <VelvetCurtain>
+      {/* Skip to content — keyboard/screen reader users */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-full focus:bg-champagne focus:text-obsidian focus:text-label"
@@ -66,27 +76,28 @@ export default function Home() {
         Skip to content
       </a>
 
-      {/* Global cursor trail effect - client only */}
+      {/* Global film grain overlay */}
+      <GrainOverlay opacity={0.055} animated />
+
+      {/* Global cursor trail effect */}
       <GoldCursorTrail />
 
       {/* Navigation */}
       <Navbar />
 
-      {/* Main content with velvet curtain entrance */}
-      <main id="main-content">
-        <VelvetCurtain>
-          <Hero />
-          <WhoAreTheMommies />
-          <WhoGetsIn />
-          <TheExperience />
-          <ThePlans />
-          <BecomeAMommy />
-          <WaitlistCta />
-        </VelvetCurtain>
+      <main id="main-content" className="relative">
+        <Hero />
+        <SocialProof />
+        <WhoAreTheMommies />
+        <HowItWorks />
+        <TheExperience />
+        <BecomeAMommy />
+        <ThePlans />
+        <Testimonials />
+        <WaitlistCta />
       </main>
 
       <Footer />
-      <MemberFootfall />
-    </>
+    </VelvetCurtain>
   );
 }

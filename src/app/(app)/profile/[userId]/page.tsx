@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { GalleryUnlockButton } from "./gallery-unlock-button";
@@ -61,12 +62,13 @@ export default async function UserProfilePage({
       {/* Hero photo */}
       <div className="aspect-[3/4] rounded-2xl bg-gradient-to-b from-burgundy via-smoke to-obsidian border border-champagne/30 mb-8 relative overflow-hidden">
         {profile.photo_urls?.[0] ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={profile.photo_urls[0]}
             alt={profile.display_name}
-            fetchPriority="high"
-            className="absolute inset-0 w-full h-full object-cover"
+            fill
+            priority
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 600px"
           />
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-transparent" />
@@ -121,8 +123,7 @@ export default async function UserProfilePage({
             <div className="grid grid-cols-3 gap-3 mb-3">
               {freeItems.map((item) => (
                 <div key={item.id} className="aspect-square rounded-xl overflow-hidden border border-champagne/20">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={item.url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                  <Image src={item.url} alt="" fill className="object-cover" sizes="(max-width: 768px) 33vw, 200px" />
                 </div>
               ))}
             </div>
@@ -140,16 +141,15 @@ export default async function UserProfilePage({
                       className="aspect-square rounded-xl bg-smoke border border-champagne/20 relative overflow-hidden"
                     >
                       {isUnlocked ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={item.url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                        <Image src={item.url} alt="" fill className="object-cover" sizes="(max-width: 768px) 33vw, 200px" />
                       ) : (
                         <>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          <Image
                             src={item.url}
                             alt=""
-                            loading="lazy"
-                            className="w-full h-full object-cover blur-xl scale-110"
+                            fill
+                            className="object-cover blur-xl scale-110"
+                            sizes="(max-width: 768px) 33vw, 200px"
                           />
                           <div className="absolute inset-0 flex items-center justify-center bg-obsidian/40">
                             <div className="size-8 rounded-full bg-champagne/20 border border-champagne/40 flex items-center justify-center">

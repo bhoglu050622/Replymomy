@@ -35,7 +35,7 @@ export async function GET() {
     .eq("user_id", user!.id)
     .single();
 
-  if (error) return NextResponse.json({ profile: null });
+  if (error) return NextResponse.json({ error: "Failed to load profile" }, { status: 500 });
   return NextResponse.json({ profile: data });
 }
 

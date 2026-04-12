@@ -45,11 +45,18 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: true });
   }
 
+  // Fetch application details for email
+  const { data: application } = await supabase
+    .from("mommy_applications")
+    .select("email, full_name")
+    .eq("id", id)
+    .single();
+
   // Approve: generate mommy invitation code
   const code = `MOMMY-RM-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const { error: codeErr } = await supabase
     .from("invitation_codes")
-    .insert({ code, role: "mommy", max_uses: 1, created_by: user!.id });
+    .insert({ code, target_role: "mommy", max_uses: 1, created_by: user!.id });
 
   if (codeErr) return NextResponse.json({ error: "Failed to generate code" }, { status: 500 });
 
@@ -62,6 +69,29 @@ export async function PATCH(req: Request) {
       reviewed_at: new Date().toISOString(),
     })
     .eq("id", id);
+
+  // Send approval email with invitation code (non-blocking)
+  if (
+    application?.email &&
+    process.env.RESEND_API_KEY &&
+    process.env.RESEND_API_KEY !== "re_placeholder"
+  ) {
+    const { resend } = await import("@/lib/resend/client");
+    resend.emails
+      .send({
+        from: "The Midnight Guild <noreply@replymommy.com>",
+        to: application.email,
+        subject: "You've been accepted — The Midnight Guild",
+        html: `<p>Dear ${application.full_name},</p>
+               <p>We're delighted to welcome you to The Midnight Guild as a Mommy.</p>
+               <p>Your invitation code: <strong>${code}</strong></p>
+               <p>Use this code at sign-up to complete your onboarding.</p>
+               <p style="font-style:italic;color:#C9A84C">— The Midnight Guild</p>`,
+      })
+      .catch((err: unknown) => {
+        console.error("[admin/applications] approval email failed", err);
+      });
+  }
 
   return NextResponse.json({ success: true, code });
 }

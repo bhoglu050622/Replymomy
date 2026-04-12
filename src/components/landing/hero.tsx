@@ -1,189 +1,287 @@
 "use client";
 
-import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, Sparkles } from "lucide-react";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "motion/react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ArrowDownRight, Check } from "lucide-react";
 import { GoldCtaButton } from "@/components/shared/gold-cta-button";
 import { AuroraBackground } from "@/components/animations/aurora-background";
+import { LuxuryMarquee } from "@/components/landing/luxury-marquee";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
-import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
+const MARQUEE_ITEMS = [
+  "Private Beta 2026",
+  "Manually Reviewed Applications",
+  "Verified Members Only",
+  "Invitation Preferred",
+  "No Public Sign-Up",
+  "Real People. Real Conversations.",
+];
+
+const TRUST_PILLS = [
+  "Verified Profiles Only",
+  "Human Reviewed",
+  "Private Beta 2026",
+  "No Bots Ever",
+];
+
+const MOCK_PROFILES = [
+  {
+    name: "Sofia",
+    age: 27,
+    city: "New York",
+    tags: ["Art", "Travel"],
+    gradient: "from-rose-300/25 to-[#4A0E1A]/70",
+    floatDelay: 0,
+    position: "left-[2%] top-[12%] z-30",
+  },
+  {
+    name: "Isabelle",
+    age: 29,
+    city: "London",
+    tags: ["Fashion", "Culture"],
+    gradient: "from-amber-200/20 to-[#C9A84C]/35",
+    floatDelay: 0.8,
+    position: "left-[28%] top-[28%] z-20",
+  },
+  {
+    name: "Maya",
+    age: 26,
+    city: "Los Angeles",
+    tags: ["Creative", "Wellness"],
+    gradient: "from-violet-300/20 to-purple-800/55",
+    floatDelay: 1.6,
+    position: "left-[54%] top-[8%] z-10",
+  },
+];
 
 export function Hero() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const copyRef = useRef<HTMLParagraphElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
-  const [isHovered, setIsHovered] = useState(false);
-  const [hasBeenRevealed, setHasBeenRevealed] = useState(false);
 
-  // Once revealed, stay revealed (optional - can remove if want re-blur on leave)
-  useEffect(() => {
-    if (isHovered) {
-      setHasBeenRevealed(true);
-    }
-  }, [isHovered]);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
 
-  const showFull = isHovered || hasBeenRevealed || reduced;
+  const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.28, 0.72]);
+  const layerY = useTransform(scrollYProgress, [0, 1], ["0%", "28%"]);
+  const gradientY = useTransform(scrollYProgress, [0, 1], ["0%", "10%"]);
+  const cardsY = useTransform(scrollYProgress, [0, 1], ["0%", "14%"]);
+
+  useGSAP(
+    () => {
+      if (reduced) return;
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      tl.fromTo(
+        titleRef.current,
+        { opacity: 0, y: 70, filter: "blur(10px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2 }
+      )
+        .fromTo(
+          copyRef.current,
+          { opacity: 0, y: 24 },
+          { opacity: 1, y: 0, duration: 0.85 },
+          "-=0.65"
+        )
+        .fromTo(
+          ctaRef.current,
+          { opacity: 0, y: 26 },
+          { opacity: 1, y: 0, duration: 0.8 },
+          "-=0.5"
+        );
+    },
+    { scope: sectionRef, dependencies: [reduced] }
+  );
+
+  const scrollToWaitlist = () =>
+    document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth" });
+  const scrollToMembership = () =>
+    document.getElementById("membership")?.scrollIntoView({ behavior: "smooth" });
 
   return (
     <section
-      className="relative h-screen w-full overflow-hidden cursor-pointer"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      ref={sectionRef}
+      className="relative min-h-[100svh] w-full overflow-hidden pt-20 md:pt-24"
     >
-      {/* Layer 1: Blurry Preview Background (always visible behind) */}
-      <div className="absolute inset-0 z-0">
-        <motion.div
-          className="absolute inset-0"
-          initial={{ scale: 1 }}
-          animate={{ scale: showFull ? 1.1 : 1 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
+      {/* Background layers */}
+      <div className="absolute inset-0">
+        <motion.div className="absolute inset-0 will-change-transform" style={{ y: layerY }}>
           <iframe
             src="https://www.unicorn.studio/embed/yGkBPF6rvy3oxuiGYvBf"
             className="w-full h-full border-0"
             style={{
-              filter: "blur(20px) brightness(0.4) saturate(0.8)",
-              transform: "scale(1.1)",
+              filter: reduced
+                ? "brightness(0.28) saturate(0.8)"
+                : "brightness(0.48) saturate(1.1)",
+              transform: "scale(1.06)",
             }}
             allow="autoplay; fullscreen"
             loading="eager"
           />
         </motion.div>
 
-        {/* Dark overlay for preview state */}
+        {reduced && <AuroraBackground className="absolute inset-0 z-0 opacity-40" />}
+
         <motion.div
-          className="absolute inset-0 bg-obsidian/60"
-          animate={{ opacity: showFull ? 0 : 1 }}
-          transition={{ duration: 0.6 }}
+          className="absolute inset-0 bg-gradient-to-b from-obsidian/50 via-obsidian/30 to-obsidian"
+          style={{ opacity: overlayOpacity }}
         />
 
-        {/* Hide Unicorn Studio badge on preview layer */}
-        <div className="absolute bottom-0 right-0 w-48 h-12 bg-obsidian z-10" />
+        <motion.div className="absolute inset-0" style={{ y: gradientY }}>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_28%,rgba(232,194,123,0.22),transparent_40%),radial-gradient(circle_at_32%_82%,rgba(74,14,26,0.36),transparent_52%)]" />
+        </motion.div>
       </div>
 
-      {/* Layer 2: Full WebGL (revealed on hover) */}
-      <AnimatePresence>
-        {showFull && (
-          <motion.div
-            className="absolute inset-0 z-10"
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <iframe
-              src="https://www.unicorn.studio/embed/yGkBPF6rvy3oxuiGYvBf"
-              className="w-full h-full border-0"
-              style={{
-                filter: "brightness(0.7) saturate(1.2)",
-              }}
-              allow="autoplay; fullscreen"
-              loading="eager"
-            />
+      {/* Hero content — two-column grid */}
+      <div className="container relative z-20 mx-auto min-h-[88svh] flex items-center px-6 lg:px-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full py-16">
 
-            {/* Gradient overlay for text readability */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "radial-gradient(ellipse at 50% 50%, transparent 0%, rgba(10, 10, 10, 0.4) 50%, rgba(10, 10, 10, 0.85) 100%)",
-              }}
-            />
+          {/* ── Left column: copy ── */}
+          <div className="max-w-xl">
+            <p className="text-kicker tracking-[0.28em] text-ivory/50 mb-8 uppercase">
+              Private Dating, Done Better.
+            </p>
 
-            {/* Bottom vignette */}
-            <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/20 to-transparent" />
-
-            {/* Hide Unicorn Studio badge */}
-            <div className="absolute bottom-0 right-0 w-48 h-12 bg-obsidian" />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Preview State Content (shown when not hovered) */}
-      <AnimatePresence>
-        {!showFull && (
-          <motion.div
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            {/* Teaser text */}
-            <motion.div
-              className="text-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+            <h1
+              ref={titleRef}
+              className="font-headline text-display-xl text-ivory leading-[0.92] tracking-[-0.028em]"
             >
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <Sparkles className="size-5 text-champagne/60" />
-                <span className="text-label text-champagne/60 tracking-widest uppercase">
-                  Hover to enter
-                </span>
-                <Sparkles className="size-5 text-champagne/60" />
-              </div>
+              Meet people{" "}
+              <em className="text-gradient-gold not-italic font-accent">worth</em>
+              <br />
+              replying to.
+            </h1>
 
-              <h2 className="text-display-lg text-ivory/40 italic">
-                Something awaits...
-              </h2>
+            <p
+              ref={copyRef}
+              className="mt-8 text-body-lg text-ivory/56 font-light leading-[1.82]"
+            >
+              Dating for attractive, ambitious people tired of boring chats,
+              ghosting, and endless swiping.
+            </p>
 
-              {/* Subtle pulse indicator */}
+            {/* CTAs */}
+            <div
+              ref={ctaRef}
+              className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center"
+            >
               <motion.div
-                className="mt-8"
-                animate={{ y: [0, 8, 0], opacity: [0.3, 0.6, 0.3] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: "spring", stiffness: 320, damping: 22 }}
               >
-                <ChevronDown className="size-6 text-champagne/30 mx-auto" />
+                <GoldCtaButton className="h-12 px-8 text-xs" onClick={scrollToWaitlist}>
+                  Apply for Early Access <ArrowDownRight className="size-4" />
+                </GoldCtaButton>
               </motion.div>
-            </motion.div>
 
-            {/* Ambient particles in preview state */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {[...Array(6)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute size-1 rounded-full bg-champagne/20"
-                  style={{
-                    left: `${20 + i * 15}%`,
-                    top: `${30 + (i % 3) * 20}%`,
-                  }}
-                  animate={{
-                    y: [0, -30, 0],
-                    opacity: [0.1, 0.4, 0.1],
-                  }}
-                  transition={{
-                    duration: 4 + i,
-                    repeat: Infinity,
-                    delay: i * 0.5,
-                    ease: "easeInOut",
-                  }}
-                />
+              <Button
+                variant="gold-outline"
+                className="h-12 rounded-full border-champagne/25 px-7 text-xs text-ivory/78 hover:text-champagne"
+                onClick={scrollToMembership}
+              >
+                Join Founding Cohort
+              </Button>
+            </div>
+
+            {/* Trust pills */}
+            <div className="mt-8 flex flex-wrap gap-2">
+              {TRUST_PILLS.map((pill) => (
+                <span
+                  key={pill}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-champagne/[0.07] border border-champagne/[0.15] text-label text-ivory/52"
+                >
+                  <Check className="size-3 text-champagne/65 shrink-0" />
+                  {pill}
+                </span>
               ))}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
 
-      {/* Full Hero Content (shown when revealed) */}
-      <AnimatePresence>
-        {showFull && (
+          {/* ── Right column: floating profile cards ── */}
           <motion.div
-            className="absolute bottom-16 inset-x-0 z-30 flex justify-center px-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="relative hidden lg:block h-[480px]"
+            style={{ y: cardsY }}
+            aria-hidden="true"
           >
-            <GoldCtaButton className="animate-breathe-glow">
-              Request Access
-            </GoldCtaButton>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {/* Background glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(232,194,123,0.07),transparent_65%)] pointer-events-none" />
 
-      {/* Fallback for reduced motion — canvas aurora background */}
-      {reduced && (
-        <AuroraBackground className="absolute inset-0 z-0" />
-      )}
+            {/* Profile cards */}
+            {MOCK_PROFILES.map((profile) => (
+              <motion.div
+                key={profile.name}
+                className={cn(
+                  "absolute luxury-glass-deep rounded-3xl p-5 w-[195px]",
+                  profile.position
+                )}
+                animate={reduced ? {} : { y: [0, -10, 0] }}
+                transition={{
+                  duration: 3.8,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: profile.floatDelay,
+                }}
+              >
+                {/* Avatar area */}
+                <div
+                  className={cn(
+                    "size-12 rounded-2xl bg-gradient-to-br mb-3 flex items-center justify-center",
+                    profile.gradient
+                  )}
+                >
+                  <span className="text-ivory/70 font-headline text-lg">
+                    {profile.name[0]}
+                  </span>
+                </div>
+
+                <div className="flex items-baseline gap-1.5 mb-0.5">
+                  <span className="text-body-md text-ivory font-medium">{profile.name}</span>
+                  <span className="text-body-sm text-ivory/32">{profile.age}</span>
+                </div>
+                <p className="text-body-sm text-ivory/38 mb-3">{profile.city}</p>
+
+                <div className="flex flex-wrap gap-1">
+                  {profile.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2 py-0.5 rounded-full bg-champagne/10 border border-champagne/[0.18] text-[10px] text-champagne/60 tracking-wide"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+
+            {/* "New match!" floating badge */}
+            <motion.div
+              className="absolute bottom-[18%] right-[2%] z-40 luxury-glass rounded-2xl px-4 py-2.5 flex items-center gap-2.5 border border-champagne/25"
+              animate={reduced ? {} : { y: [0, -7, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            >
+              <span className="relative flex size-2 shrink-0">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-champagne opacity-60 animate-ping" />
+                <span className="relative inline-flex size-2 rounded-full bg-champagne" />
+              </span>
+              <span className="text-body-sm text-champagne font-medium">New match!</span>
+            </motion.div>
+          </motion.div>
+
+        </div>
+      </div>
+
+      {/* Bottom marquee ticker */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-champagne/[0.08] py-3.5">
+        <LuxuryMarquee items={MARQUEE_ITEMS} speed={55} />
+      </div>
     </section>
   );
 }

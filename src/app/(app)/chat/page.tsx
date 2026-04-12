@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { useStreamChatContext } from "@/components/providers/stream-provider";
@@ -99,12 +100,12 @@ export default function ChatPage() {
               >
                 <div className="size-14 rounded-full bg-gradient-to-br from-burgundy to-smoke border border-champagne/30 shrink-0 overflow-hidden">
                   {other?.image && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={other.image}
                       alt={other.name ?? ""}
-                      loading="lazy"
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="56px"
                     />
                   )}
                 </div>

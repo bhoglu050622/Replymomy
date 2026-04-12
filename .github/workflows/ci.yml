@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    name: Type-check, Lint, Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+        env:
+          # Provide stub values so the build doesn't fail on missing env vars
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder
+          SUPABASE_SERVICE_ROLE_KEY: placeholder
+          DODO_SECRET_KEY: placeholder
+          DODO_WEBHOOK_SECRET: placeholder
+          STREAM_API_KEY: placeholder
+          STREAM_API_SECRET: placeholder
+          NEXT_PUBLIC_STREAM_API_KEY: placeholder
+          NEXT_PUBLIC_SITE_URL: https://placeholder.com
+          CRON_SECRET: placeholder

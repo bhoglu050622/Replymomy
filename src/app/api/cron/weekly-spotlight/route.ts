@@ -56,12 +56,47 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
 
-  // Promote elite → icon tier
+  // Clear previous spotlight winner
   await supabase
     .from("users")
-    .update({ mommy_tier: "icon" })
+    .update({ is_spotlight: false })
+    .eq("is_spotlight", true);
+
+  // Crown new spotlight winner + promote elite → icon tier if applicable
+  await supabase
+    .from("users")
+    .update({ is_spotlight: true, mommy_tier: "icon" })
     .eq("id", mommyId)
     .eq("mommy_tier", "elite");
+
+  // Also set is_spotlight even if not elite tier
+  await supabase
+    .from("users")
+    .update({ is_spotlight: true })
+    .eq("id", mommyId);
+
+  // Notify winner via email (non-blocking — don't fail cron if email fails)
+  try {
+    const { data: winnerUser } = await supabase
+      .from("users")
+      .select("email, display_name")
+      .eq("id", mommyId)
+      .single();
+
+    if (winnerUser?.email) {
+      const { resend } = await import("@/lib/resend/client");
+      await resend.emails.send({
+        from: "The Midnight Guild <noreply@replymommy.com>",
+        to: winnerUser.email,
+        subject: "You're this week's Spotlight Mommy ✦",
+        html: `<p>Congratulations, ${winnerUser.display_name ?? "valued member"}!</p>
+               <p>You've been selected as this week's Spotlight Mommy based on your exceptional engagement. Your profile will be featured prominently to all members this week.</p>
+               <p style="font-style:italic;color:#C9A84C">— The Midnight Guild</p>`,
+      });
+    }
+  } catch (emailErr) {
+    console.error("[weekly-spotlight] failed to send winner email", emailErr);
+  }
 
   return NextResponse.json({
     success: true,

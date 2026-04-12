@@ -93,6 +93,10 @@
   }
   body {
     @apply bg-obsidian text-ivory antialiased;
+    background-image:
+      radial-gradient(circle at 15% -20%, rgba(232, 194, 123, 0.14), transparent 38%),
+      radial-gradient(circle at 85% 4%, rgba(74, 14, 26, 0.28), transparent 42%),
+      linear-gradient(to bottom, #08090d, #0a0a0a 38%, #0a0a0a);
   }
   html {
     @apply font-sans;
@@ -126,4 +130,95 @@
     outline-offset: 2px;
     border-radius: 4px;
   }
+}
+
+@layer utilities {
+  .luxury-section {
+    @apply relative overflow-hidden px-6 lg:px-12 py-24 md:py-32 lg:py-40;
+  }
+
+  .luxury-surface {
+    background: var(--gradient-luxe-base);
+    border: 1px solid rgba(232, 194, 123, 0.18);
+    box-shadow: var(--shadow-luxe-md);
+  }
+
+  .luxury-glass {
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-stroke);
+    backdrop-filter: blur(20px) saturate(130%);
+  }
+
+  .luxury-glass-deep {
+    background: var(--glass-surface-deep);
+    border: 1px solid var(--glass-stroke-bright);
+    backdrop-filter: blur(28px) saturate(150%);
+  }
+
+  .luxury-divider {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-champagne/30 to-transparent;
+  }
+
+  .luxury-noise::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.18;
+    mix-blend-mode: soft-light;
+    background-image:
+      radial-gradient(rgba(255, 255, 255, 0.08) 0.5px, transparent 0.5px),
+      radial-gradient(rgba(232, 194, 123, 0.06) 0.5px, transparent 0.5px);
+    background-size: 3px 3px, 5px 5px;
+  }
+
+  /* Gradient text utility */
+  .text-gradient-gold {
+    background: var(--gradient-text-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Decorative background section numeral */
+  .section-numeral {
+    font-family: var(--font-headline);
+    font-size: var(--section-numeral-size);
+    line-height: 0.85;
+    font-weight: 300;
+    letter-spacing: -0.06em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(201, 168, 76, 0.055);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Metallic shimmer border — Principal tier */
+  .shimmer-border-gold {
+    position: relative;
+  }
+  .shimmer-border-gold::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      rgba(201, 168, 76, 0.12) 0%,
+      rgba(245, 240, 232, 0.42) 25%,
+      rgba(201, 168, 76, 0.58) 50%,
+      rgba(245, 240, 232, 0.42) 75%,
+      rgba(201, 168, 76, 0.12) 100%
+    );
+    background-size: 300% 100%;
+    animation: metallic-sheen 4s linear infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    padding: 1px;
+  }
+
+  /* Hide scrollbar for mobile plan snap scroll */
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 }

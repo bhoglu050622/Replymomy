@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/dashboard/empty-state";
@@ -54,12 +55,12 @@ export default async function MatchesPage() {
             >
               <div className="size-14 rounded-full bg-gradient-to-br from-burgundy to-smoke border border-champagne/30 overflow-hidden shrink-0">
                 {m.profiles?.photo_urls?.[0] && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={m.profiles.photo_urls[0]}
                     alt={m.profiles.display_name}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="56px"
                   />
                 )}
               </div>

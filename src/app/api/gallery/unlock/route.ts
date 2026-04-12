@@ -18,28 +18,29 @@ export async function POST(req: Request) {
     const data = schema.parse(await req.json());
     const tokenCost = TOKEN_COST[data.unlockType];
 
-    // Deduct tokens
-    const { error: deductError } = await supabase.rpc("deduct_tokens", {
+    // Single atomic DB function — deducts tokens AND records unlock in one transaction.
+    const { data: result, error } = await supabase.rpc("unlock_gallery", {
       p_user_id: user!.id,
-      p_amount: tokenCost,
-      p_reason: `gallery_${data.unlockType}`,
+      p_owner_id: data.ownerId,
+      p_unlock_type: data.unlockType,
+      p_token_cost: tokenCost,
+      p_item_id: data.galleryItemId ?? null,
     });
 
-    if (deductError) {
-      return NextResponse.json(
-        { error: "Insufficient token balance" },
-        { status: 402 }
-      );
+    if (error) {
+      return NextResponse.json({ error: "Unlock failed" }, { status: 500 });
     }
 
-    // Record unlock
-    await supabase.from("gallery_unlocks").insert({
-      user_id: user!.id,
-      owner_id: data.ownerId,
-      gallery_item_id: data.galleryItemId ?? null,
-      unlock_type: data.unlockType,
-      token_cost: tokenCost,
-    });
+    const res = result as { success: boolean; error?: string };
+    if (!res.success) {
+      if (res.error === "insufficient_balance") {
+        return NextResponse.json({ error: "Insufficient token balance" }, { status: 402 });
+      }
+      if (res.error === "already_unlocked") {
+        return NextResponse.json({ error: "Already unlocked" }, { status: 409 });
+      }
+      return NextResponse.json({ error: "Unlock failed" }, { status: 400 });
+    }
 
     return NextResponse.json({ success: true, ...data });
   } catch (err) {

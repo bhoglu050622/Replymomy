@@ -1,50 +1,64 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Logo } from "@/components/shared/logo";
-import { TextScramble } from "@/components/animations/text-scramble";
 
 const FOOTER_LINKS = {
-  Guild: [
-    { label: "The Icons", href: "#icons" },
-    { label: "Access", href: "#access" },
-    { label: "Standing", href: "#standing" },
+  Experience: [
+    { label: "Salon", href: "#salon" },
+    { label: "Protocol", href: "#protocol" },
+    { label: "Membership", href: "#membership" },
   ],
   Legal: [
-    { label: "Terms of Entry", href: "/terms" },
-    { label: "Privacy Pact", href: "/privacy" },
-    { label: "Discretion Bond", href: "/discretion" },
+    { label: "Terms", href: "/terms" },
+    { label: "Privacy", href: "/privacy" },
+    { label: "Discretion", href: "/discretion" },
   ],
   Connect: [
     { label: "Instagram", href: "https://instagram.com/replymommy" },
-    { label: "X / Twitter", href: "https://x.com/ReplyMommy" },
-    { label: "Press Inquiries", href: "/press" },
+    { label: "X", href: "https://x.com/ReplyMommy" },
+    { label: "Press", href: "/press" },
   ],
 };
 
 export function Footer() {
   return (
-    <footer className="relative border-t border-champagne/10 bg-obsidian overflow-hidden">
-      {/* Background ambient effect */}
+    <footer className="relative overflow-hidden bg-obsidian-soft">
+      {/* Decorative top ornament — replaces hard border */}
+      <div className="absolute top-0 left-0 right-0 flex items-center pointer-events-none">
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-champagne/20 to-champagne/[0.08]" />
+        <div className="px-8 flex items-center gap-3">
+          <div className="h-px w-7 bg-champagne/[0.18]" />
+          <span className="text-champagne/35 text-[9px] tracking-[0.5em]">✦</span>
+          <div className="h-px w-7 bg-champagne/[0.18]" />
+        </div>
+        <div className="flex-1 h-px bg-gradient-to-l from-transparent via-champagne/20 to-champagne/[0.08]" />
+      </div>
+
+      {/* Background accents */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute bottom-0 left-1/4 w-1/2 h-1/2 bg-gradient-to-t from-champagne/5 to-transparent blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_30%,rgba(232,194,123,0.1),transparent_32%),radial-gradient(circle_at_80%_85%,rgba(74,14,26,0.22),transparent_38%)]" />
       </div>
 
       <div className="container mx-auto px-6 lg:px-12 py-20 relative">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-12 mb-16">
-          {/* Logo and tagline column */}
-          <div className="col-span-2">
+        {/* Main grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-[2.2fr_1fr_1fr_1fr] gap-12 mb-16">
+          {/* Logo column */}
+          <div className="col-span-2 lg:col-span-1">
             <Logo />
-            <p className="mt-6 text-accent-quote text-ivory/50 max-w-sm">
-              Quiet. Intentional. Invitation only.
+            <p className="mt-5 max-w-[22rem] font-accent italic text-ivory/46 leading-relaxed text-[0.95rem]">
+              Because your next relationship shouldn&apos;t start with &ldquo;hey lol.&rdquo;
+            </p>
+            <p className="mt-4 max-w-[22rem] text-body-sm text-ivory/32 leading-relaxed">
+              Built by founders who grew frustrated with what modern dating had become.
             </p>
             <motion.div
-              className="mt-6 text-label text-champagne/60"
+              className="mt-5 text-label text-champagne/55"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
             >
-              <TextScramble text="The 0.1% guild" delay={0.5} />
+              By invitation only
             </motion.div>
           </div>
 
@@ -74,9 +88,13 @@ export function Footer() {
                   >
                     <Link
                       href={link.href}
-                      className="text-body-sm text-ivory/60 hover:text-champagne transition-colors duration-300 inline-block"
+                      className="text-body-sm text-ivory/58 hover:text-champagne transition-colors duration-300 inline-block"
                       target={link.href.startsWith("http") ? "_blank" : undefined}
-                      rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                      rel={
+                        link.href.startsWith("http")
+                          ? "noopener noreferrer"
+                          : undefined
+                      }
                     >
                       {link.label}
                     </Link>
@@ -89,23 +107,23 @@ export function Footer() {
 
         {/* Bottom bar */}
         <motion.div
-          className="pt-8 border-t border-champagne/10 flex flex-col md:flex-row justify-between items-center gap-4"
+          className="pt-8 border-t border-champagne/[0.08] flex flex-col md:flex-row justify-between items-center gap-4"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
         >
-          <p className="text-label text-ivory/30">
-            © {new Date().getFullYear()} The Midnight Guild · Access is earned.
+          <p className="text-label text-ivory/28">
+            © {new Date().getFullYear()} ReplyMommy. Designed for people who know what they want.
           </p>
-          <p className="text-label text-ivory/30 italic font-accent">
-            Made with discretion.
+          <p className="text-label text-ivory/28 italic font-accent">
+            Real people. Real conversations. Real connections.
           </p>
         </motion.div>
 
         {/* Trust badges */}
         <motion.div
-          className="mt-8 flex flex-wrap items-center justify-center gap-6 text-label text-ivory/20 text-[10px]"
+          className="mt-8 flex flex-wrap items-center justify-center gap-6 text-label text-ivory/18 text-[10px]"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -113,11 +131,11 @@ export function Footer() {
         >
           <span>256-bit encryption</span>
           <span className="size-0.5 rounded-full bg-champagne/20" />
-          <span>GDPR compliant</span>
+          <span>GDPR ready</span>
           <span className="size-0.5 rounded-full bg-champagne/20" />
-          <span>SOC 2 Type II</span>
+          <span>By invitation only</span>
           <span className="size-0.5 rounded-full bg-champagne/20" />
-          <span>Verified by Stripe</span>
+          <span>Confidential by design</span>
         </motion.div>
       </div>
     </footer>

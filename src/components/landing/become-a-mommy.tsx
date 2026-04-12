@@ -1,29 +1,31 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { DollarSign, Shield, Star, ChevronRight, Camera, X, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { GoldCtaButton } from "@/components/shared/gold-cta-button";
+import { LuxuryScrollTrigger } from "@/components/animations/luxury-scroll-trigger";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const PERKS = [
   {
     icon: DollarSign,
-    title: "Earn on your terms",
-    desc: "Gallery unlocks, gifts, and spotlight bonuses. Average mommy earns $2,400/month.",
+    title: "Earn exclusive perks",
+    desc: "Receive gifts, gallery unlocks, and spotlight rewards. On your schedule, on your terms, with no pressure.",
   },
   {
     icon: Shield,
-    title: "Absolute discretion",
-    desc: "Your identity, your rules. Every member signs a discretion pact before access.",
+    title: "Control your visibility",
+    desc: "You decide what's shared and with whom. Your profile is never public and you can pause anytime.",
   },
   {
     icon: Star,
-    title: "Elite members only",
-    desc: "Gold, Platinum, and Black Card members. Verified, vetted, exceptional.",
+    title: "Verified members only",
+    desc: "Every person you connect with has been identity-verified and personally approved before joining.",
   },
 ];
 
@@ -33,18 +35,15 @@ export function BecomeAMommy() {
   const [step, setStep] = useState<Step>(1);
   const [state, setState] = useState<"idle" | "success">("idle");
 
-  // Step 1 — Personal info
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [age, setAge] = useState("");
   const [city, setCity] = useState("");
   const [instagram, setInstagram] = useState("");
 
-  // Step 2 — Photos
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
 
-  // Step 3 — Motivation
   const [motivation, setMotivation] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -72,7 +71,10 @@ export function BecomeAMommy() {
       input.accept = "image/*";
       input.onchange = async (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
-        if (!file) { setUploadingIdx(null); return; }
+        if (!file) {
+          setUploadingIdx(null);
+          return;
+        }
         formData.append("file", file);
         const res = await fetch(
           `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -124,35 +126,54 @@ export function BecomeAMommy() {
     }
   }
 
-  const canProceedStep1 = fullName.trim() && email.includes("@") && parseInt(age) >= 18 && city.trim();
+  const canProceedStep1 =
+    fullName.trim() && email.includes("@") && parseInt(age) >= 18 && city.trim();
   const canProceedStep2 = photoUrls.length >= 1;
   const canSubmit = motivation.trim().length >= 20;
 
   return (
-    <section id="become-a-mommy" className="relative py-32 overflow-hidden">
-      {/* Background */}
+    <section
+      id="become-a-mommy"
+      className="luxury-section overflow-hidden bg-obsidian-soft"
+    >
       <div
         className="absolute inset-0 z-0"
         style={{
           background:
-            "radial-gradient(ellipse at 30% 50%, rgba(74, 14, 26, 0.3) 0%, transparent 60%), radial-gradient(ellipse at 70% 50%, rgba(201, 168, 76, 0.05) 0%, transparent 60%)",
+            "radial-gradient(ellipse at 30% 50%, rgba(74, 14, 26, 0.3) 0%, transparent 60%), radial-gradient(ellipse at 70% 50%, rgba(232, 194, 123, 0.1) 0%, transparent 60%)",
         }}
       />
 
+      {/* Decorative section numeral */}
+      <div
+        aria-hidden="true"
+        className="section-numeral absolute -right-8 top-16 pointer-events-none hidden sm:block"
+      >
+        05
+      </div>
+
       <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="text-label text-champagne tracking-widest uppercase mb-4">
-            For exceptional women
+        {/* Section header with ornamental divider */}
+        <LuxuryScrollTrigger>
+          <div className="text-center mb-16">
+            <div className="flex items-center justify-center gap-4 mb-5">
+              <div className="h-px w-10 bg-gradient-to-r from-transparent to-champagne/35" />
+              <span className="text-champagne/40 text-[11px]">✦</span>
+              <div className="h-px w-10 bg-gradient-to-l from-transparent to-champagne/35" />
+            </div>
+            <p className="text-kicker mb-4">For Our Mommies</p>
+            <h2 className="text-display-lg text-ivory mb-4">
+              Join our founding{" "}
+              <em className="text-gradient-gold not-italic font-accent">Mommies</em>
+              {" "}💌
+            </h2>
+            <p className="text-body-lg text-ivory/58 font-light max-w-2xl mx-auto">
+              We&apos;re building a founding community of confident women who
+              want to date on their own terms — with respect, privacy, and
+              zero compromises.
+            </p>
           </div>
-          <h2 className="text-display-lg text-ivory mb-4">
-            Become a <span className="italic text-champagne">Mommy.</span>
-          </h2>
-          <p className="text-body-lg text-ivory/60 max-w-xl mx-auto">
-            The Guild's mommies are curated, not collected. If you carry yourself with intention —
-            we want you here.
-          </p>
-        </div>
+        </LuxuryScrollTrigger>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           {/* Left — perks */}
@@ -160,7 +181,7 @@ export function BecomeAMommy() {
             {PERKS.map((perk, i) => (
               <motion.div
                 key={perk.title}
-                className="flex gap-5"
+                className="luxury-glass rounded-2xl p-4 flex gap-5"
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -170,28 +191,40 @@ export function BecomeAMommy() {
                   <perk.icon className="size-5 text-champagne" />
                 </div>
                 <div>
-                  <h3 className="text-body-lg text-ivory font-medium mb-1">{perk.title}</h3>
-                  <p className="text-body-md text-ivory/55">{perk.desc}</p>
+                  <h3 className="text-body-lg text-ivory font-medium mb-1">
+                    {perk.title}
+                  </h3>
+                  <p className="text-body-md text-ivory/53">{perk.desc}</p>
                 </div>
               </motion.div>
             ))}
 
-            {/* Quote */}
-            <motion.blockquote
-              className="mt-12 pl-5 border-l-2 border-champagne/30"
+            {/* Pull-quote card */}
+            <motion.div
+              className="mt-2 luxury-glass-deep rounded-2xl p-7 relative overflow-hidden"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.6 }}
+              transition={{ delay: 0.55 }}
             >
-              <p className="text-accent-quote text-ivory/60 italic">
-                &ldquo;The quality of the members here is unlike anything I&apos;ve experienced.
-                Discretion, generosity, and genuine appreciation.&rdquo;
+              <span
+                aria-hidden="true"
+                className="absolute -top-2 left-5 font-headline text-[5rem] leading-none text-champagne/[0.07] select-none pointer-events-none"
+              >
+                &ldquo;
+              </span>
+              <p
+                className="font-accent italic text-ivory/80 leading-[1.45] relative z-10"
+                style={{ fontSize: "clamp(1rem, 1.8vw, 1.35rem)" }}
+              >
+                The atmosphere is completely different from anything else I've
+                tried. Every person I've met has been genuine.
               </p>
-              <cite className="text-label text-champagne/70 mt-3 block not-italic">
-                — Guild Mommy, NYC. 14 months.
+              <cite className="text-label text-champagne/56 mt-4 block not-italic">
+                — A founding member, New York
               </cite>
-            </motion.blockquote>
+              <div className="mt-5 h-px bg-gradient-to-r from-champagne/18 to-transparent" />
+            </motion.div>
           </div>
 
           {/* Right — application form */}
@@ -209,7 +242,9 @@ export function BecomeAMommy() {
                     <Check className="size-7 text-champagne" />
                   </div>
                   <div>
-                    <h3 className="text-display-md text-ivory mb-2">Application received.</h3>
+                    <h3 className="text-display-md text-ivory mb-2">
+                      Application received.
+                    </h3>
                     <p className="text-body-md text-ivory/50 max-w-xs">
                       We review every application personally. Expect a response within 48 hours.
                     </p>
@@ -218,10 +253,23 @@ export function BecomeAMommy() {
               ) : (
                 <motion.div
                   key="form"
-                  className="p-8 rounded-3xl bg-smoke/50 border border-champagne/15 backdrop-blur-sm"
+                  className="luxury-glass-deep p-8 rounded-3xl relative overflow-hidden"
+                  style={{
+                    boxShadow:
+                      "0 0 0 1px rgba(232,194,123,0.11), 0 24px 64px rgba(0,0,0,0.42)",
+                  }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
+                  {/* Corner ornament */}
+                  <div
+                    className="absolute top-0 right-0 overflow-hidden rounded-tr-3xl pointer-events-none"
+                    style={{ width: 88, height: 88 }}
+                  >
+                    <div className="absolute top-0 right-0 w-px h-14 bg-gradient-to-b from-champagne/28 to-transparent" />
+                    <div className="absolute top-0 right-0 h-px w-14 bg-gradient-to-l from-champagne/28 to-transparent" />
+                  </div>
+
                   {/* Step indicator */}
                   <div className="flex items-center gap-2 mb-8">
                     {([1, 2, 3] as Step[]).map((s) => (
@@ -239,12 +287,21 @@ export function BecomeAMommy() {
                           {step > s ? <Check className="size-3" /> : s}
                         </div>
                         {s < 3 && (
-                          <div className={cn("h-px w-8 transition-all", step > s ? "bg-champagne/40" : "bg-champagne/10")} />
+                          <div
+                            className={cn(
+                              "h-px w-8 transition-all",
+                              step > s ? "bg-champagne/40" : "bg-champagne/10"
+                            )}
+                          />
                         )}
                       </div>
                     ))}
-                    <span className="ml-2 text-label text-ivory/40">
-                      {step === 1 ? "About you" : step === 2 ? "Your photos" : "Your story"}
+                    <span className="ml-2 text-label text-ivory/38">
+                      {step === 1
+                        ? "Identity"
+                        : step === 2
+                          ? "Photo selection"
+                          : "Your story"}
                     </span>
                   </div>
 
@@ -261,29 +318,64 @@ export function BecomeAMommy() {
                       >
                         <div className="grid grid-cols-2 gap-3">
                           <div className="col-span-2">
-                            <label className="text-label text-ivory/40 mb-1.5 block">Full Name</label>
-                            <Input value={fullName} onChange={(e) => setFullName(e.target.value)}
-                              placeholder="Your name" className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5" />
+                            <label className="text-label text-ivory/38 mb-1.5 block">
+                              Full Name
+                            </label>
+                            <Input
+                              value={fullName}
+                              onChange={(e) => setFullName(e.target.value)}
+                              placeholder="Your name"
+                              className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5"
+                            />
                           </div>
                           <div>
-                            <label className="text-label text-ivory/40 mb-1.5 block">Email</label>
-                            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                              placeholder="you@email.com" className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5" />
+                            <label className="text-label text-ivory/38 mb-1.5 block">
+                              Email
+                            </label>
+                            <Input
+                              type="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              placeholder="you@email.com"
+                              className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5"
+                            />
                           </div>
                           <div>
-                            <label className="text-label text-ivory/40 mb-1.5 block">Age</label>
-                            <Input type="number" value={age} onChange={(e) => setAge(e.target.value)}
-                              placeholder="Age" min="18" max="65" className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5" />
+                            <label className="text-label text-ivory/38 mb-1.5 block">
+                              Age
+                            </label>
+                            <Input
+                              type="number"
+                              value={age}
+                              onChange={(e) => setAge(e.target.value)}
+                              placeholder="Age"
+                              min="18"
+                              max="65"
+                              className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5"
+                            />
                           </div>
                           <div>
-                            <label className="text-label text-ivory/40 mb-1.5 block">City</label>
-                            <Input value={city} onChange={(e) => setCity(e.target.value)}
-                              placeholder="Your city" className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5" />
+                            <label className="text-label text-ivory/38 mb-1.5 block">
+                              City
+                            </label>
+                            <Input
+                              value={city}
+                              onChange={(e) => setCity(e.target.value)}
+                              placeholder="Your city"
+                              className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5"
+                            />
                           </div>
                           <div>
-                            <label className="text-label text-ivory/40 mb-1.5 block">Instagram <span className="text-ivory/20">(optional)</span></label>
-                            <Input value={instagram} onChange={(e) => setInstagram(e.target.value)}
-                              placeholder="@handle" className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5" />
+                            <label className="text-label text-ivory/38 mb-1.5 block">
+                              Instagram{" "}
+                              <span className="text-ivory/20">(optional)</span>
+                            </label>
+                            <Input
+                              value={instagram}
+                              onChange={(e) => setInstagram(e.target.value)}
+                              placeholder="@handle"
+                              className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5"
+                            />
                           </div>
                         </div>
                         <GoldCtaButton
@@ -307,7 +399,7 @@ export function BecomeAMommy() {
                         transition={{ duration: 0.3 }}
                       >
                         <div>
-                          <p className="text-body-sm text-ivory/50 mb-4">
+                          <p className="text-body-sm text-ivory/48 mb-4">
                             Add 1–5 photos. Your first photo is your introduction.
                           </p>
                           <div className="grid grid-cols-5 gap-2">
@@ -316,16 +408,28 @@ export function BecomeAMommy() {
                                 key={i}
                                 type="button"
                                 onClick={() => handlePhotoClick(i)}
-                                disabled={uploadingIdx === i || (!photoUrls[i] && i > photoUrls.length)}
+                                disabled={
+                                  uploadingIdx === i ||
+                                  (!photoUrls[i] && i > photoUrls.length)
+                                }
                                 className={cn(
                                   "aspect-square rounded-xl border-2 border-dashed flex items-center justify-center transition-colors relative overflow-hidden",
-                                  photoUrls[i] ? "border-champagne" : i === photoUrls.length ? "border-champagne/30 hover:border-champagne/60" : "border-champagne/10 opacity-40"
+                                  photoUrls[i]
+                                    ? "border-champagne"
+                                    : i === photoUrls.length
+                                      ? "border-champagne/30 hover:border-champagne/60"
+                                      : "border-champagne/10 opacity-40"
                                 )}
                               >
                                 {photoUrls[i] ? (
                                   <>
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={photoUrls[i]} alt="" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
+                                    <Image
+                                      src={photoUrls[i]}
+                                      alt=""
+                                      fill
+                                      className="object-cover rounded-xl"
+                                      sizes="(max-width: 768px) 33vw, 150px"
+                                    />
                                     <div className="absolute inset-0 flex items-center justify-center bg-obsidian/60 opacity-0 hover:opacity-100 transition-opacity">
                                       <X className="size-3 text-ivory" />
                                     </div>
@@ -340,10 +444,17 @@ export function BecomeAMommy() {
                           </div>
                         </div>
                         <div className="flex gap-3">
-                          <button onClick={() => setStep(1)} className="px-5 py-2.5 rounded-full border border-champagne/20 text-ivory/50 text-body-sm hover:text-ivory transition-colors">
+                          <button
+                            onClick={() => setStep(1)}
+                            className="px-5 py-2.5 rounded-full border border-champagne/20 text-ivory/48 text-body-sm hover:text-ivory transition-colors"
+                          >
                             Back
                           </button>
-                          <GoldCtaButton className="flex-1" disabled={!canProceedStep2} onClick={() => setStep(3)}>
+                          <GoldCtaButton
+                            className="flex-1"
+                            disabled={!canProceedStep2}
+                            onClick={() => setStep(3)}
+                          >
                             Continue <ChevronRight className="size-4 ml-1" />
                           </GoldCtaButton>
                         </div>
@@ -361,25 +472,33 @@ export function BecomeAMommy() {
                         transition={{ duration: 0.3 }}
                       >
                         <div>
-                          <label className="text-label text-ivory/40 mb-2 block">
-                            Why The Guild? <span className="text-ivory/20">(min 20 characters)</span>
+                          <label className="text-label text-ivory/38 mb-2 block">
+                            Your story{" "}
+                            <span className="text-ivory/20">(min 20 characters)</span>
                           </label>
                           <Textarea
                             value={motivation}
                             onChange={(e) => setMotivation(e.target.value)}
-                            placeholder="Tell us about yourself, what draws you to the guild, and what kind of connections you're seeking..."
+                            placeholder="Tell us a little about yourself and what kind of connections you're looking for..."
                             rows={5}
                             className="bg-obsidian/50 border-champagne/20 text-ivory rounded-2xl p-4"
                           />
-                          <div className="text-right text-label text-ivory/25 mt-1">
+                          <div className="text-right text-label text-ivory/22 mt-1">
                             {motivation.length} chars
                           </div>
                         </div>
                         <div className="flex gap-3">
-                          <button onClick={() => setStep(2)} className="px-5 py-2.5 rounded-full border border-champagne/20 text-ivory/50 text-body-sm hover:text-ivory transition-colors">
+                          <button
+                            onClick={() => setStep(2)}
+                            className="px-5 py-2.5 rounded-full border border-champagne/20 text-ivory/48 text-body-sm hover:text-ivory transition-colors"
+                          >
                             Back
                           </button>
-                          <GoldCtaButton className="flex-1" disabled={!canSubmit || submitting} onClick={handleSubmit}>
+                          <GoldCtaButton
+                            className="flex-1"
+                            disabled={!canSubmit || submitting}
+                            onClick={handleSubmit}
+                          >
                             {submitting ? "Submitting..." : "Submit Application"}
                           </GoldCtaButton>
                         </div>

@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useRef, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring } from "motion/react";
 import { Check, Sparkles } from "lucide-react";
-import { ScrollReveal } from "@/components/animations/scroll-reveal";
-import { TextScramble } from "@/components/animations/text-scramble";
-import { MagneticText } from "@/components/animations/magnetic-text";
+import { LuxuryScrollTrigger } from "@/components/animations/luxury-scroll-trigger";
 import { AuroraBackground } from "@/components/animations/aurora-background";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,39 +21,24 @@ interface BurstParticle {
 
 export function WaitlistCta() {
   const [email, setEmail] = useState("");
-  const [state, setState] = useState<"idle" | "loading" | "success" | "error">(
-    "idle"
-  );
+  const [state, setState] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState("");
   const [position, setPosition] = useState<number | null>(null);
   const [burstParticles, setBurstParticles] = useState<BurstParticle[]>([]);
-  const buttonRef = useRef<HTMLButtonElement>(null);
   const reduced = useReducedMotion();
 
-  // Mouse tracking for button glow effect
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-
   const springX = useSpring(mouseX, { stiffness: 300, damping: 30 });
   const springY = useSpring(mouseY, { stiffness: 300, damping: 30 });
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!buttonRef.current || reduced) return;
-    const rect = buttonRef.current.getBoundingClientRect();
-    mouseX.set(e.clientX - rect.left - rect.width / 2);
-    mouseY.set(e.clientY - rect.top - rect.height / 2);
-  };
-
   const createBurst = (x: number, y: number) => {
     if (reduced) return;
-
     const colors = ["#C9A84C", "#F5ECCD", "#DFC368", "#E8C4B0", "#4A0E1A"];
     const newParticles: BurstParticle[] = [];
-
     for (let i = 0; i < 24; i++) {
       const angle = (Math.PI * 2 * i) / 24 + Math.random() * 0.5;
       const velocity = 3 + Math.random() * 5;
-
       newParticles.push({
         id: Date.now() + i,
         x,
@@ -66,10 +49,7 @@ export function WaitlistCta() {
         color: colors[Math.floor(Math.random() * colors.length)],
       });
     }
-
     setBurstParticles((prev) => [...prev, ...newParticles]);
-
-    // Clean up particles after animation
     setTimeout(() => {
       setBurstParticles((prev) =>
         prev.filter((p) => !newParticles.find((np) => np.id === p.id))
@@ -81,7 +61,6 @@ export function WaitlistCta() {
     e.preventDefault();
     setState("loading");
     setError("");
-
     try {
       const res = await fetch("/api/waitlist", {
         method: "POST",
@@ -92,8 +71,6 @@ export function WaitlistCta() {
       if (!res.ok) throw new Error(data.error ?? "Something went wrong");
       setState("success");
       if (data.position) setPosition(data.position);
-
-      // Create burst effect from center of form
       const form = e.target as HTMLFormElement;
       const rect = form.getBoundingClientRect();
       createBurst(rect.left + rect.width / 2, rect.top + rect.height / 2);
@@ -104,11 +81,24 @@ export function WaitlistCta() {
   }
 
   return (
-    <section id="waitlist" className="relative py-32 lg:py-48 px-6 lg:px-12 bg-obsidian overflow-hidden">
-      {/* Ambient background — canvas aurora */}
+    <section
+      id="waitlist"
+      className="relative min-h-[100svh] w-full overflow-hidden flex items-center bg-obsidian px-6 lg:px-12 py-28"
+    >
+      {/* Atmospheric depth layers */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `
+            radial-gradient(ellipse 80% 50% at 50% 0%, rgba(74,14,26,0.38), transparent),
+            radial-gradient(ellipse 60% 40% at 50% 100%, rgba(201,168,76,0.05), transparent)
+          `,
+        }}
+      />
+
       <AuroraBackground className="absolute inset-0 pointer-events-none" />
 
-      {/* Burst particles overlay */}
+      {/* Burst particles */}
       <div className="absolute inset-0 pointer-events-none z-20">
         <AnimatePresence>
           {burstParticles.map((particle) => (
@@ -138,151 +128,153 @@ export function WaitlistCta() {
       </div>
 
       <div className="container mx-auto max-w-3xl text-center relative z-10">
-        <ScrollReveal>
-          <div className="text-label text-champagne mb-6 tracking-widest uppercase">
-            <TextScramble text="The List" delay={0.1} />
+        <LuxuryScrollTrigger>
+          {/* Ornamental kicker */}
+          <div className="flex items-center justify-center gap-4 mb-5">
+            <div className="h-px w-8 bg-gradient-to-r from-transparent to-champagne/35" />
+            <p className="text-kicker">Get Early Access</p>
+            <div className="h-px w-8 bg-gradient-to-l from-transparent to-champagne/35" />
           </div>
-          <h2 className="text-display-xl text-ivory mb-8">
-            Your circle is{" "}
-            <MagneticText
-              as="span"
-              className="italic text-champagne"
-              strength={8}
-              radius={100}
-              staggerDelay={0.04}
-              initialDelay={0.2}
-            >
-              waiting.
-            </MagneticText>
-          </h2>
-          <p className="text-accent-quote text-ivory/60 mb-12 max-w-xl mx-auto">
-            No noise. Just recognition when you&apos;ve been seen.
-          </p>
-        </ScrollReveal>
 
-        <ScrollReveal delay={0.2}>
+          {/* Dramatic headline */}
+          <h2 className="mt-5 text-display-xl text-ivory leading-[0.9] tracking-[-0.025em] mx-auto max-w-4xl">
+            Because your next relationship shouldn&apos;t start with{" "}
+            <em className="text-gradient-gold not-italic font-accent">&ldquo;hey lol.&rdquo;</em>
+          </h2>
+
+          <p className="mx-auto mt-7 max-w-2xl text-body-lg text-ivory/60 font-light">
+            Join the founding cohort today. We review every application personally —
+            if you&apos;re a good fit, you&apos;ll hear from us within 48 hours.
+          </p>
+        </LuxuryScrollTrigger>
+
+        <LuxuryScrollTrigger delay={0.12}>
           <AnimatePresence mode="wait">
             {state !== "success" ? (
               <motion.form
                 key="form"
                 onSubmit={handleSubmit}
-                className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto"
+                className="mt-10 max-w-sm mx-auto flex flex-col gap-3"
                 initial={{ opacity: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
               >
                 <Input
                   type="email"
-                  placeholder="your@email.com"
+                  placeholder="you@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={state === "loading"}
-                  className="h-14 flex-1 bg-smoke border-champagne/30 text-ivory placeholder:text-ivory/30 focus:ring-champagne focus:border-champagne text-base px-6 rounded-full"
+                  className="h-14 bg-obsidian/80 border-champagne/[0.18] text-ivory placeholder:text-ivory/22 text-base px-6 rounded-2xl focus:border-champagne/45 focus:ring-0"
                 />
                 <div
                   className="relative"
-                  onMouseMove={handleMouseMove}
+                  onMouseMove={(e) => {
+                    if (!reduced) {
+                      mouseX.set(e.clientX);
+                      mouseY.set(e.clientY);
+                    }
+                  }}
                   onMouseLeave={() => {
                     mouseX.set(0);
                     mouseY.set(0);
                   }}
                 >
-                  {/* Button glow effect */}
                   {!reduced && (
                     <motion.div
-                      className="absolute inset-0 rounded-full blur-xl opacity-50"
+                      className="absolute inset-0 rounded-2xl blur-xl opacity-40 pointer-events-none"
                       style={{
                         background:
-                          "radial-gradient(circle at var(--x) var(--y), rgba(201, 168, 76, 0.4), transparent 50%)",
+                          "radial-gradient(circle, rgba(201, 168, 76, 0.35), transparent 55%)",
                         x: springX,
                         y: springY,
                       }}
                     />
                   )}
                   <Button
-                    ref={buttonRef}
                     type="submit"
                     variant="gold"
                     size="lg"
                     disabled={state === "loading"}
-                    className="relative h-14 px-10 rounded-full text-xs animate-breathe-glow"
+                    className="relative h-14 w-full rounded-2xl text-sm animate-breathe-glow"
                   >
-                    {state === "loading" ? "Sending..." : "Request Access"}
+                    {state === "loading" ? "Sending..." : "Apply for Early Access"}
                   </Button>
                 </div>
               </motion.form>
             ) : (
               <motion.div
                 key="success"
-                className="flex flex-col items-center gap-6 py-8"
+                className="flex flex-col items-center gap-5 py-8"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{
-                  duration: 0.8,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               >
-                {/* Wax seal with enhanced animation */}
-                <motion.div
-                  className="relative"
-                  initial={{ scale: 2, rotate: -15 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{
-                    duration: 0.8,
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
-                >
+                {/* Wax seal with orbit ring */}
+                <div className="relative flex items-center justify-center">
+                  {/* Slow orbit dashed ring */}
                   <motion.div
-                    className="size-24 rounded-full bg-gradient-to-br from-burgundy-400 to-burgundy flex items-center justify-center shadow-gold-glow border-2 border-champagne/40"
-                    animate={{
-                      boxShadow: [
-                        "0 0 20px rgba(201, 168, 76, 0.3)",
-                        "0 0 40px rgba(201, 168, 76, 0.5)",
-                        "0 0 20px rgba(201, 168, 76, 0.3)",
-                      ],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute size-36 rounded-full border border-dashed border-champagne/[0.14]"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+                  />
+
+                  <motion.div
+                    className="size-28 rounded-full bg-gradient-to-br from-burgundy-400 to-burgundy flex items-center justify-center shadow-gold-glow border-2 border-champagne/35 relative z-10"
+                    initial={{ scale: 2, rotate: -15 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    <Check className="size-10 text-champagne" />
+                    <motion.div
+                      animate={{
+                        boxShadow: [
+                          "0 0 20px rgba(201, 168, 76, 0.3)",
+                          "0 0 40px rgba(201, 168, 76, 0.5)",
+                          "0 0 20px rgba(201, 168, 76, 0.3)",
+                        ],
+                      }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute inset-0 rounded-full"
+                    />
+                    <Check className="size-11 text-champagne" />
                   </motion.div>
+
                   {/* Sparkle decorations */}
                   <motion.div
-                    className="absolute -top-2 -right-2"
+                    className="absolute -top-2 -right-2 z-20"
                     animate={{ rotate: [0, 360], scale: [1, 1.2, 1] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <Sparkles className="size-5 text-champagne/60" />
+                    <Sparkles className="size-5 text-champagne/55" />
                   </motion.div>
                   <motion.div
-                    className="absolute -bottom-1 -left-1"
+                    className="absolute -bottom-1 -left-1 z-20"
                     animate={{ rotate: [360, 0], scale: [1, 1.2, 1] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
                   >
-                    <Sparkles className="size-4 text-champagne/40" />
+                    <Sparkles className="size-4 text-champagne/38" />
                   </motion.div>
-                </motion.div>
-
-                <div>
-                  <div className="font-headline text-3xl text-ivory mb-2">Noted.</div>
-                  <div className="text-body-md text-ivory/60">
-                    We&apos;ll be in touch.
-                  </div>
                 </div>
 
-                {/* Additional confirmation text */}
+                <h3 className="mt-4 text-display-md text-ivory">We've received your request.</h3>
+                <p className="text-body-md text-ivory/52 font-light max-w-[22rem] mx-auto -mt-2">
+                  Someone from our team will review it personally and be
+                  in touch within 48 hours.
+                </p>
+
                 <motion.p
-                  className="text-label text-ivory/40"
+                  className="text-label text-ivory/38"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
                 >
-                  Your request has been sealed.
+                  Your request is with our team.
                 </motion.p>
 
                 {position && (
                   <motion.div
-                    className="mt-2 px-4 py-2 rounded-full bg-champagne/10 border border-champagne/20 text-label text-champagne"
+                    className="mt-1 px-4 py-2 rounded-full bg-champagne/10 border border-champagne/20 text-label text-champagne"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.7 }}
@@ -303,21 +295,20 @@ export function WaitlistCta() {
               {error}
             </motion.p>
           )}
-        </ScrollReveal>
+        </LuxuryScrollTrigger>
 
-        {/* Trust indicators */}
-        <ScrollReveal delay={0.4}>
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-label text-ivory/30">
-            <span>No spam, ever.</span>
+        <LuxuryScrollTrigger delay={0.2}>
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-label text-ivory/28">
+            <span>No spam. Ever.</span>
             <span className="size-1 rounded-full bg-champagne/40" />
-            <span>Invitation-only access.</span>
+            <span>Every request reviewed by hand.</span>
             <span className="size-1 rounded-full bg-champagne/40" />
-            <span>Encrypted transmission.</span>
+            <span>Your data is encrypted end to end.</span>
           </div>
-        </ScrollReveal>
+        </LuxuryScrollTrigger>
       </div>
 
-      {/* Bottom decorative element */}
+      {/* Bottom decorative line */}
       <motion.div
         className="absolute bottom-0 left-1/2 -translate-x-1/2 h-px w-1/3 bg-gradient-to-r from-transparent via-champagne/20 to-transparent"
         initial={{ scaleX: 0 }}

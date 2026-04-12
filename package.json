@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "type-check": "tsc --noEmit",
     "seed": "node --env-file=.env.local scripts/seed-test-user.mjs",
     "generate-assets": "node --env-file=.env.local scripts/generate-assets.mjs"
   },

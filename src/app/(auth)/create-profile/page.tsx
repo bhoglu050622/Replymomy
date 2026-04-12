@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Camera, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -160,11 +161,12 @@ export default function CreateProfilePage() {
               >
                 {photoUrls[i] ? (
                   <>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={photoUrls[i]}
                       alt="Upload"
-                      className="absolute inset-0 w-full h-full object-cover rounded-2xl"
+                      fill
+                      className="object-cover rounded-2xl"
+                      sizes="(max-width: 768px) 33vw, 200px"
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-obsidian/60 opacity-0 hover:opacity-100 transition-opacity">
                       <X className="size-5 text-ivory" />
