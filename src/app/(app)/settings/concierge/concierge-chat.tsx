@@ -26,7 +26,7 @@ export function ConciergeChat({ userId }: Props) {
 
     async function init() {
       try {
-        const tokenRes = await fetch("/api/stream/token");
+        const tokenRes = await fetch("/api/chat/token");
         if (!tokenRes.ok) throw new Error("Token fetch failed");
         const { token } = await tokenRes.json();
 
