@@ -2,12 +2,10 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Check,
   ChevronRight,
-  Sparkles,
   Users,
   Heart,
 } from "lucide-react";
@@ -229,7 +227,6 @@ function ApplyPageInner() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
 
   const set = (k: keyof FormState) => (v: string) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -316,7 +313,7 @@ function ApplyPageInner() {
         toast.error(data.error ?? "Failed to submit. Please try again.");
         return;
       }
-      setDone(true);
+      router.push(data.redirect ?? (role === "member" ? "/create-profile" : "/mommy-profile"));
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
@@ -439,46 +436,42 @@ function ApplyPageInner() {
       </div>
 
       {/* Role toggle */}
-      {!done && (
-        <div className="flex p-1 rounded-full bg-smoke border border-champagne/[0.08]">
-          <button
-            type="button"
-            onClick={() => handleRoleSwitch("member")}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-body-sm font-medium transition-all",
-              role === "member"
-                ? "bg-champagne/20 text-champagne"
-                : "text-ivory/40 hover:text-ivory/70"
-            )}
-          >
-            <Users className="size-4" />
-            I&apos;m a Man
-          </button>
-          <button
-            type="button"
-            onClick={() => handleRoleSwitch("mommy")}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-body-sm font-medium transition-all",
-              role === "mommy"
-                ? "bg-champagne/20 text-champagne"
-                : "text-ivory/40 hover:text-ivory/70"
-            )}
-          >
-            <Heart className="size-4" />
-            I&apos;m a Mommy
-          </button>
-        </div>
-      )}
+      <div className="flex p-1 rounded-full bg-smoke border border-champagne/[0.08]">
+        <button
+          type="button"
+          onClick={() => handleRoleSwitch("member")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-body-sm font-medium transition-all",
+            role === "member"
+              ? "bg-champagne/20 text-champagne"
+              : "text-ivory/40 hover:text-ivory/70"
+          )}
+        >
+          <Users className="size-4" />
+          I&apos;m a Man
+        </button>
+        <button
+          type="button"
+          onClick={() => handleRoleSwitch("mommy")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-body-sm font-medium transition-all",
+            role === "mommy"
+              ? "bg-champagne/20 text-champagne"
+              : "text-ivory/40 hover:text-ivory/70"
+          )}
+        >
+          <Heart className="size-4" />
+          I&apos;m a Mommy
+        </button>
+      </div>
 
       {/* Asterisk note */}
-      {!done && (
-        <p className="text-[11px] text-ivory/30 leading-relaxed text-center">
-          <span className="text-champagne/50">*</span>{" "}
-          Anyone who identifies outside of male — whether as a woman, non-binary,
-          femme, or any expression of femininity — belongs here as a Mommy.{" "}
-          <span className="italic text-champagne/50">Slay your feminine energy.</span>
-        </p>
-      )}
+      <p className="text-[11px] text-ivory/30 leading-relaxed text-center">
+        <span className="text-champagne/50">*</span>{" "}
+        Anyone who identifies outside of male — whether as a woman, non-binary,
+        femme, or any expression of femininity — belongs here as a Mommy.{" "}
+        <span className="italic text-champagne/50">Slay your feminine energy.</span>
+      </p>
 
       {/* Form card */}
       <div
@@ -486,43 +479,13 @@ function ApplyPageInner() {
         style={{ boxShadow: "0 0 0 1px rgba(232,194,123,0.06), 0 24px 64px rgba(0,0,0,0.35)" }}
       >
         <AnimatePresence mode="wait">
-          {/* ── Success ── */}
-          {done ? (
-            <motion.div
-              key="done"
-              className="flex flex-col items-center justify-center py-16 px-8 text-center gap-6"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="size-16 rounded-full bg-champagne/10 border border-champagne/30 flex items-center justify-center">
-                <Sparkles className="size-7 text-champagne" />
-              </div>
-              <div>
-                <h2 className="text-display-md text-ivory mb-2">
-                  {role === "mommy" ? "Application received." : "Request received."}
-                </h2>
-                <p className="text-body-sm text-ivory/50 max-w-xs mx-auto">
-                  {role === "mommy"
-                    ? "We review every Mommy application personally. Expect a response within 48 hours."
-                    : "We'll reach out once we've reviewed your details. Watch your inbox."}
-                </p>
-              </div>
-              <Link
-                href="/"
-                className="text-label text-champagne/60 hover:text-champagne transition-colors"
-              >
-                Return home
-              </Link>
-            </motion.div>
-          ) : (
-            <motion.div
-              key={`${role}-form`}
-              className="p-6 sm:p-8 space-y-7"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.25 }}
-            >
+          <motion.div
+            key={`${role}-form`}
+            className="p-6 sm:p-8 space-y-7"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
+          >
               {/* Step indicator */}
               <StepIndicator step={step} role={role} />
 
@@ -874,19 +837,15 @@ function ApplyPageInner() {
 
               </AnimatePresence>
             </motion.div>
-          )}
         </AnimatePresence>
       </div>
 
-      {/* Already have an account */}
-      {!done && (
-        <p className="text-center text-label text-ivory/40">
-          Already a member?{" "}
-          <a href="/login" className="text-champagne hover:underline">
-            Sign in
-          </a>
-        </p>
-      )}
+      <p className="text-center text-label text-ivory/40">
+        Already a member?{" "}
+        <a href="/login" className="text-champagne hover:underline">
+          Sign in
+        </a>
+      </p>
     </div>
   );
 }
