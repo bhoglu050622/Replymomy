@@ -17,24 +17,18 @@ const STANDALONE = resolve(".next/standalone/server.js");
 if (existsSync(STANDALONE)) {
   let src = readFileSync(STANDALONE, "utf8");
   const PATCH_MARKER = "// rm-patch: single-worker port guard";
+  // Remove any old racy TCP pre-check guard if present
+  src = src.replace(/\n\/\/ rm-patch: single-worker port guard[\s\S]*?tester\.listen\(port, host\);\s*\}\)\(\);\n/m, "\n");
+
   if (!src.includes(PATCH_MARKER)) {
-    const GUARD = `
-${PATCH_MARKER}
-;(function guardSingleWorker() {
-  const net = require("net");
-  const port = parseInt(process.env.PORT, 10) || 3000;
-  const host = process.env.HOSTNAME || "0.0.0.0";
-  const tester = net.createServer();
-  tester.once("error", function(err) {
-    if (err.code === "EADDRINUSE") { process.exit(0); }
-  });
-  tester.once("listening", function() { tester.close(); });
-  tester.listen(port, host);
-})();
-`;
-    src = src.replace(/startServer\(\{/, `${GUARD}\nstartServer({`);
+    // Fix: all workers race to startServer(); first wins, losers get EADDRINUSE
+    // in .catch() and exit(0) — Passenger won't respawn on clean exit.
+    src = src.replace(
+      /\.catch\(\(err\) => \{\s*console\.error\(err\);\s*process\.exit\(1\);\s*\}\);/,
+      `.catch((err) => {\n  ${PATCH_MARKER}\n  if (err.code === 'EADDRINUSE') { process.exit(0); }\n  console.error(err);\n  process.exit(1);\n});`
+    );
     writeFileSync(STANDALONE, src, "utf8");
-    console.log("Patched .next/standalone/server.js");
+    console.log("Patched .next/standalone/server.js — EADDRINUSE exits cleanly");
   }
 }
 
