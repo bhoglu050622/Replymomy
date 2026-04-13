@@ -39,16 +39,19 @@ export async function GET() {
     if (!latestByChat[msg.chat_id]) latestByChat[msg.chat_id] = msg;
   }
 
+  type MatchUser = { id: string; profiles: { display_name: string; photo_url: string | null }[] } | null;
   const chats = matches.map((m) => {
-    const isMe = (m.member as { id: string }).id === user!.id;
-    const other = isMe ? m.mommy : m.member;
-    const otherProfile = (other as { profiles: { display_name: string; photo_url: string | null } | null })?.profiles;
+    const member = (m.member as unknown as MatchUser);
+    const mommy = (m.mommy as unknown as MatchUser);
+    const isMe = member?.id === user!.id;
+    const other = isMe ? mommy : member;
+    const otherProfile = other?.profiles?.[0] ?? null;
     const last = latestByChat[`match-${m.id}`];
 
     return {
       matchId: m.id,
       otherName: otherProfile?.display_name ?? "Match",
-      otherPhoto: otherProfile?.photo_url ?? null,
+      otherPhoto: (otherProfile?.photo_url) ?? null,
       lastMessage: last?.content ?? null,
       lastMessageAt: last?.created_at ?? m.created_at,
     };
