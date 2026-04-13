@@ -90,6 +90,23 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  // Admin routes: always block non-admins, even if DB query fails
+  if (user && pathname.startsWith("/admin") && !pathname.startsWith("/api/")) {
+    try {
+      const { data: adminCheck } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      if (adminCheck?.role !== "admin") {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+    } catch {
+      // Can't verify role — deny access
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
   // Logged in: enforce onboarding gate (skip for API routes — they handle their own auth)
   if (user && !isPublic && !pathname.startsWith("/api/")) {
     try {
@@ -120,11 +137,6 @@ export async function updateSession(request: NextRequest) {
         if (status === "active" && isAuthRoute && pathname !== "/welcome") {
           const home = isMommy ? "/mommy-dashboard" : "/dashboard";
           return NextResponse.redirect(new URL(home, request.url));
-        }
-
-        // Admin-only routes
-        if (pathname.startsWith("/admin") && userRecord?.role !== "admin") {
-          return NextResponse.redirect(new URL("/dashboard", request.url));
         }
       }
     } catch {
