@@ -2,14 +2,11 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Check,
   ChevronRight,
-  Camera,
-  X,
   Sparkles,
   Users,
   Heart,
@@ -95,54 +92,15 @@ const INITIAL_FORM: FormState = {
   photoUrls: [],
 };
 
-// ─── Upload helper ────────────────────────────────────────────────────────────
-
-async function pickAndUpload(
-  idx: number,
-  photoUrls: string[],
-  setPhotoUrls: React.Dispatch<React.SetStateAction<string[]>>,
-  setUploadingIdx: React.Dispatch<React.SetStateAction<number | null>>
-) {
-  if (photoUrls[idx]) {
-    setPhotoUrls((prev) => prev.filter((_, i) => i !== idx));
-    return;
-  }
-
-  setUploadingIdx(idx);
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "image/*";
-  input.onchange = async (e) => {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (!file) { setUploadingIdx(null); return; }
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (data.url) {
-        setPhotoUrls((prev) => { const next = [...prev]; next[idx] = data.url; return next; });
-      } else {
-        toast.error("Upload failed. Please try again.");
-      }
-    } catch {
-      toast.error("Upload failed. Please try again.");
-    } finally {
-      setUploadingIdx(null);
-    }
-  };
-  input.click();
-}
-
 // ─── Step indicator ───────────────────────────────────────────────────────────
 
 const STEP_LABELS: Record<Role, string[]> = {
-  member: ["Agreement", "Details", "Career", "Photos", "Story"],
-  mommy: ["Agreement", "Details", "Photos", "Story", ""],
+  member: ["Agreement", "Details", "Career", "Story"],
+  mommy: ["Agreement", "Details", "Story", ""],
 };
 
 function StepIndicator({ step, role }: { step: Step; role: Role }) {
-  const total = role === "member" ? 4 : 3;
+  const total = role === "member" ? 3 : 2;
   return (
     <div className="flex items-center gap-2">
       {Array.from({ length: total + 1 }, (_, i) => i).map((s) => (
@@ -172,116 +130,6 @@ function StepIndicator({ step, role }: { step: Step; role: Role }) {
       <span className="ml-2 text-label text-ivory/38 hidden sm:block">
         {STEP_LABELS[role][step]}
       </span>
-    </div>
-  );
-}
-
-// ─── Photo grid ───────────────────────────────────────────────────────────────
-
-function PhotoGrid({
-  photoUrls,
-  uploadingIdx,
-  maxPhotos,
-  onPhotoClick,
-}: {
-  photoUrls: string[];
-  uploadingIdx: number | null;
-  maxPhotos: number;
-  onPhotoClick: (idx: number) => void;
-}) {
-  // Member (3 photos): big highlight on left + 2 stacked on right
-  // Mommy  (5 photos): flat row of 5 equal squares
-  const is3 = maxPhotos === 3;
-
-  if (is3) {
-    return (
-      <div className="grid grid-cols-3 grid-rows-2 gap-2">
-        {Array.from({ length: 3 }).map((_, i) => {
-          const isHighlight = i === 0;
-          return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => onPhotoClick(i)}
-              disabled={uploadingIdx === i || (!photoUrls[i] && i > photoUrls.length)}
-              className={cn(
-                "aspect-square rounded-xl border-2 border-dashed flex items-center justify-center transition-colors relative overflow-hidden group",
-                isHighlight ? "col-span-2 row-span-2 rounded-2xl" : "",
-                photoUrls[i]
-                  ? "border-champagne"
-                  : i === photoUrls.length
-                    ? "border-champagne/30 hover:border-champagne/60"
-                    : "border-champagne/10 opacity-40"
-              )}
-            >
-              {photoUrls[i] ? (
-                <>
-                  <Image src={photoUrls[i]} alt="" fill className="object-cover" sizes="200px" />
-                  {isHighlight && (
-                    <div className="absolute bottom-2 left-2 bg-champagne/90 text-obsidian text-[9px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full">
-                      Highlight
-                    </div>
-                  )}
-                  <div className="absolute inset-0 flex items-center justify-center bg-obsidian/60 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <X className="size-3 text-ivory" />
-                  </div>
-                </>
-              ) : uploadingIdx === i ? (
-                <div className="size-3.5 rounded-full border-2 border-champagne/40 border-t-champagne animate-spin" />
-              ) : (
-                <div className="flex flex-col items-center gap-1">
-                  <Camera className={cn("text-champagne/30", isHighlight ? "size-6" : "size-4")} />
-                  {isHighlight && (
-                    <span className="text-[9px] text-champagne/30 tracking-widest uppercase">
-                      Highlight
-                    </span>
-                  )}
-                </div>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    );
-  }
-
-  // 5-photo flat grid
-  return (
-    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <button
-          key={i}
-          type="button"
-          onClick={() => onPhotoClick(i)}
-          disabled={uploadingIdx === i || (!photoUrls[i] && i > photoUrls.length)}
-          className={cn(
-            "aspect-square rounded-xl border-2 border-dashed flex items-center justify-center transition-colors relative overflow-hidden group",
-            photoUrls[i]
-              ? "border-champagne"
-              : i === photoUrls.length
-                ? "border-champagne/30 hover:border-champagne/60"
-                : "border-champagne/10 opacity-40"
-          )}
-        >
-          {photoUrls[i] ? (
-            <>
-              <Image src={photoUrls[i]} alt="" fill className="object-cover rounded-xl" sizes="150px" />
-              {i === 0 && (
-                <div className="absolute bottom-1 left-1 bg-champagne/90 text-obsidian text-[8px] font-bold tracking-widest uppercase px-1.5 py-0.5 rounded-full">
-                  ★
-                </div>
-              )}
-              <div className="absolute inset-0 flex items-center justify-center bg-obsidian/60 opacity-0 group-hover:opacity-100 transition-opacity">
-                <X className="size-3 text-ivory" />
-              </div>
-            </>
-          ) : uploadingIdx === i ? (
-            <div className="size-3 rounded-full border-2 border-champagne/40 border-t-champagne animate-spin" />
-          ) : (
-            <Camera className="size-3.5 text-champagne/30" />
-          )}
-        </button>
-      ))}
     </div>
   );
 }
@@ -379,7 +227,6 @@ function ApplyPageInner() {
   }
 
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
-  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -404,15 +251,12 @@ function ApplyPageInner() {
   const canAdvanceStep2_member =
     form.occupation.trim().length >= 2 && !!form.income_bracket;
 
-  const canAdvancePhotos_member = form.photoUrls.length >= 1;
-  const canAdvancePhotos_mommy = form.photoUrls.length >= 1;
-
   const canSubmit = form.motivation.trim().length >= 20;
 
   // ── Step routing ──
 
-  // member: 0=agreement 1=details 2=career 3=photos 4=story
-  // mommy:  0=agreement 1=details 2=photos 3=story
+  // member: 0=agreement 1=details 2=career 3=story
+  // mommy:  0=agreement 1=details 2=story
 
   function nextStep() {
     setStep((s) => (s + 1) as Step);
@@ -479,8 +323,6 @@ function ApplyPageInner() {
       setSubmitting(false);
     }
   }
-
-  const photoCount = role === "member" ? 3 : 5;
 
   // ── Auth check loading ──
   if (!authChecked) {
@@ -951,123 +793,9 @@ function ApplyPageInner() {
                   </motion.div>
                 )}
 
-                {/* ── Step 2 (mommy): Socials ── */}
-                {step === 2 && role === "mommy" && (
-                  <motion.div
-                    key="step2-mommy"
-                    className="space-y-5"
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -16 }}
-                    transition={{ duration: 0.25 }}
-                  >
-                    <div>
-                      <h2 className="text-body-lg text-ivory font-medium mb-1">
-                        Photos
-                      </h2>
-                      <p className="text-body-sm text-ivory/40">
-                        Your first photo is your highlight — make it count. Add up to 5.
-                      </p>
-                    </div>
-
-                    <PhotoGrid
-                      photoUrls={form.photoUrls}
-                      uploadingIdx={uploadingIdx}
-                      maxPhotos={photoCount}
-
-                      onPhotoClick={(idx) =>
-                        pickAndUpload(
-                          idx,
-                          form.photoUrls,
-                          (updater) => setForm((f) => ({ ...f, photoUrls: typeof updater === "function" ? updater(f.photoUrls) : updater })),
-                          setUploadingIdx
-                        )
-                      }
-                    />
-
-                    <p className="text-[11px] text-ivory/30">
-                      Photos are reviewed by our team and never shown publicly without your consent.
-                    </p>
-
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        onClick={prevStep}
-                        className="px-5 py-2.5 rounded-full border border-champagne/20 text-ivory/48 text-body-sm hover:text-ivory transition-colors"
-                      >
-                        Back
-                      </button>
-                      <GoldCtaButton
-                        className="flex-1"
-                        disabled={!canAdvancePhotos_mommy}
-                        onClick={nextStep}
-                      >
-                        Continue <ChevronRight className="size-4 ml-1" />
-                      </GoldCtaButton>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* ── Step 3 (member): Photos ── */}
-                {step === 3 && role === "member" && (
-                  <motion.div
-                    key="step3-member"
-                    className="space-y-5"
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -16 }}
-                    transition={{ duration: 0.25 }}
-                  >
-                    <div>
-                      <h2 className="text-body-lg text-ivory font-medium mb-1">
-                        Photos
-                      </h2>
-                      <p className="text-body-sm text-ivory/40">
-                        Add up to 3 photos. Your first is your highlight.
-                      </p>
-                    </div>
-
-                    <PhotoGrid
-                      photoUrls={form.photoUrls}
-                      uploadingIdx={uploadingIdx}
-                      maxPhotos={photoCount}
-
-                      onPhotoClick={(idx) =>
-                        pickAndUpload(
-                          idx,
-                          form.photoUrls,
-                          (updater) => setForm((f) => ({ ...f, photoUrls: typeof updater === "function" ? updater(f.photoUrls) : updater })),
-                          setUploadingIdx
-                        )
-                      }
-                    />
-
-                    <p className="text-[11px] text-ivory/30">
-                      Photos are reviewed by our team and never shown publicly without your consent.
-                    </p>
-
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        onClick={prevStep}
-                        className="px-5 py-2.5 rounded-full border border-champagne/20 text-ivory/48 text-body-sm hover:text-ivory transition-colors"
-                      >
-                        Back
-                      </button>
-                      <GoldCtaButton
-                        className="flex-1"
-                        disabled={!canAdvancePhotos_member}
-                        onClick={nextStep}
-                      >
-                        Continue <ChevronRight className="size-4 ml-1" />
-                      </GoldCtaButton>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* ── Step 3 (mommy) / Step 4 (member): Story ── */}
-                {((step === 3 && role === "mommy") ||
-                  (step === 4 && role === "member")) && (
+                {/* ── Step 2 (mommy) / Step 3 (member): Story ── */}
+                {((step === 2 && role === "mommy") ||
+                  (step === 3 && role === "member")) && (
                   <motion.div
                     key="step-story"
                     className="space-y-5"
