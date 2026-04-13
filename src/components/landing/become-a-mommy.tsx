@@ -109,8 +109,8 @@ export function BecomeAMommy() {
                 className="font-accent italic text-ivory/80 leading-[1.45] relative z-10"
                 style={{ fontSize: "clamp(1rem, 1.8vw, 1.35rem)" }}
               >
-                The atmosphere is completely different from anything else I've
-                tried. Every person I've met has been genuine.
+                The atmosphere is completely different from anything else I&apos;ve
+                tried. Every person I&apos;ve met has been genuine.
               </p>
               <cite className="text-label text-champagne/56 mt-4 block not-italic">
                 — A founding member, New York

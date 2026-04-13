@@ -486,6 +486,7 @@ function PayoutsTable({
     setTotal(d.total ?? 0);
   }, [statusFilter]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchPayouts(); }, [fetchPayouts, onRefreshNeeded]);
 
   if (payouts === null) {
@@ -576,6 +577,7 @@ export default function PayoutsPage() {
   });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSummaryLoading(true);
     Promise.all([
       fetch("/api/admin/payouts?status=pending&page=0").then((r) => r.json()),

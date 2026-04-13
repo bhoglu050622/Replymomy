@@ -33,10 +33,12 @@ export default async function DashboardPage() {
     .neq("status", "expired");
 
   // Fetch weekly spotlight
+  // eslint-disable-next-line react-hooks/purity
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const { data: spotlight } = await supabase
     .from("spotlight_history")
     .select("mommy_id, profiles!spotlight_history_mommy_id_fkey(display_name, location_city)")
-    .gte("week_start", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+    .gte("week_start", weekAgo)
     .limit(1)
     .maybeSingle();
 

@@ -32,7 +32,9 @@ const MAX_BURST_PARTICLES = 30;
 
 export function GoldCursorTrail() {
   const reduced = useReducedMotion();
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(() =>
+    typeof window !== "undefined" ? navigator.maxTouchPoints > 0 : false
+  );
   const [particles, setParticles] = useState<Particle[]>([]);
   const [burstParticles, setBurstParticles] = useState<BurstParticle[]>([]);
   const mousePos = useRef({ x: -100, y: -100 });
@@ -40,12 +42,6 @@ export function GoldCursorTrail() {
   const particleId = useRef(0);
   const burstId = useRef(0);
   const animationFrame = useRef<number | undefined>(undefined);
-
-  // Detect touch device
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setIsTouchDevice(navigator.maxTouchPoints > 0);
-  }, []);
 
   // Initialize trail particles
   useEffect(() => {
@@ -62,6 +58,7 @@ export function GoldCursorTrail() {
       decay: 0.02 + i * 0.005,
     }));
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setParticles(initialParticles);
   }, [reduced, isTouchDevice]);
 

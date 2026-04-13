@@ -53,6 +53,7 @@ export function TextScramble({
 
     if (!shouldTrigger || (once && hasTriggered)) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasTriggered(true);
 
     const chars = text.split("");
@@ -144,6 +145,7 @@ export function ScrambleReveal({ children, className, delay = 0 }: ScrambleRevea
   useEffect(() => {
     if (reduced || !isInView || hasAnimated) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasAnimated(true);
     const chars = children.split("");
     const speed = 40;

@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Check,
@@ -665,12 +666,12 @@ function ApplyPageInner() {
                     : "We'll reach out once we've reviewed your details. Watch your inbox."}
                 </p>
               </div>
-              <a
+              <Link
                 href="/"
                 className="text-label text-champagne/60 hover:text-champagne transition-colors"
               >
                 Return home
-              </a>
+              </Link>
             </motion.div>
           ) : (
             <motion.div

@@ -15,6 +15,7 @@ export function VelvetCurtain({ children, onComplete }: VelvetCurtainProps) {
 
   useEffect(() => {
     if (reduced) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPhase("done");
       onComplete?.();
       return;

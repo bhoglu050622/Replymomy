@@ -115,7 +115,7 @@ export default function InvestorsPage() {
                   Thank you for your interest.
                 </h1>
                 <p className="text-ivory/50 text-sm leading-relaxed max-w-sm mx-auto mb-2">
-                  We review every submission personally. You'll hear from us within 48 hours.
+                  We review every submission personally. You&apos;ll hear from us within 48 hours.
                 </p>
                 <div className="mt-10 h-px w-24 mx-auto bg-gradient-to-r from-transparent via-champagne/40 to-transparent" />
                 <p className="mt-6 text-xs text-ivory/25 tracking-widest uppercase">
@@ -144,8 +144,8 @@ export default function InvestorsPage() {
                     Invest in curated connection.
                   </h1>
                   <p className="text-ivory/45 text-sm leading-relaxed">
-                    ReplyMommy is building India's most exclusive matching platform.
-                    Share your details and we'll reach out personally.
+                    ReplyMommy is building India&apos;s most exclusive matching platform.
+                    Share your details and we&apos;ll reach out personally.
                   </p>
                 </div>
 

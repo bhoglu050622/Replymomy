@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -70,9 +71,9 @@ export function InvitationForm() {
       </GoldCtaButton>
       <p className="text-center text-label text-ivory/40">
         Don&apos;t have a code?{" "}
-        <a href="/" className="text-champagne hover:underline">
+        <Link href="/" className="text-champagne hover:underline">
           Join the waitlist
-        </a>
+        </Link>
       </p>
     </motion.form>
   );
