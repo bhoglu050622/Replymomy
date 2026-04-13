@@ -31,6 +31,7 @@ export default function MommyPreferencesPage() {
   const [maxMatches, setMaxMatches] = useState(3);
   const [responseTime, setResponseTime] = useState("24h");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   function toggleTier(v: string) {
     setTiers((p) => p.includes(v) ? p.filter((x) => x !== v) : [...p, v]);
@@ -59,6 +60,7 @@ export default function MommyPreferencesPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     try {
       const profileRes = await fetch("/api/profile", {
@@ -75,13 +77,23 @@ export default function MommyPreferencesPage() {
       });
 
       if (!profileRes.ok) {
+        const d = await profileRes.json().catch(() => ({}));
+        setError(d.error ?? "Failed to save preferences. Try again.");
         setLoading(false);
         return;
       }
 
-      await fetch("/api/user/activate", { method: "POST" });
+      const activateRes = await fetch("/api/user/activate", { method: "POST" });
+      if (!activateRes.ok) {
+        const d = await activateRes.json().catch(() => ({}));
+        setError(d.error ?? "Failed to activate account. Try again.");
+        setLoading(false);
+        return;
+      }
+
       router.push("/welcome?role=mommy");
     } catch {
+      setError("Something went wrong. Try again.");
       setLoading(false);
     }
   }
@@ -225,6 +237,10 @@ export default function MommyPreferencesPage() {
             ))}
           </div>
         </div>
+
+        {error && (
+          <p className="text-body-sm text-red-400 text-center">{error}</p>
+        )}
 
         <GoldCtaButton type="submit" disabled={loading} className="w-full">
           {loading ? "Saving..." : "Enter the Guild"}
