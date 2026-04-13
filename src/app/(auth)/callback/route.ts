@@ -5,7 +5,17 @@ import { createClient } from "@/lib/supabase/server";
 // For new member signups (email confirmation or Google OAuth), advances status from
 // pending_invite → pending_profile so the onboarding gate routes them correctly.
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const requestUrl = new URL(request.url);
+  const searchParams = requestUrl.searchParams;
+
+  // Behind Hostinger/Passenger reverse proxy, request.url has host 0.0.0.0.
+  // Use x-forwarded-host + x-forwarded-proto to get the real public origin.
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
+  const origin = forwardedHost
+    ? `${forwardedProto}://${forwardedHost}`
+    : requestUrl.origin;
+
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/dashboard";
 
