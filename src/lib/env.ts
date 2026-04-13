@@ -31,7 +31,11 @@ export const isConfigured = {
 
   cloudinary:
     !!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME &&
-    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME !== "your-cloud-name",
+    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME !== "your-cloud-name" &&
+    !!process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY &&
+    process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY !== "your-api-key" &&
+    !!process.env.CLOUDINARY_API_SECRET &&
+    process.env.CLOUDINARY_API_SECRET !== "your-api-secret",
 
   gemini:
     !!process.env.GEMINI_API_KEY &&
