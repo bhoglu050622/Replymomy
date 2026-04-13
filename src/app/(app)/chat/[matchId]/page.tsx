@@ -22,6 +22,7 @@ interface Message {
   attachments: Attachment[];
   reactions: Record<string, string[]>;
   edited_at: string | null;
+  deleted_at: string | null;
   created_at: string;
   sender?: { id: string; profiles: { display_name: string; photo_url: string | null } | null } | null;
 }
