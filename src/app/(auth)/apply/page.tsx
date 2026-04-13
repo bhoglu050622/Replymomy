@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
@@ -324,7 +324,7 @@ function ChipSelect({
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export default function ApplyPage() {
+function ApplyPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [role, setRole] = useState<Role>("member");
@@ -1159,5 +1159,13 @@ export default function ApplyPage() {
         </p>
       )}
     </div>
+  );
+}
+
+export default function ApplyPage() {
+  return (
+    <Suspense>
+      <ApplyPageInner />
+    </Suspense>
   );
 }
