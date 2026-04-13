@@ -26,8 +26,6 @@ export type MatchStatus =
   | "expired"
   | "mutual";
 export type GiftType = "virtual" | "irl";
-export type GalleryItemType = "photo" | "video";
-
 export interface User {
   id: string;
   role: UserRole;
@@ -57,7 +55,6 @@ export interface Profile {
   date_of_birth: string | null;
   location_city: string | null;
   location_country: string | null;
-  photo_urls: string[] | null;
   voice_note_url: string | null;
   desires: string[] | null;
   preferred_age_min: number | null;
@@ -67,7 +64,6 @@ export interface Profile {
   show_online_status: boolean;
   show_last_active: boolean;
   allow_direct_messages: boolean;
-  blur_photos_for_free: boolean;
   created_at: string;
   updated_at: string;
 }

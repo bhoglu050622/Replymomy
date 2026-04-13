@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { ProfilePlaceholder } from "@/components/shared/profile-placeholder";
 import { Check, X, Copy, Clock, MapPin, AtSign, ExternalLink, Briefcase, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,7 +18,6 @@ interface MommyApplication {
   city: string;
   instagram: string | null;
   motivation: string;
-  photo_urls: string[];
   status: "pending" | "approved" | "rejected";
   invitation_code: string | null;
   ai_review: AiApplicationReview | null;
@@ -34,7 +33,6 @@ interface MemberApplication {
   occupation: string;
   income_bracket: "200k_500k" | "500k_1m" | "1m_plus";
   motivation: string;
-  photo_url: string | null;
   status: "pending" | "approved" | "rejected";
   invitation_code: string | null;
   ai_review: AiApplicationReview | null;
@@ -239,12 +237,8 @@ export default function AdminApplicationsPage() {
                 )}
               >
                 <div className="flex gap-5">
-                  <div className="flex gap-1.5 flex-shrink-0">
-                    {app.photo_urls.slice(0, 3).map((url, i) => (
-                      <div key={i} className="size-16 rounded-xl overflow-hidden relative border border-champagne/10 shrink-0">
-                        <Image src={url} alt="" fill className="object-cover" sizes="64px" />
-                      </div>
-                    ))}
+                  <div className="size-16 rounded-xl overflow-hidden relative border border-champagne/10 shrink-0">
+                    <ProfilePlaceholder seed={app.id} width={64} height={64} className="w-full h-full" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4 mb-2">
@@ -335,12 +329,9 @@ export default function AdminApplicationsPage() {
                 )}
               >
                 <div className="flex gap-5">
-                  {/* Optional photo */}
-                  {app.photo_url && (
-                    <div className="size-16 rounded-xl overflow-hidden relative border border-champagne/10 flex-shrink-0">
-                      <Image src={app.photo_url} alt="" fill className="object-cover" sizes="64px" />
-                    </div>
-                  )}
+                  <div className="size-16 rounded-xl overflow-hidden relative border border-champagne/10 flex-shrink-0">
+                    <ProfilePlaceholder seed={app.id} width={64} height={64} className="w-full h-full" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4 mb-2">
                       <div>

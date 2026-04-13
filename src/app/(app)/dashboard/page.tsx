@@ -2,6 +2,7 @@ import { Sparkles, TrendingUp, Crown, BookOpen, Clock } from "lucide-react";
 import { MatchCardPreview } from "@/components/dashboard/match-card-preview";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { KnowledgeArticleSheet } from "@/components/dashboard/knowledge-article-sheet";
+import { AnimatedStats } from "@/components/dashboard/animated-stats";
 import { createClient } from "@/lib/supabase/server";
 import { getArticlesForRole } from "@/lib/knowledge/articles";
 import Link from "next/link";
@@ -27,7 +28,7 @@ export default async function DashboardPage() {
   // Fetch today's matches with mommy profiles
   const { data: matchesRaw } = await supabase
     .from("matches")
-    .select("id, match_score, status, mommy_id, expires_at, member_response, profiles!matches_mommy_id_fkey(display_name, date_of_birth, location_city, desires, photo_urls)")
+    .select("id, match_score, status, mommy_id, expires_at, member_response, profiles!matches_mommy_id_fkey(display_name, date_of_birth, location_city, desires)")
     .eq("member_id", authUser!.id)
     .eq("match_date", today)
     .neq("status", "expired");
@@ -73,7 +74,6 @@ export default async function DashboardPage() {
       date_of_birth: string | null;
       location_city: string | null;
       desires: string[] | null;
-      photo_urls: string[] | null;
     } | null;
   };
 
@@ -141,7 +141,6 @@ export default async function DashboardPage() {
                 city={m.profiles?.location_city ?? "Unknown"}
                 desire={m.profiles?.desires?.[0] ?? ""}
                 matchScore={Math.round(m.match_score ?? 0)}
-                photoUrl={m.profiles?.photo_urls?.[0] ?? null}
                 alreadyResponded={!!m.member_response}
                 status={m.status}
               />
@@ -205,23 +204,11 @@ export default async function DashboardPage() {
       </section>
 
       {/* Quick stats */}
-      <section className="grid grid-cols-3 gap-4 lg:gap-6">
-        {[
-          { label: "Active Matches", value: String(mutualCount ?? 0) },
-          { label: "Chats", value: String(messageCount ?? 0) },
-          { label: "Gifts Sent", value: String(giftsCount ?? 0) },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="p-6 rounded-2xl bg-smoke border border-champagne/10"
-          >
-            <div className="text-label text-ivory/40 mb-2">{stat.label}</div>
-            <div className="font-headline text-3xl text-champagne">
-              {stat.value}
-            </div>
-          </div>
-        ))}
-      </section>
+      <AnimatedStats
+        mutual={mutualCount ?? 0}
+        chats={messageCount ?? 0}
+        gifts={giftsCount ?? 0}
+      />
 
       {userRecord?.member_tier && (
         <div className="mt-6 text-center">

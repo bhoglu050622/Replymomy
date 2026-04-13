@@ -7,7 +7,6 @@ const TOGGLES = [
   { key: "show_online_status", uiKey: "online", label: "Show online status" },
   { key: "show_last_active", uiKey: "lastActive", label: "Show last active" },
   { key: "allow_direct_messages", uiKey: "directMessages", label: "Allow direct messages" },
-  { key: "blur_photos_for_free", uiKey: "blurPhotos", label: "Blur photos until matched" },
 ];
 
 type PrivacyState = Record<string, boolean>;
@@ -16,7 +15,6 @@ const DEFAULTS: PrivacyState = {
   online: true,
   lastActive: false,
   directMessages: true,
-  blurPhotos: true,
 };
 
 export default function PrivacyPage() {
@@ -33,7 +31,6 @@ export default function PrivacyPage() {
             online: profile.show_online_status ?? true,
             lastActive: profile.show_last_active ?? false,
             directMessages: profile.allow_direct_messages ?? true,
-            blurPhotos: profile.blur_photos_for_free ?? true,
           });
         }
       })
@@ -51,7 +48,6 @@ export default function PrivacyPage() {
           show_online_status: state.online,
           show_last_active: state.lastActive,
           allow_direct_messages: state.directMessages,
-          blur_photos_for_free: state.blurPhotos,
         }),
       });
       if (res.ok) {
@@ -77,7 +73,7 @@ export default function PrivacyPage() {
 
       {loading ? (
         <div className="space-y-2">
-          {[1, 2, 3, 4].map((i) => (
+          {[1, 2, 3].map((i) => (
             <div key={i} className="h-16 rounded-2xl bg-smoke animate-pulse" />
           ))}
         </div>

@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { formatDistanceToNow } from "date-fns";
+import { ProfilePlaceholder } from "@/components/shared/profile-placeholder";
 
 export default async function MatchesPage() {
   const supabase = await createClient();
@@ -12,7 +12,7 @@ export default async function MatchesPage() {
 
   const { data: matchesRaw } = await supabase
     .from("matches")
-    .select("id, status, created_at, mommy_id, member_id, profiles!matches_mommy_id_fkey(display_name, photo_urls)")
+    .select("id, status, created_at, mommy_id, member_id, profiles!matches_mommy_id_fkey(display_name)")
     .or(`member_id.eq.${authUser!.id},mommy_id.eq.${authUser!.id}`)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -23,7 +23,7 @@ export default async function MatchesPage() {
     created_at: string;
     mommy_id: string;
     member_id: string;
-    profiles: { display_name: string; photo_urls: string[] | null } | null;
+    profiles: { display_name: string } | null;
   };
 
   const matches = (matchesRaw ?? []) as unknown as MatchRow[];
@@ -53,16 +53,8 @@ export default async function MatchesPage() {
               href={`/matches/${m.id}`}
               className="flex items-center gap-4 p-5 rounded-2xl bg-smoke border border-champagne/10 hover:border-champagne/30 transition-all"
             >
-              <div className="relative size-14 rounded-full bg-gradient-to-br from-burgundy to-smoke border border-champagne/30 overflow-hidden shrink-0">
-                {m.profiles?.photo_urls?.[0] && (
-                  <Image
-                    src={m.profiles.photo_urls[0]}
-                    alt={m.profiles.display_name}
-                    fill
-                    className="object-cover"
-                    sizes="56px"
-                  />
-                )}
+              <div className="relative size-14 rounded-full border border-champagne/30 overflow-hidden shrink-0">
+                <ProfilePlaceholder seed={m.id} width={56} height={56} className="w-full h-full" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-headline text-xl text-ivory">

@@ -9,7 +9,6 @@ const schema = z.object({
   instagram: z.string().max(100).optional(),
   city: z.string().min(2).max(100),
   motivation: z.string().min(20).max(2000),
-  photo_urls: z.array(z.string().url()).max(5).optional(),
   gender: z.string().max(100).optional(),
   pronouns: z.string().max(50).optional(),
 });
@@ -39,7 +38,7 @@ export async function POST(req: Request) {
           instagram: body.instagram ?? null,
           city: body.city,
           motivation: body.motivation,
-          photo_urls: body.photo_urls ?? [],
+          photo_urls: [],
           gender: body.gender ?? null,
           pronouns: body.pronouns ?? null,
           status: "approved",

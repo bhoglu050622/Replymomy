@@ -14,8 +14,8 @@ export async function GET() {
     .from("matches")
     .select(`
       id, created_at,
-      member:users!matches_member_id_fkey(id, profiles(display_name, photo_url)),
-      mommy:users!matches_mommy_id_fkey(id, profiles(display_name, photo_url))
+      member:users!matches_member_id_fkey(id, profiles(display_name)),
+      mommy:users!matches_mommy_id_fkey(id, profiles(display_name))
     `)
     .or(`member_id.eq.${user!.id},mommy_id.eq.${user!.id}`)
     .eq("status", "mutual")
@@ -39,7 +39,7 @@ export async function GET() {
     if (!latestByChat[msg.chat_id]) latestByChat[msg.chat_id] = msg;
   }
 
-  type MatchUser = { id: string; profiles: { display_name: string; photo_url: string | null }[] } | null;
+  type MatchUser = { id: string; profiles: { display_name: string }[] } | null;
   const chats = matches.map((m) => {
     const member = (m.member as unknown as MatchUser);
     const mommy = (m.mommy as unknown as MatchUser);
@@ -51,7 +51,6 @@ export async function GET() {
     return {
       matchId: m.id,
       otherName: otherProfile?.display_name ?? "Match",
-      otherPhoto: (otherProfile?.photo_url) ?? null,
       lastMessage: last?.content ?? null,
       lastMessageAt: last?.created_at ?? m.created_at,
     };

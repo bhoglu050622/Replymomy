@@ -1,15 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { ProfilePlaceholder } from "@/components/shared/profile-placeholder";
 
 interface Chat {
   matchId: string;
   otherName: string;
-  otherPhoto: string | null;
   lastMessage: string | null;
   lastMessageAt: string;
 }
@@ -55,10 +54,8 @@ export default function ChatPage() {
               href={`/chat/${chat.matchId}`}
               className="flex items-center gap-4 p-5 rounded-2xl bg-smoke border border-champagne/10 hover:border-champagne/30 transition-all"
             >
-              <div className="relative size-14 rounded-full bg-gradient-to-br from-burgundy to-smoke border border-champagne/30 shrink-0 overflow-hidden">
-                {chat.otherPhoto && (
-                  <Image src={chat.otherPhoto} alt={chat.otherName} fill className="object-cover" sizes="56px" />
-                )}
+              <div className="relative size-14 rounded-full border border-champagne/30 shrink-0 overflow-hidden">
+                <ProfilePlaceholder seed={chat.matchId} width={56} height={56} className="w-full h-full" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">

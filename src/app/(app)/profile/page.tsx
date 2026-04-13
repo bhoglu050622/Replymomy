@@ -1,8 +1,8 @@
-import Image from "next/image";
-import { Camera, Edit, Crown } from "lucide-react";
+import { Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { MEMBER_PRICES } from "@/lib/dodo/prices";
 import { ProfileEditDialog } from "./profile-edit-dialog";
+import { ProfilePhotoGrid } from "@/components/profile/profile-photo-grid";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -18,7 +18,7 @@ export default async function ProfilePage() {
       .single(),
     supabase
       .from("profiles")
-      .select("*")
+      .select("*, photo_urls")
       .eq("user_id", authUser!.id)
       .single(),
   ]);
@@ -42,31 +42,15 @@ export default async function ProfilePage() {
           initialHeadline={profile?.headline ?? ""}
           initialBio={profile?.bio ?? ""}
           initialDesires={profile?.desires ?? []}
-          initialPhotoUrls={profile?.photo_urls ?? []}
           initialLocation={profile?.location_city ?? ""}
         />
       </div>
 
-      {/* Photos */}
-      <div className="grid grid-cols-3 gap-3 mb-10">
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="relative aspect-[3/4] rounded-2xl bg-gradient-to-b from-burgundy/30 to-smoke border border-champagne/20 overflow-hidden flex items-center justify-center"
-          >
-            {profile?.photo_urls?.[i] ? (
-              <Image
-                src={profile.photo_urls[i]}
-                alt={`Photo ${i + 1}`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 33vw, 200px"
-              />
-            ) : (
-              <Camera className="size-6 text-champagne/30" />
-            )}
-          </div>
-        ))}
+      <div className="mb-10">
+        <ProfilePhotoGrid
+          initialUrls={(profile as { photo_urls?: string[] } | null)?.photo_urls ?? []}
+          editable={true}
+        />
       </div>
 
       {/* Name + Headline */}

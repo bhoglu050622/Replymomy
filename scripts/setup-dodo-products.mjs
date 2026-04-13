@@ -131,8 +131,8 @@ async function main() {
   for (const r of results) {
     console.log(`${r.envKey}=${r.productId}`);
   }
-  console.log("\n--- Also add these to Vercel Environment Variables ---");
-  console.log("(Settings → Environment Variables → Add each line above)\n");
+  console.log("\n--- Also add these to your production environment (e.g. Hostinger) ---");
+  console.log("(Same keys as above in your hosting panel or process env)\n");
 }
 
 main();

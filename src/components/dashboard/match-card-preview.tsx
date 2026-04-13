@@ -3,20 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Heart, X, MessageCircle } from "lucide-react";
+import { Heart, X, MessageCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GoldCtaButton } from "@/components/shared/gold-cta-button";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 import { ProfilePlaceholder } from "@/components/shared/profile-placeholder";
-
-// Image shimmer loader component
-function ImageLoader({ className }: { className?: string }) {
-  return (
-    <div className={cn("animate-pulse bg-gradient-to-br from-smoke to-burgundy/20", className)}>
-      <div className="w-full h-full bg-[linear-gradient(90deg,transparent,rgba(201,168,76,0.1),transparent)] animate-[shimmer_2s_infinite]" />
-    </div>
-  );
-}
 
 interface MatchCardPreviewProps {
   matchId: string;
@@ -25,7 +16,6 @@ interface MatchCardPreviewProps {
   city: string;
   desire: string;
   matchScore: number;
-  photoUrl?: string | null;
   alreadyResponded?: boolean;
   status?: string;
 }
@@ -37,14 +27,12 @@ export function MatchCardPreview({
   city,
   desire,
   matchScore,
-  photoUrl,
   alreadyResponded,
   status,
 }: MatchCardPreviewProps) {
   const router = useRouter();
   const [revealed, setRevealed] = useState(false);
   const [responding, setResponding] = useState<"accept" | "decline" | null>(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   async function respond(action: "accepted" | "declined") {
     setResponding(action === "accepted" ? "accept" : "decline");
@@ -68,25 +56,17 @@ export function MatchCardPreview({
   if (status === "mutual") {
     return (
       <motion.div
-        className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-champagne/40 bg-gradient-to-b from-burgundy via-smoke to-obsidian"
-        whileHover={{ y: -4 }}
+        className="relative aspect-[3/4] rounded-2xl overflow-hidden border-t-2 border-champagne/50 bg-gradient-to-b from-burgundy via-smoke to-obsidian"
+        style={{ borderLeft: "1px solid rgba(201,168,76,0.25)", borderRight: "1px solid rgba(201,168,76,0.25)", borderBottom: "1px solid rgba(201,168,76,0.25)" }}
+        whileHover={{ y: -6, scale: 1.01 }}
+        animate={{ boxShadow: "0 0 40px rgba(201,168,76,0.15)" }}
         transition={{ duration: 0.3 }}
       >
-      {photoUrl ? (
-        <>
-          {!imageLoaded && <ImageLoader className="absolute inset-0" />}
-          <Image
-            src={photoUrl}
-            alt={name}
-            fill
-            className={cn("object-cover transition-opacity duration-500", imageLoaded ? "opacity-100" : "opacity-0")}
-            onLoad={() => setImageLoaded(true)}
-          />
-        </>
-      ) : (
         <ProfilePlaceholder seed={matchId} width={300} height={400} className="w-full h-full" />
-      )}
         <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-transparent" />
+        <div className="absolute top-4 left-4">
+          <Sparkles className="size-4 text-champagne" />
+        </div>
         <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-champagne text-obsidian text-label">
           Mutual
         </div>
@@ -120,37 +100,19 @@ export function MatchCardPreview({
   return (
     <motion.div
       className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-champagne/20 bg-gradient-to-b from-burgundy via-smoke to-obsidian"
-      whileHover={{ y: -4 }}
+      whileHover={{ y: -6, scale: 1.01 }}
+      animate={matchScore >= 80 ? { boxShadow: "0 0 40px rgba(201,168,76,0.2)" } : { boxShadow: "none" }}
       transition={{ duration: 0.3 }}
     >
-      {photoUrl ? (
-        <>
-          {!imageLoaded && <ImageLoader className="absolute inset-0" />}
-          <Image
-            src={photoUrl}
-            alt={revealed ? name : "Tonight's match"}
-            fill
-            className={cn(
-              "object-cover transition-all duration-700",
-              !revealed && "blur-xl",
-              imageLoaded ? "opacity-100" : "opacity-0"
-            )}
-            onLoad={() => setImageLoaded(true)}
-          />
-        </>
-      ) : (
-        <ProfilePlaceholder
-          seed={matchId}
-          width={300}
-          height={400}
-          className={cn("w-full h-full transition-all duration-700", !revealed && "blur-xl")}
-        />
-      )}
+      <ProfilePlaceholder
+        seed={matchId}
+        width={300}
+        height={400}
+        className={cn("w-full h-full transition-all duration-700", !revealed && "blur-xl")}
+      />
 
-      {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-transparent" />
 
-      {/* Top: match score */}
       <motion.div
         className={cn(
           "absolute top-4 right-4 px-3 py-1 rounded-full bg-champagne/20 backdrop-blur-md border",
@@ -160,10 +122,11 @@ export function MatchCardPreview({
         animate={revealed ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
         transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        <span className="text-label text-champagne">{matchScore}% match</span>
+        <span className={cn("text-label text-champagne", matchScore >= 90 && "animate-pulse")}>
+          {matchScore}% match
+        </span>
       </motion.div>
 
-      {/* Bottom: info */}
       <div className="absolute bottom-0 inset-x-0 p-6 space-y-3">
         {!revealed ? (
           <>
@@ -173,13 +136,12 @@ export function MatchCardPreview({
             <p className="text-body-sm text-ivory/60">
               Reveal her — if you&apos;re ready.
             </p>
-            <Button
+            <GoldCtaButton
               onClick={() => setRevealed(true)}
-              variant="gold-outline"
               className="w-full h-10 rounded-full text-xs"
             >
-              Reveal
-            </Button>
+              Reveal her
+            </GoldCtaButton>
           </>
         ) : (
           <>

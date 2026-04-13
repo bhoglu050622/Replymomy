@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
 import { Check, ArrowLeft, Clock, Mail, Star, Zap, Infinity } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -227,22 +226,8 @@ export function SubscriptionClient({ currentTier, browsedCount = 0 }: Props) {
               <div className="text-label text-ivory/30">/ month</div>
             </div>
 
-            {/* QR code */}
-            <div className="flex justify-center">
-              <div className="p-3 rounded-2xl bg-white">
-                <Image
-                  src="/gpay-qr.jpg"
-                  alt="Google Pay QR code"
-                  width={192}
-                  height={192}
-                  className="rounded-xl"
-                  priority
-                />
-              </div>
-            </div>
-
-            <p className="text-center text-body-sm text-ivory/40">
-              Scan with your Google Pay app to complete payment.
+            <p className="text-center text-body-sm text-ivory/50 px-2">
+              Complete payment using your usual method, then tap the button below to record it.
             </p>
 
             <Button

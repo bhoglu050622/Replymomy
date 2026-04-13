@@ -7,7 +7,7 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Public routes that don't require auth
-  const publicRoutes = ["/", "/login", "/apply", "/investors", "/api/waitlist", "/api/investor", "/api/upload"];
+  const publicRoutes = ["/", "/login", "/admin-login", "/apply", "/investors", "/api/waitlist", "/api/investor"];
   const isPublic =
     publicRoutes.some((r) => pathname === r || pathname.startsWith(r + "/")) ||
     pathname.startsWith("/_next") ||
@@ -88,6 +88,10 @@ export async function updateSession(request: NextRequest) {
 
   // Not logged in trying to access protected route → redirect to login
   if (!user && !isPublic && !isAuthRoute) {
+    // Admin routes redirect to the dedicated admin login page
+    if (pathname.startsWith("/admin") && !pathname.startsWith("/api/")) {
+      return NextResponse.redirect(new URL("/admin-login", request.url));
+    }
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -103,11 +107,11 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
       if (!passesStrictAdminSession(user)) {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+        return NextResponse.redirect(new URL("/admin-login", request.url));
       }
     } catch {
       // Can't verify role — deny access
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(new URL("/admin-login", request.url));
     }
   }
 

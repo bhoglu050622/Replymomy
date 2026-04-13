@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
-import { Edit, X, Camera, GripVertical, AlertTriangle } from "lucide-react";
+import { Edit, X, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 const SUGGESTED_DESIRES = [
   "Travel", "Fine Dining", "Motorsport", "Aviation",
@@ -21,7 +18,6 @@ interface Props {
   initialHeadline: string;
   initialBio: string;
   initialDesires: string[];
-  initialPhotoUrls: string[];
   initialLocation: string;
 }
 
@@ -30,7 +26,6 @@ export function ProfileEditDialog({
   initialHeadline,
   initialBio,
   initialDesires,
-  initialPhotoUrls,
   initialLocation,
 }: Props) {
   const router = useRouter();
@@ -40,31 +35,20 @@ export function ProfileEditDialog({
   const [bio, setBio] = useState(initialBio);
   const [location, setLocation] = useState(initialLocation);
   const [desires, setDesires] = useState(initialDesires);
-  const [photoUrls, setPhotoUrls] = useState(initialPhotoUrls);
   const [saving, setSaving] = useState(false);
-  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
 
-  // Drag and drop state
-  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
-  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
-
-  // Unsaved changes warning state
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
-  const [pendingClose, setPendingClose] = useState(false);
 
-  // Check if there are unsaved changes
   const hasUnsavedChanges = useCallback(() => {
     return (
       name !== initialName ||
       headline !== initialHeadline ||
       bio !== initialBio ||
       location !== initialLocation ||
-      JSON.stringify(desires.sort()) !== JSON.stringify(initialDesires.sort()) ||
-      JSON.stringify(photoUrls) !== JSON.stringify(initialPhotoUrls)
+      JSON.stringify(desires.sort()) !== JSON.stringify(initialDesires.sort())
     );
-  }, [name, headline, bio, location, desires, photoUrls, initialName, initialHeadline, initialBio, initialLocation, initialDesires, initialPhotoUrls]);
+  }, [name, headline, bio, location, desires, initialName, initialHeadline, initialBio, initialLocation, initialDesires]);
 
-  // Warn about unsaved changes when leaving page
   useEffect(() => {
     function handleBeforeUnload(e: BeforeUnloadEvent) {
       if (open && hasUnsavedChanges()) {
@@ -80,7 +64,6 @@ export function ProfileEditDialog({
   function handleCloseAttempt() {
     if (hasUnsavedChanges()) {
       setShowUnsavedWarning(true);
-      setPendingClose(true);
     } else {
       setOpen(false);
     }
@@ -88,20 +71,16 @@ export function ProfileEditDialog({
 
   function confirmClose() {
     setShowUnsavedWarning(false);
-    setPendingClose(false);
     setOpen(false);
-    // Reset to initial values
     setName(initialName);
     setHeadline(initialHeadline);
     setBio(initialBio);
     setLocation(initialLocation);
     setDesires(initialDesires);
-    setPhotoUrls(initialPhotoUrls);
   }
 
   function cancelClose() {
     setShowUnsavedWarning(false);
-    setPendingClose(false);
   }
 
   function toggleDesire(d: string) {
@@ -112,46 +91,6 @@ export function ProfileEditDialog({
           ? [...prev, d]
           : prev
     );
-  }
-
-  async function handlePhotoClick(idx: number) {
-    if (photoUrls[idx]) {
-      setPhotoUrls((prev) => prev.filter((_, i) => i !== idx));
-      return;
-    }
-
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return; // user cancelled — no spinner
-      setUploadingIdx(idx);
-      try {
-        const fd = new FormData();
-        fd.append("file", file);
-        const res = await fetch("/api/upload", { method: "POST", body: fd });
-        const data = await res.json();
-        if (res.ok && data.url) {
-          setPhotoUrls((prev) => {
-            const next = [...prev];
-            next[idx] = data.url;
-            return next;
-          });
-        } else {
-          const msg =
-            typeof data.detail === "string"
-              ? `${data.error ?? "Upload failed"}: ${data.detail}`
-              : (data.error as string) ?? "Upload failed. Try again.";
-          toast.error(msg);
-        }
-      } catch {
-        toast.error("Upload failed. Try again.");
-      } finally {
-        setUploadingIdx(null);
-      }
-    };
-    input.click();
   }
 
   async function save() {
@@ -166,7 +105,7 @@ export function ProfileEditDialog({
           bio,
           location_city: location,
           desires,
-          photo_urls: photoUrls,
+          photo_urls: [],
         }),
       });
       setOpen(false);
@@ -192,96 +131,6 @@ export function ProfileEditDialog({
               <button onClick={handleCloseAttempt} className="text-ivory/40 hover:text-ivory">
                 <X className="size-5" />
               </button>
-            </div>
-
-            {/* Photos */}
-            <div>
-              <label className="text-label text-ivory/50 mb-3 block">
-                Photos
-                {photoUrls.length > 0 && (
-                  <span className="text-ivory/30 ml-2 text-xs">(drag to reorder)</span>
-                )}
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    draggable={!!photoUrls[i]}
-                    onDragStart={() => {
-                      if (photoUrls[i]) setDraggedIdx(i);
-                    }}
-                    onDragEnd={() => {
-                      setDraggedIdx(null);
-                      setDragOverIdx(null);
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      if (draggedIdx !== null && draggedIdx !== i) {
-                        setDragOverIdx(i);
-                      }
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      if (draggedIdx !== null && draggedIdx !== i) {
-                        // Swap photos
-                        setPhotoUrls((prev) => {
-                          const newUrls = [...prev];
-                          const draggedUrl = newUrls[draggedIdx];
-                          const targetUrl = newUrls[i];
-                          newUrls[i] = draggedUrl;
-                          newUrls[draggedIdx] = targetUrl;
-                          return newUrls;
-                        });
-                      }
-                      setDraggedIdx(null);
-                      setDragOverIdx(null);
-                    }}
-                    className={cn(
-                      "aspect-[3/4] rounded-xl border-2 border-dashed flex items-center justify-center transition-colors relative overflow-hidden",
-                      photoUrls[i] ? "border-champagne cursor-move" : "border-champagne/20",
-                      dragOverIdx === i && "border-champagne-400 bg-champagne/10",
-                      draggedIdx === i && "opacity-50"
-                    )}
-                  >
-                    {photoUrls[i] ? (
-                      <>
-                        <Image
-                          src={photoUrls[i]}
-                          alt=""
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 25vw, 150px"
-                          draggable={false}
-                        />
-                        {/* Reorder hint */}
-                        <div className="absolute top-1 left-1 p-1 bg-obsidian/60 rounded">
-                          <GripVertical className="size-3 text-ivory/70" />
-                        </div>
-                        {/* Delete overlay */}
-                        <div
-                          className="absolute inset-0 flex items-center justify-center bg-obsidian/60 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPhotoUrls((prev) => prev.filter((_, idx) => idx !== i));
-                          }}
-                        >
-                          <X className="size-4 text-ivory" />
-                        </div>
-                      </>
-                    ) : uploadingIdx === i ? (
-                      <div className="size-4 rounded-full border-2 border-champagne/40 border-t-champagne animate-spin" />
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handlePhotoClick(i)}
-                        className="w-full h-full flex items-center justify-center hover:border-champagne/50 transition-colors"
-                      >
-                        <Camera className="size-4 text-champagne/40" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
             </div>
 
             {/* Name */}
@@ -366,7 +215,6 @@ export function ProfileEditDialog({
         </div>
       )}
 
-      {/* Unsaved Changes Warning Dialog */}
       {showUnsavedWarning && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-obsidian/90 backdrop-blur-sm" onClick={cancelClose} />

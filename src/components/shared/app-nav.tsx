@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUserStore } from "@/stores/user-store";
+import { SignOutButton } from "@/components/shared/sign-out-button";
 
 const MEMBER_NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: Sparkles },
@@ -130,6 +131,9 @@ export function SidebarFooter() {
       {balance !== null && (
         <div className="text-label text-champagne mt-1">{balance} tokens</div>
       )}
+      <div className="mt-4 pt-4 border-t border-champagne/[0.06]">
+        <SignOutButton />
+      </div>
     </div>
   );
 }

@@ -71,8 +71,6 @@ interface FormState {
   referral_source: string;
   // Mommy-only
   instagram: string;
-  // Photos
-  photoUrls: string[];
 }
 
 const INITIAL_FORM: FormState = {
@@ -88,7 +86,6 @@ const INITIAL_FORM: FormState = {
   income_bracket: "",
   referral_source: "",
   instagram: "",
-  photoUrls: [],
 };
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
@@ -100,35 +97,20 @@ const STEP_LABELS: Record<Role, string[]> = {
 
 function StepIndicator({ step, role }: { step: Step; role: Role }) {
   const total = role === "member" ? 3 : 2;
+  const pct = Math.round((step / total) * 100);
   return (
-    <div className="flex items-center gap-2">
-      {Array.from({ length: total + 1 }, (_, i) => i).map((s) => (
-        <div key={s} className="flex items-center gap-2">
-          <div
-            className={cn(
-              "size-7 rounded-full flex items-center justify-center text-label border transition-all",
-              step === s
-                ? "bg-champagne text-obsidian border-champagne"
-                : step > s
-                  ? "bg-champagne/20 text-champagne border-champagne/30"
-                  : "bg-smoke text-ivory/30 border-champagne/10"
-            )}
-          >
-            {step > s ? <Check className="size-3" /> : s + 1}
-          </div>
-          {s < total && (
-            <div
-              className={cn(
-                "h-px w-6 transition-all",
-                step > s ? "bg-champagne/40" : "bg-champagne/10"
-              )}
-            />
-          )}
-        </div>
-      ))}
-      <span className="ml-2 text-label text-ivory/38 hidden sm:block">
-        {STEP_LABELS[role][step]}
-      </span>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-label text-champagne">{STEP_LABELS[role][step]}</span>
+        <span className="text-label text-ivory/30">Step {step + 1} of {total + 1}</span>
+      </div>
+      <div className="h-0.5 bg-champagne/10 rounded-full overflow-hidden">
+        <motion.div
+          className="h-full bg-champagne rounded-full"
+          animate={{ width: `${pct === 0 ? 4 : pct}%` }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        />
+      </div>
     </div>
   );
 }
@@ -287,8 +269,6 @@ function ApplyPageInner() {
               occupation: form.occupation,
               income_bracket: form.income_bracket,
               motivation: form.motivation,
-              photo_url: form.photoUrls[0] ?? undefined,
-              photo_urls: form.photoUrls,
               referral_source: form.referral_source || undefined,
               gender: effectiveGender || undefined,
               pronouns: form.pronouns || undefined,
@@ -300,7 +280,6 @@ function ApplyPageInner() {
               city: form.city,
               instagram: form.instagram || undefined,
               motivation: form.motivation,
-              photo_urls: form.photoUrls,
               gender: effectiveGender || undefined,
               pronouns: form.pronouns || undefined,
             };
@@ -349,29 +328,28 @@ function ApplyPageInner() {
         </div>
 
         {/* Role toggle (so user can pick before signing in) */}
-        <div className="flex p-1 rounded-full bg-smoke border border-champagne/[0.08]">
-          <button
-            type="button"
-            onClick={() => setRole("member")}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-body-sm font-medium transition-all",
-              role === "member" ? "bg-champagne/20 text-champagne" : "text-ivory/40 hover:text-ivory/70"
-            )}
-          >
-            <Users className="size-4" />
-            I&apos;m a Man
-          </button>
-          <button
-            type="button"
-            onClick={() => setRole("mommy")}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-body-sm font-medium transition-all",
-              role === "mommy" ? "bg-champagne/20 text-champagne" : "text-ivory/40 hover:text-ivory/70"
-            )}
-          >
-            <Heart className="size-4" />
-            I&apos;m a Mommy
-          </button>
+        <div className="relative flex p-1 rounded-full bg-smoke border border-champagne/[0.08]">
+          {(["member", "mommy"] as Role[]).map((r) => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => setRole(r)}
+              className={cn(
+                "relative flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-body-sm font-medium transition-colors z-10",
+                role === r ? "text-champagne" : "text-ivory/40 hover:text-ivory/70"
+              )}
+            >
+              {role === r && (
+                <motion.div
+                  layoutId="role-pill-gate"
+                  className="absolute inset-0 rounded-full bg-champagne/20 border border-champagne/30"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                />
+              )}
+              {r === "member" ? <Users className="size-4 relative z-10" /> : <Heart className="size-4 relative z-10" />}
+              <span className="relative z-10">{r === "member" ? "I'm a Man" : "I'm a Mommy"}</span>
+            </button>
+          ))}
         </div>
 
         <p className="text-[11px] text-ivory/30 leading-relaxed text-center">
@@ -439,33 +417,28 @@ function ApplyPageInner() {
       </div>
 
       {/* Role toggle */}
-      <div className="flex p-1 rounded-full bg-smoke border border-champagne/[0.08]">
-        <button
-          type="button"
-          onClick={() => handleRoleSwitch("member")}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-body-sm font-medium transition-all",
-            role === "member"
-              ? "bg-champagne/20 text-champagne"
-              : "text-ivory/40 hover:text-ivory/70"
-          )}
-        >
-          <Users className="size-4" />
-          I&apos;m a Man
-        </button>
-        <button
-          type="button"
-          onClick={() => handleRoleSwitch("mommy")}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-body-sm font-medium transition-all",
-            role === "mommy"
-              ? "bg-champagne/20 text-champagne"
-              : "text-ivory/40 hover:text-ivory/70"
-          )}
-        >
-          <Heart className="size-4" />
-          I&apos;m a Mommy
-        </button>
+      <div className="relative flex p-1 rounded-full bg-smoke border border-champagne/[0.08]">
+        {(["member", "mommy"] as Role[]).map((r) => (
+          <button
+            key={r}
+            type="button"
+            onClick={() => handleRoleSwitch(r)}
+            className={cn(
+              "relative flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-body-sm font-medium transition-colors z-10",
+              role === r ? "text-champagne" : "text-ivory/40 hover:text-ivory/70"
+            )}
+          >
+            {role === r && (
+              <motion.div
+                layoutId="role-pill"
+                className="absolute inset-0 rounded-full bg-champagne/20 border border-champagne/30"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+              />
+            )}
+            {r === "member" ? <Users className="size-4 relative z-10" /> : <Heart className="size-4 relative z-10" />}
+            <span className="relative z-10">{r === "member" ? "I'm a Man" : "I'm a Mommy"}</span>
+          </button>
+        ))}
       </div>
 
       {/* Asterisk note */}
@@ -499,9 +472,9 @@ function ApplyPageInner() {
                   <motion.div
                     key="step0"
                     className="space-y-6"
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -16 }}
+                    initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -16, scale: 1.01 }}
                     transition={{ duration: 0.25 }}
                   >
                     <div>
@@ -567,9 +540,9 @@ function ApplyPageInner() {
                   <motion.div
                     key="step1"
                     className="space-y-5"
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -16 }}
+                    initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -16, scale: 1.01 }}
                     transition={{ duration: 0.25 }}
                   >
                     <div>
@@ -678,9 +651,9 @@ function ApplyPageInner() {
                   <motion.div
                     key="step2-member"
                     className="space-y-5"
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -16 }}
+                    initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -16, scale: 1.01 }}
                     transition={{ duration: 0.25 }}
                   >
                     <div>
@@ -765,9 +738,9 @@ function ApplyPageInner() {
                   <motion.div
                     key="step-story"
                     className="space-y-5"
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -16 }}
+                    initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -16, scale: 1.01 }}
                     transition={{ duration: 0.25 }}
                   >
                     <div>

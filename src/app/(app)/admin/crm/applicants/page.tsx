@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
 import { toast } from "sonner";
+import { ProfilePlaceholder } from "@/components/shared/profile-placeholder";
 import {
   Search,
   X,
@@ -34,7 +34,6 @@ interface MemberApplicant {
   occupation: string;
   income_bracket: string;
   motivation: string;
-  photo_url: string | null;
   referral_source: string | null;
   status: "pending" | "approved" | "rejected";
   invitation_code: string | null;
@@ -50,7 +49,6 @@ interface MommyApplicant {
   city: string;
   instagram: string | null;
   motivation: string;
-  photo_urls: string[];
   status: "pending" | "approved" | "rejected";
   invitation_code: string | null;
   ai_review: AiApplicationReview | null;
@@ -221,15 +219,9 @@ function ApplicantSheet({
             {/* Profile Tab */}
             <TabsContent value="profile" className="space-y-6">
               <div className="flex items-center gap-4">
-                {member?.photo_url ? (
-                  <div className="size-16 rounded-xl overflow-hidden relative border border-champagne/10 flex-shrink-0">
-                    <Image src={member.photo_url} alt="" fill className="object-cover" sizes="64px" />
-                  </div>
-                ) : mommy && mommy.photo_urls?.[0] ? (
-                  <div className="size-16 rounded-xl overflow-hidden relative border border-champagne/10 flex-shrink-0">
-                    <Image src={mommy.photo_urls[0]} alt="" fill className="object-cover" sizes="64px" />
-                  </div>
-                ) : null}
+                <div className="size-16 rounded-xl overflow-hidden relative border border-champagne/10 flex-shrink-0">
+                  <ProfilePlaceholder seed={applicant.id} width={64} height={64} className="w-full h-full" />
+                </div>
                 <div>
                   <span className={cn("px-2.5 py-1 rounded-full text-label border", statusColor(applicant.status))}>
                     {applicant.status}
@@ -263,19 +255,6 @@ function ApplicantSheet({
                 </p>
               </div>
 
-              {/* Mommy additional photos */}
-              {mommy && mommy.photo_urls.length > 1 && (
-                <div>
-                  <p className="text-label text-ivory/38 mb-2">Photos</p>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {mommy.photo_urls.map((url, i) => (
-                      <div key={i} className="aspect-square rounded-lg overflow-hidden relative border border-champagne/10">
-                        <Image src={url} alt="" fill className="object-cover" sizes="80px" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </TabsContent>
 
             {/* Notes & Tags Tab */}
@@ -524,18 +503,9 @@ export default function CrmApplicantsPage() {
                 className="w-full text-left p-4 rounded-xl bg-smoke border border-champagne/[0.08] hover:border-champagne/25 transition-all group"
               >
                 <div className="flex items-center gap-4">
-                  {/* Photo thumbnail */}
-                  {(member?.photo_url || mommy?.photo_urls?.[0]) && (
-                    <div className="size-10 rounded-lg overflow-hidden relative border border-champagne/10 flex-shrink-0">
-                      <Image
-                        src={(member?.photo_url ?? mommy?.photo_urls?.[0])!}
-                        alt=""
-                        fill
-                        className="object-cover"
-                        sizes="40px"
-                      />
-                    </div>
-                  )}
+                  <div className="size-10 rounded-lg overflow-hidden relative border border-champagne/10 flex-shrink-0">
+                    <ProfilePlaceholder seed={app.id} width={40} height={40} className="w-full h-full" />
+                  </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">

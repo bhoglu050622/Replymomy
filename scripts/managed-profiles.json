@@ -1,0 +1,122 @@
+[
+  {
+    "userId": "01a6c966-3eb5-4d0f-9766-8aa091940689",
+    "email": "priya.sharma.blr@replymommy.dev",
+    "display_name": "Priya Sharma",
+    "role": "mommy"
+  },
+  {
+    "userId": "6cf02fa5-eb14-4d6a-a363-7654b5af7394",
+    "email": "kavya.reddy.blr@replymommy.dev",
+    "display_name": "Kavya Reddy",
+    "role": "mommy"
+  },
+  {
+    "userId": "a27ecc34-3a04-452a-89ef-d1cfd511afa3",
+    "email": "ananya.krishnan.blr@replymommy.dev",
+    "display_name": "Ananya Krishnan",
+    "role": "mommy"
+  },
+  {
+    "userId": "ef31e57c-65f3-4280-89b3-23198221a837",
+    "email": "meghna.nair.blr@replymommy.dev",
+    "display_name": "Meghna Nair",
+    "role": "mommy"
+  },
+  {
+    "userId": "177675da-e364-426a-ba8b-6e5089e226aa",
+    "email": "shreya.iyer.blr@replymommy.dev",
+    "display_name": "Shreya Iyer",
+    "role": "mommy"
+  },
+  {
+    "userId": "011c43b3-1758-4d79-aab9-872bbbc8d72a",
+    "email": "pooja.bhat.blr@replymommy.dev",
+    "display_name": "Pooja Bhat",
+    "role": "mommy"
+  },
+  {
+    "userId": "b589d74f-f279-4769-9a47-707bfec59b1b",
+    "email": "divya.rao.blr@replymommy.dev",
+    "display_name": "Divya Rao",
+    "role": "mommy"
+  },
+  {
+    "userId": "99d09cfc-623e-41eb-96bf-dcbde4d0e599",
+    "email": "tara.singh.blr@replymommy.dev",
+    "display_name": "Tara Singh",
+    "role": "mommy"
+  },
+  {
+    "userId": "f423382b-c3c3-4130-9e93-cf983b35433c",
+    "email": "nandini.kulkarni.blr@replymommy.dev",
+    "display_name": "Nandini Kulkarni",
+    "role": "mommy"
+  },
+  {
+    "userId": "04d7e7a7-1dce-411b-b33c-e9bb11aab00b",
+    "email": "aditi.menon.blr@replymommy.dev",
+    "display_name": "Aditi Menon",
+    "role": "mommy"
+  },
+  {
+    "userId": "f6898d75-ea90-43ed-a5e6-6ef1723efb68",
+    "email": "arjun.mehta.blr@replymommy.dev",
+    "display_name": "Arjun Mehta",
+    "role": "member"
+  },
+  {
+    "userId": "e6b3da01-6bad-46b3-a7d1-afb794fb3fd6",
+    "email": "karthik.subramanian.blr@replymommy.dev",
+    "display_name": "Karthik Subramanian",
+    "role": "member"
+  },
+  {
+    "userId": "6a661478-8d55-47c3-a642-f7e358e67c59",
+    "email": "rohan.joshi.blr@replymommy.dev",
+    "display_name": "Rohan Joshi",
+    "role": "member"
+  },
+  {
+    "userId": "efccb935-2739-442d-aebd-74ae5bf2bf60",
+    "email": "vikram.nair.blr@replymommy.dev",
+    "display_name": "Vikram Nair",
+    "role": "member"
+  },
+  {
+    "userId": "397b4234-784e-4bfd-9369-9999f090e03e",
+    "email": "siddharth.rao.blr@replymommy.dev",
+    "display_name": "Siddharth Rao",
+    "role": "member"
+  },
+  {
+    "userId": "e3e2a1b7-b751-48ce-a8c4-56f29eda8707",
+    "email": "akash.sharma.blr@replymommy.dev",
+    "display_name": "Akash Sharma",
+    "role": "member"
+  },
+  {
+    "userId": "5e13cb22-d0bb-4863-9fec-080988f54358",
+    "email": "raj.kumar.blr@replymommy.dev",
+    "display_name": "Raj Kumar",
+    "role": "member"
+  },
+  {
+    "userId": "a33f1e8d-d681-4f73-bc3b-a73ed36fa6e8",
+    "email": "dev.patel.blr@replymommy.dev",
+    "display_name": "Dev Patel",
+    "role": "member"
+  },
+  {
+    "userId": "924a78f2-ddf9-41c9-b8ef-fba472197b4a",
+    "email": "nikhil.agarwal.blr@replymommy.dev",
+    "display_name": "Nikhil Agarwal",
+    "role": "member"
+  },
+  {
+    "userId": "7226d08c-10a0-45d5-a633-414db6267239",
+    "email": "amit.verma.blr@replymommy.dev",
+    "display_name": "Amit Verma",
+    "role": "member"
+  }
+]

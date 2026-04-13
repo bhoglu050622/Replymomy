@@ -1,5 +1,6 @@
 export const MEDIA_CONFIG = {
   MAX_IMAGE_BYTES:            8  * 1024 * 1024,  // 8 MB raw upload limit
+  MAX_VIDEO_BYTES:            50 * 1024 * 1024,  // 50 MB
   MAX_PDF_BYTES:              10 * 1024 * 1024,  // 10 MB
   MAX_ATTACHMENTS:            3,
   MAX_DAILY_UPLOAD_BYTES:     100 * 1024 * 1024, // 100 MB per user per day
@@ -16,12 +17,13 @@ export const MEDIA_CONFIG = {
   UPGRADE_WARN_PCT:           70,
 } as const;
 
-// Allowed MIME types — videos disabled at MVP
-export const ALLOWED_MIME: Record<string, "image" | "pdf"> = {
+export const ALLOWED_MIME: Record<string, "image" | "pdf" | "video"> = {
   "image/jpeg":       "image",
   "image/png":        "image",
   "image/webp":       "image",
   "application/pdf":  "pdf",
+  "video/mp4":        "video",
+  "video/webm":       "video",
 };
 
 // Magic byte signatures for server-side file type verification
@@ -30,4 +32,6 @@ export const MAGIC_BYTES: Array<{ mime: string; bytes: number[]; offset: number 
   { mime: "image/png",        bytes: [0x89, 0x50, 0x4E, 0x47],       offset: 0 },
   { mime: "image/webp",       bytes: [0x52, 0x49, 0x46, 0x46],       offset: 0 }, // RIFF header
   { mime: "application/pdf",  bytes: [0x25, 0x50, 0x44, 0x46],       offset: 0 }, // %PDF
+  { mime: "video/webm",       bytes: [0x1A, 0x45, 0xDF, 0xA3],       offset: 0 }, // EBML header
+  { mime: "video/mp4",        bytes: [0x66, 0x74, 0x79, 0x70],       offset: 4 }, // ftyp box
 ];

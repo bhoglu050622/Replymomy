@@ -178,7 +178,8 @@ export default function PrivacyPage() {
 
       <Section title="10. International Transfers">
         <p>
-          Our infrastructure is operated primarily within the United States (Supabase, Vercel).
+          Our infrastructure is operated primarily within the United States (Supabase, our hosting
+          provider, and other subprocessors we use to run the service).
           If you are located in the European Economic Area, United Kingdom, or other regions with
           data transfer restrictions, your data is processed under applicable Standard Contractual
           Clauses or equivalent safeguards.

@@ -9,8 +9,11 @@ export async function proxy(request: NextRequest) {
     // Last-resort: never let proxy errors 500 the site
     response = NextResponse.next({ request });
   }
-  // Forward Vercel geo header as a short-lived cookie for client-side regional pricing
-  const country = request.headers.get("x-vercel-ip-country") ?? "US";
+  // Geo hint from edge (e.g. Cloudflare cf-ipcountry) for client-side regional pricing
+  const country =
+    request.headers.get("cf-ipcountry") ??
+    request.headers.get("x-country-code") ??
+    "US";
   response.cookies.set("x-country", country, { path: "/", maxAge: 3600, sameSite: "lax" });
   return response;
 }

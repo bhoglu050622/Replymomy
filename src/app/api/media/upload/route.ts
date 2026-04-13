@@ -1,21 +1,20 @@
 import { NextResponse } from "next/server";
-import { createHash, randomUUID } from "crypto";
+import { randomUUID } from "crypto";
+import sharp from "sharp";
 import { requireAuth } from "@/lib/supabase/require-auth";
 import { ALLOWED_MIME, MEDIA_CONFIG } from "@/lib/media/config";
 import { validateMagicBytes, validateUpload, checkDailyQuota } from "@/lib/media/validate";
-import { processImage } from "@/lib/media/process";
-import { uploadToHostinger } from "@/lib/media/hostinger";
+import { uploadBinaryAsset } from "@/lib/media/upload-backend";
 
-export const runtime = "nodejs"; // sharp requires Node.js runtime
+export const runtime = "nodejs";
 
 // POST /api/media/upload
 // Accepts multipart/form-data with fields: file, chatId
-// Returns: { assetId, url, thumbUrl, width, height, bytes }
+// Supports images (JPEG/PNG/WebP), videos (MP4/WebM), and PDFs.
 export async function POST(req: Request) {
   const { user, supabase, response } = await requireAuth();
   if (response) return response;
 
-  // Parse multipart
   let formData: FormData;
   try {
     formData = await req.formData();
@@ -30,14 +29,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
-  // --- Declared MIME + size check ---
-  const declaredMime = file.type.toLowerCase();
-  const check = validateUpload(declaredMime, file.size, MEDIA_CONFIG.MAX_IMAGE_BYTES);
-  if (!check.ok) {
-    return NextResponse.json({ error: check.error }, { status: check.status });
-  }
-
-  // --- Daily quota check ---
   const withinQuota = await checkDailyQuota(user.id, supabase);
   if (!withinQuota) {
     return NextResponse.json(
@@ -46,119 +37,106 @@ export async function POST(req: Request) {
     );
   }
 
-  // --- Read buffer & magic bytes check ---
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   const detectedMime = validateMagicBytes(buffer);
 
-  if (!detectedMime) {
-    return NextResponse.json({ error: "File type not recognised" }, { status: 400 });
-  }
-  if (detectedMime !== declaredMime && !(declaredMime === "image/jpeg" && detectedMime === "image/jpeg")) {
-    // Allow declared mime to be a subtype match
-    const detectedKind = ALLOWED_MIME[detectedMime];
-    if (!detectedKind) {
-      return NextResponse.json({ error: "File type not allowed" }, { status: 400 });
-    }
+  const cat = detectedMime ? ALLOWED_MIME[detectedMime] : undefined;
+  if (!cat || !detectedMime) {
+    return NextResponse.json({ error: "Unsupported file type" }, { status: 415 });
   }
 
-  const fileKind = ALLOWED_MIME[detectedMime] ?? ALLOWED_MIME[declaredMime];
+  const maxBytes =
+    cat === "image" ? MEDIA_CONFIG.MAX_IMAGE_BYTES
+    : cat === "video" ? MEDIA_CONFIG.MAX_VIDEO_BYTES
+    : MEDIA_CONFIG.MAX_PDF_BYTES;
 
-  if (fileKind === "pdf") {
-    // PDF: validate size limit only, no processing
-    if (file.size > MEDIA_CONFIG.MAX_PDF_BYTES) {
-      return NextResponse.json({ error: "PDF exceeds 10 MB limit" }, { status: 413 });
-    }
-    // PDF upload path (simplified — no processing)
-    const assetId = randomUUID();
-    const remotePath = `rm/${user.id}/chat/${chatId ?? "general"}/${assetId}.pdf`;
-    let pdfUrl: string;
+  const check = validateUpload(detectedMime, file.size, maxBytes);
+  if (!check.ok) {
+    return NextResponse.json({ error: check.error }, { status: check.status });
+  }
+
+  const assetId = randomUUID();
+  const chatPath = chatId ?? "general";
+
+  let mainUrl: string;
+  let thumbUrl: string | null = null;
+
+  if (cat === "image") {
+    // Resize main image to max 1920px, encode as WebP
+    let mainBuffer: Buffer;
     try {
-      pdfUrl = await uploadToHostinger(buffer, remotePath);
+      mainBuffer = await sharp(buffer)
+        .resize(MEDIA_CONFIG.IMAGE_MAIN_EDGE, MEDIA_CONFIG.IMAGE_MAIN_EDGE, { fit: "inside", withoutEnlargement: true })
+        .webp({ quality: MEDIA_CONFIG.WEBP_QUALITY })
+        .toBuffer();
+
+      // Re-encode at lower quality if still over limit
+      if (mainBuffer.length > MEDIA_CONFIG.PROCESSED_MAX_BYTES) {
+        mainBuffer = await sharp(buffer)
+          .resize(MEDIA_CONFIG.IMAGE_MAIN_EDGE, MEDIA_CONFIG.IMAGE_MAIN_EDGE, { fit: "inside", withoutEnlargement: true })
+          .webp({ quality: MEDIA_CONFIG.WEBP_QUALITY_FALLBACK })
+          .toBuffer();
+      }
+    } catch (err) {
+      console.error("[media/upload] Image processing failed:", err);
+      return NextResponse.json({ error: "Image processing failed" }, { status: 422 });
+    }
+
+    const mainPath = `rm/${user.id}/chat/${chatPath}/${assetId}.webp`;
+    try {
+      mainUrl = await uploadBinaryAsset(mainBuffer, mainPath, "image");
+    } catch (err) {
+      console.error("[media/upload] Image upload failed:", err);
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    }
+
+    // Generate thumbnail
+    try {
+      const thumbBuffer = await sharp(buffer)
+        .resize(MEDIA_CONFIG.IMAGE_THUMB_EDGE, MEDIA_CONFIG.IMAGE_THUMB_EDGE, { fit: "cover" })
+        .webp({ quality: MEDIA_CONFIG.WEBP_QUALITY })
+        .toBuffer();
+      const thumbPath = `rm/${user.id}/chat/${chatPath}/${assetId}_thumb.webp`;
+      thumbUrl = await uploadBinaryAsset(thumbBuffer, thumbPath, "image");
+    } catch {
+      // Thumbnail failure is non-fatal; main image already uploaded
+      thumbUrl = null;
+    }
+  } else if (cat === "video") {
+    const ext = detectedMime === "video/mp4" ? "mp4" : "webm";
+    const videoPath = `rm/${user.id}/chat/${chatPath}/${assetId}.${ext}`;
+    try {
+      mainUrl = await uploadBinaryAsset(buffer, videoPath, "video");
+    } catch (err) {
+      console.error("[media/upload] Video upload failed:", err);
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    }
+  } else {
+    // PDF — unchanged path
+    const pdfPath = `rm/${user.id}/chat/${chatPath}/${assetId}.pdf`;
+    try {
+      mainUrl = await uploadBinaryAsset(buffer, pdfPath, "raw");
     } catch (err) {
       console.error("[media/upload] PDF upload failed:", err);
       return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
-
-    await supabase.from("media_assets").insert({
-      id: assetId,
-      owner_id: user.id,
-      chat_id: chatId,
-      url: pdfUrl,
-      mime_type: detectedMime,
-      size_bytes: buffer.length,
-    });
-
-    return NextResponse.json({ assetId, url: pdfUrl, thumbUrl: null });
   }
 
-  // --- Image processing ---
-  let processed: Awaited<ReturnType<typeof processImage>>;
-  try {
-    processed = await processImage(buffer);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Image processing failed";
-    return NextResponse.json({ error: msg }, { status: 422 });
-  }
-
-  // --- SHA-256 dedup ---
-  const sha256 = createHash("sha256").update(processed.main).digest("hex");
-  const { data: existing } = await supabase
-    .from("media_assets")
-    .select("id, url, thumb_url")
-    .eq("owner_id", user.id)
-    .eq("sha256", sha256)
-    .is("deleted_at", null)
-    .limit(1)
-    .maybeSingle();
-
-  if (existing) {
-    return NextResponse.json({
-      assetId:  existing.id,
-      url:      existing.url,
-      thumbUrl: existing.thumb_url,
-      width:    processed.width,
-      height:   processed.height,
-      bytes:    processed.bytes,
-    });
-  }
-
-  // --- Upload to Hostinger ---
-  const assetId = randomUUID();
-  const baseRemotePath = `rm/${user.id}/chat/${chatId ?? "general"}/${assetId}`;
-
-  let mainUrl: string;
-  let thumbUrl: string;
-  try {
-    [mainUrl, thumbUrl] = await Promise.all([
-      uploadToHostinger(processed.main,  `${baseRemotePath}-main.webp`),
-      uploadToHostinger(processed.thumb, `${baseRemotePath}-thumb.webp`),
-    ]);
-  } catch (err) {
-    console.error("[media/upload] Hostinger upload failed:", err);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
-  }
-
-  // --- Persist metadata ---
   await supabase.from("media_assets").insert({
-    id:         assetId,
-    owner_id:   user.id,
-    chat_id:    chatId,
-    url:        mainUrl,
-    thumb_url:  thumbUrl,
-    mime_type:  "image/webp",
-    size_bytes: processed.bytes,
-    width:      processed.width,
-    height:     processed.height,
-    sha256,
+    id: assetId,
+    owner_id: user.id,
+    chat_id: chatId,
+    url: mainUrl!,
+    thumb_url: thumbUrl,
+    mime_type: detectedMime,
+    size_bytes: buffer.length,
   });
 
   return NextResponse.json({
     assetId,
-    url:      mainUrl,
-    thumbUrl: thumbUrl,
-    width:    processed.width,
-    height:   processed.height,
-    bytes:    processed.bytes,
+    url: mainUrl!,
+    thumbUrl,
+    mimeType: detectedMime,
   });
 }

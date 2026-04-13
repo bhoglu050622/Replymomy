@@ -9,11 +9,23 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const type = (searchParams.get("type") ?? "mommy") as "mommy" | "member";
 
-  const table = type === "member" ? "member_applications" : "mommy_applications";
+  const memberCols =
+    "id, email, full_name, age, city, occupation, income_bracket, motivation, referral_source, status, reviewed_by, reviewed_at, invitation_code, ai_review, created_at, gender, pronouns";
+  const mommyCols =
+    "id, email, full_name, age, instagram, city, motivation, status, reviewed_by, reviewed_at, invitation_code, ai_review, created_at, gender, pronouns";
+
+  if (type === "member") {
+    const { data, error } = await admin
+      .from("member_applications")
+      .select(memberCols)
+      .order("created_at", { ascending: false });
+    if (error) return NextResponse.json({ error: "Failed" }, { status: 500 });
+    return NextResponse.json({ applications: data });
+  }
 
   const { data, error } = await admin
-    .from(table)
-    .select("*")
+    .from("mommy_applications")
+    .select(mommyCols)
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: "Failed" }, { status: 500 });

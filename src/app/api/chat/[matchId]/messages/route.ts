@@ -9,6 +9,7 @@ const sendSchema = z.object({
     assetId: z.string(),
     url: z.string(),
     thumbUrl: z.string().nullable(),
+    mimeType: z.string(),
   })).max(5).default([]),
 });
 
@@ -41,7 +42,7 @@ export async function GET(
   const { data, error } = await admin
     .from("messages")
     .select(`id, chat_id, sender_id, content, attachments, reactions, edited_at, deleted_at, created_at,
-             sender:users!messages_sender_id_fkey(id, profiles(display_name, photo_url))`)
+             sender:users!messages_sender_id_fkey(id, profiles(display_name))`)
     .eq("chat_id", `match-${matchId}`)
     .is("deleted_at", null)
     .order("created_at", { ascending: true })
@@ -79,6 +80,7 @@ export async function POST(
         asset_id: a.assetId,
         url: a.url,
         thumb_url: a.thumbUrl,
+        mime_type: a.mimeType,
       })),
     })
     .select()

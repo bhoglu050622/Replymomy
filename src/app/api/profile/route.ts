@@ -7,7 +7,6 @@ const schema = z.object({
   bio: z.string().optional(),
   headline: z.string().max(80).optional(),
   desires: z.array(z.string()).max(12).optional(),
-  photo_urls: z.array(z.string()).max(8).optional(),
   date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   location_city: z.string().max(100).optional(),
   location_country: z.string().max(100).optional(),
@@ -20,7 +19,6 @@ const schema = z.object({
   show_online_status: z.boolean().optional(),
   show_last_active: z.boolean().optional(),
   allow_direct_messages: z.boolean().optional(),
-  blur_photos_for_free: z.boolean().optional(),
   notification_preferences: z.record(z.string(), z.boolean()).optional(),
 });
 

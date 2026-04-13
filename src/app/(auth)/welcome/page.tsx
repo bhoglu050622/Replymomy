@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { GoldCtaButton } from "@/components/shared/gold-cta-button";
+import { VelvetCurtain } from "@/components/animations/velvet-curtain";
 import { Suspense } from "react";
 
 function WelcomeContent() {
@@ -95,7 +96,9 @@ function WelcomeContent() {
 export default function WelcomePage() {
   return (
     <Suspense fallback={null}>
-      <WelcomeContent />
+      <VelvetCurtain>
+        <WelcomeContent />
+      </VelvetCurtain>
     </Suspense>
   );
 }

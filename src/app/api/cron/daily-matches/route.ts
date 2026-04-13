@@ -10,7 +10,7 @@ import type { User, Profile } from "@/types/database";
 type UserWithProfile = User & { profiles: Profile };
 
 // POST /api/cron/daily-matches — generates daily curated matches for all active members.
-// Protected by CRON_SECRET. Triggered by Vercel Cron at midnight UTC.
+// Protected by CRON_SECRET. Schedule via your host (e.g. cron at midnight UTC).
 export async function POST(req: Request) {
   const auth = req.headers.get("authorization");
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {

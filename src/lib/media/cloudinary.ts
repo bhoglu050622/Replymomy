@@ -13,14 +13,16 @@ function base64Auth(): string {
 export async function uploadBuffer(
   buffer: Buffer,
   publicId: string,
-  resourceType: "image" | "raw" = "image"
+  resourceType: "image" | "raw" | "video" = "image"
 ): Promise<{ url: string; secureUrl: string; bytes: number }> {
   const form = new FormData();
 
   // Convert buffer → Blob for FormData (use Uint8Array to satisfy strict FormData typings)
-  const blob = new Blob([new Uint8Array(buffer)], {
-    type: resourceType === "image" ? "image/webp" : "application/octet-stream",
-  });
+  const blobType =
+    resourceType === "image" ? "image/webp"
+    : resourceType === "video" ? "video/mp4"
+    : "application/octet-stream";
+  const blob = new Blob([new Uint8Array(buffer)], { type: blobType });
   form.append("file", blob, "upload");
   form.append("public_id", publicId);
   form.append("overwrite", "true");
@@ -49,7 +51,7 @@ export async function uploadBuffer(
  */
 export async function deleteAsset(
   publicId: string,
-  resourceType: "image" | "raw" = "image"
+  resourceType: "image" | "raw" | "video" = "image"
 ): Promise<void> {
   try {
     const form = new FormData();

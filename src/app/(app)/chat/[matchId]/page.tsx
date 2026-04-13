@@ -4,9 +4,10 @@ import { use, useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft, Send, Gift, MoreVertical, Trash2, Edit2,
-  Smile, X, Check, Image as ImageIcon,
+  Smile, X, Check, FileText, Camera,
 } from "lucide-react";
-import Image from "next/image";
+import { CameraCapture } from "@/components/chat/camera-capture";
+import { ProfilePlaceholder } from "@/components/shared/profile-placeholder";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,12 @@ import { createClient } from "@/lib/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { MEDIA_CONFIG } from "@/lib/media/config";
 
-interface Attachment { asset_id: string; url: string; thumb_url: string | null }
+interface Attachment {
+  asset_id: string;
+  url: string;
+  thumb_url: string | null;
+  mime_type?: string;
+}
 interface Message {
   id: string;
   sender_id: string;
@@ -24,9 +30,9 @@ interface Message {
   edited_at: string | null;
   deleted_at: string | null;
   created_at: string;
-  sender?: { id: string; profiles: { display_name: string; photo_url: string | null } | null } | null;
+  sender?: { id: string; profiles: { display_name: string } | null } | null;
 }
-interface PendingAttachment { assetId: string; url: string; thumbUrl: string | null }
+interface PendingAttachment { assetId: string; url: string; thumbUrl: string | null; mimeType: string }
 
 const REACTIONS = ["❤️", "🔥", "👍", "😂", "😮", "🙏"];
 
@@ -38,7 +44,6 @@ export default function ChatPage({ params }: { params: Promise<{ matchId: string
   const [messages, setMessages] = useState<Message[]>([]);
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const [otherName, setOtherName] = useState("Match");
-  const [otherPhoto, setOtherPhoto] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -46,8 +51,9 @@ export default function ChatPage({ params }: { params: Promise<{ matchId: string
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [showReactions, setShowReactions] = useState<string | null>(null);
-  const [attachedImages, setAttachedImages] = useState<PendingAttachment[]>([]);
-  const [uploadingImage, setUploadingImage] = useState(false);
+   const [attachedFiles, setAttachedFiles] = useState<PendingAttachment[]>([]);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -68,7 +74,6 @@ export default function ChatPage({ params }: { params: Promise<{ matchId: string
         const other = (d.messages ?? []).find((m: Message) => m.sender_id !== user.id);
         if (other?.sender?.profiles) {
           setOtherName(other.sender.profiles.display_name ?? "Match");
-          setOtherPhoto(other.sender.profiles.photo_url ?? null);
         }
 
         // Also fetch from chat list for name
@@ -78,7 +83,6 @@ export default function ChatPage({ params }: { params: Promise<{ matchId: string
           const chat = chatData.chats?.find((c: { matchId: string }) => c.matchId === matchId);
           if (chat) {
             setOtherName(chat.otherName);
-            setOtherPhoto(chat.otherPhoto);
           }
         }
       }
@@ -148,12 +152,12 @@ export default function ChatPage({ params }: { params: Promise<{ matchId: string
   }, []);
 
   const send = useCallback(async () => {
-    if ((!input.trim() && attachedImages.length === 0) || sending) return;
+    if ((!input.trim() && attachedFiles.length === 0) || sending) return;
     setSending(true);
     const text = input.trim();
     setInput("");
-    const imgs = attachedImages;
-    setAttachedImages([]);
+    const imgs = attachedFiles;
+    setAttachedFiles([]);
 
     try {
       const res = await fetch(`/api/chat/${matchId}/messages`, {
@@ -161,22 +165,22 @@ export default function ChatPage({ params }: { params: Promise<{ matchId: string
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: text || null,
-          attachments: imgs.map((i) => ({ assetId: i.assetId, url: i.url, thumbUrl: i.thumbUrl })),
+          attachments: imgs.map((i) => ({ assetId: i.assetId, url: i.url, thumbUrl: i.thumbUrl, mimeType: i.mimeType })),
         }),
       });
       if (!res.ok) {
         setInput(text);
-        setAttachedImages(imgs);
+        setAttachedFiles(imgs);
         toast.error("Failed to send.");
       }
     } catch {
       setInput(text);
-      setAttachedImages(imgs);
+      setAttachedFiles(imgs);
       toast.error("Failed to send.");
     } finally {
       setSending(false);
     }
-  }, [input, attachedImages, sending, matchId]);
+  }, [input, attachedFiles, sending, matchId]);
 
   async function deleteMessage(id: string) {
     const res = await fetch(`/api/chat/${matchId}/messages/${id}`, { method: "DELETE" });
@@ -207,15 +211,12 @@ export default function ChatPage({ params }: { params: Promise<{ matchId: string
     setActiveMessageId(null);
   }
 
-  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    if (attachedImages.length >= MEDIA_CONFIG.MAX_ATTACHMENTS) {
+  async function uploadFile(file: File) {
+    if (attachedFiles.length >= MEDIA_CONFIG.MAX_ATTACHMENTS) {
       toast.error(`Max ${MEDIA_CONFIG.MAX_ATTACHMENTS} attachments`);
       return;
     }
-    setUploadingImage(true);
+    setUploadingFile(true);
     try {
       const form = new FormData();
       form.append("file", file);
@@ -223,12 +224,23 @@ export default function ChatPage({ params }: { params: Promise<{ matchId: string
       const res = await fetch("/api/media/upload", { method: "POST", body: form });
       const data = await res.json();
       if (!res.ok) { toast.error(data.error ?? "Upload failed"); return; }
-      setAttachedImages((prev) => [...prev, { assetId: data.assetId, url: data.url, thumbUrl: data.thumbUrl ?? null }]);
+      setAttachedFiles((prev) => [...prev, { assetId: data.assetId, url: data.url, thumbUrl: data.thumbUrl ?? null, mimeType: data.mimeType ?? "application/octet-stream" }]);
     } catch {
       toast.error("Upload failed");
     } finally {
-      setUploadingImage(false);
+      setUploadingFile(false);
     }
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    await uploadFile(file);
+  }
+
+  async function handleCameraCapture(file: File) {
+    await uploadFile(file);
   }
 
   return (
@@ -238,8 +250,8 @@ export default function ChatPage({ params }: { params: Promise<{ matchId: string
         <button onClick={() => router.push("/chat")} className="text-ivory/60 hover:text-ivory transition-colors">
           <ArrowLeft className="size-5" />
         </button>
-        <div className="relative size-10 rounded-full bg-gradient-to-br from-burgundy to-smoke border border-champagne/30 overflow-hidden shrink-0">
-          {otherPhoto && <Image src={otherPhoto} alt={otherName} fill className="object-cover" sizes="40px" />}
+        <div className="relative size-10 rounded-full border border-champagne/30 overflow-hidden shrink-0">
+          <ProfilePlaceholder seed={matchId} width={40} height={40} className="w-full h-full" />
         </div>
         <div className="font-headline text-xl text-ivory">{loading ? "Loading..." : otherName}</div>
       </div>
@@ -293,12 +305,44 @@ export default function ChatPage({ params }: { params: Promise<{ matchId: string
                     <>
                       {msg.content && <p className="leading-relaxed">{msg.content}</p>}
                       {(msg.attachments ?? []).length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {(msg.attachments ?? []).map((att, i) => (
-                            <a key={i} href={att.url} target="_blank" rel="noreferrer" className="block rounded-xl overflow-hidden">
-                              <Image src={att.thumb_url ?? att.url} alt="Shared image" width={160} height={120} className="object-cover rounded-xl" />
-                            </a>
-                          ))}
+                        <div className="mt-2 flex flex-col gap-2">
+                          {(msg.attachments ?? []).map((att, i) => {
+                            const mime = att.mime_type ?? "";
+                            if (mime.startsWith("image/")) {
+                              return (
+                                <img
+                                  key={i}
+                                  src={att.thumb_url ?? att.url}
+                                  alt="Image"
+                                  className="rounded-xl max-w-[240px] cursor-pointer hover:opacity-90 transition-opacity"
+                                  onClick={() => window.open(att.url, "_blank")}
+                                />
+                              );
+                            }
+                            if (mime.startsWith("video/")) {
+                              return (
+                                <video
+                                  key={i}
+                                  src={att.url}
+                                  controls
+                                  playsInline
+                                  className="rounded-xl max-w-[280px] max-h-[200px]"
+                                />
+                              );
+                            }
+                            return (
+                              <a
+                                key={i}
+                                href={att.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 text-body-sm underline text-champagne/90 hover:text-champagne"
+                              >
+                                <FileText className="size-4 shrink-0" />
+                                Attachment {i + 1}
+                              </a>
+                            );
+                          })}
                         </div>
                       )}
                       {Object.keys(reactions).length > 0 && (
@@ -376,37 +420,65 @@ export default function ChatPage({ params }: { params: Promise<{ matchId: string
 
       {/* Input */}
       <div className="px-6 py-4 border-t border-champagne/10 bg-obsidian/95 backdrop-blur-xl shrink-0">
-        {attachedImages.length > 0 && (
+        {attachedFiles.length > 0 && (
           <div className="mb-3 flex items-center gap-2 flex-wrap">
-            {attachedImages.map((img) => (
-              <div key={img.assetId} className="relative">
-                <Image src={img.thumbUrl ?? img.url} alt="Attached" width={60} height={60} className="rounded-lg object-cover" />
+            {attachedFiles.map((f) => (
+              <div key={f.assetId} className="relative flex items-center gap-2 px-3 py-2 rounded-xl bg-smoke border border-champagne/20 text-body-sm text-ivory">
+                {f.mimeType.startsWith("image/") ? (
+                  <img src={f.url} alt="" className="size-8 rounded-lg object-cover" />
+                ) : f.mimeType.startsWith("video/") ? (
+                  <div className="size-8 rounded-lg bg-champagne/10 flex items-center justify-center">
+                    <Camera className="size-4 text-champagne" />
+                  </div>
+                ) : (
+                  <FileText className="size-4 text-champagne" />
+                )}
                 <button
-                  onClick={() => setAttachedImages((prev) => prev.filter((a) => a.assetId !== img.assetId))}
-                  className="absolute -top-1 -right-1 size-5 bg-smoke border border-champagne/30 rounded-full flex items-center justify-center text-ivory/60 hover:text-ivory"
+                  type="button"
+                  onClick={() => setAttachedFiles((prev) => prev.filter((a) => a.assetId !== f.assetId))}
+                  className="ml-1 text-ivory/50 hover:text-ivory"
+                  aria-label="Remove attachment"
                 >
                   <X className="size-3" />
                 </button>
               </div>
             ))}
-            <span className="text-body-sm text-ivory/50">{attachedImages.length}/{MEDIA_CONFIG.MAX_ATTACHMENTS}</span>
+            <span className="text-body-sm text-ivory/50">{attachedFiles.length}/{MEDIA_CONFIG.MAX_ATTACHMENTS}</span>
           </div>
         )}
 
         <div className="flex items-end gap-3">
-          <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,application/pdf,.jpg,.jpeg,.png,.webp,.mp4,.webm,.pdf"
+            className="hidden"
+          />
           <Button
             variant="ghost" size="icon"
             className="text-ivory/40 hover:text-champagne shrink-0"
             onClick={() => {
-              if (attachedImages.length >= MEDIA_CONFIG.MAX_ATTACHMENTS) { toast.error(`Max ${MEDIA_CONFIG.MAX_ATTACHMENTS} attachments`); return; }
+              if (attachedFiles.length >= MEDIA_CONFIG.MAX_ATTACHMENTS) { toast.error(`Max ${MEDIA_CONFIG.MAX_ATTACHMENTS} attachments`); return; }
               fileInputRef.current?.click();
             }}
-            disabled={uploadingImage || attachedImages.length >= MEDIA_CONFIG.MAX_ATTACHMENTS}
+            disabled={uploadingFile || attachedFiles.length >= MEDIA_CONFIG.MAX_ATTACHMENTS}
           >
-            {uploadingImage
+            {uploadingFile
               ? <div className="size-4 border-2 border-champagne/40 border-t-champagne rounded-full animate-spin" />
-              : <ImageIcon className="size-5" />}
+              : <FileText className="size-5" />}
+          </Button>
+          <Button
+            variant="ghost" size="icon"
+            className="text-ivory/40 hover:text-champagne shrink-0"
+            onClick={() => {
+              if (attachedFiles.length >= MEDIA_CONFIG.MAX_ATTACHMENTS) { toast.error(`Max ${MEDIA_CONFIG.MAX_ATTACHMENTS} attachments`); return; }
+              setCameraOpen(true);
+            }}
+            disabled={uploadingFile || attachedFiles.length >= MEDIA_CONFIG.MAX_ATTACHMENTS}
+            aria-label="Open camera"
+          >
+            <Camera className="size-5" />
           </Button>
           <Button variant="ghost" size="icon" className="text-ivory/40 hover:text-champagne shrink-0" onClick={() => router.push("/gifts")}>
             <Gift className="size-5" />
@@ -415,7 +487,7 @@ export default function ChatPage({ params }: { params: Promise<{ matchId: string
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-            placeholder={attachedImages.length > 0 ? "Add a message (optional)..." : "Say something..."}
+            placeholder={attachedFiles.length > 0 ? "Add a message (optional)..." : "Say something..."}
             rows={1}
             className="flex-1 bg-smoke border border-champagne/20 text-ivory rounded-2xl px-4 py-3 text-body-md resize-none focus:outline-none focus:border-champagne/50 transition-colors placeholder:text-ivory/30"
             style={{ minHeight: "48px", maxHeight: "120px" }}
@@ -423,12 +495,18 @@ export default function ChatPage({ params }: { params: Promise<{ matchId: string
           <Button
             variant="gold" size="icon" className="rounded-full shrink-0"
             onClick={send}
-            disabled={(!input.trim() && attachedImages.length === 0) || sending}
+            disabled={(!input.trim() && attachedFiles.length === 0) || sending}
           >
             <Send className="size-4" />
           </Button>
         </div>
       </div>
+
+      <CameraCapture
+        open={cameraOpen}
+        onClose={() => setCameraOpen(false)}
+        onCapture={handleCameraCapture}
+      />
     </div>
   );
 }

@@ -16,11 +16,13 @@ import {
   BarChart2,
   Menu,
   X,
+  Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/inbox", label: "Managed Inbox", icon: Inbox, exact: false },
   { href: "/admin/crm/users", label: "Users CRM", icon: Users, exact: false },
   { href: "/admin/crm/applicants", label: "Applicants CRM", icon: ClipboardList, exact: false },
   { href: "/admin/applications", label: "Applications", icon: FileCheck, exact: false },

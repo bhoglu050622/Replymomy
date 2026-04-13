@@ -7,8 +7,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ExpiryCountdown } from "@/components/matches/expiry-countdown";
 import { IcebreakerDialog } from "@/components/matches/icebreaker-dialog";
-import Image from "next/image";
 import posthog from "posthog-js";
+import { ProfilePlaceholder } from "@/components/shared/profile-placeholder";
 
 interface Props {
   matchId: string;
@@ -24,7 +24,6 @@ interface Props {
     city: string;
     bio: string;
     desires: string[];
-    photoUrls: string[];
     tier: string;
   };
 }
@@ -91,16 +90,8 @@ export function MatchDetailClient({
         <ExpiryCountdown expiresAt={expiresAt} />
       </div>
 
-      {/* Photo */}
       <div className="aspect-[3/4] rounded-2xl bg-gradient-to-b from-burgundy via-smoke to-obsidian border border-champagne/30 mb-8 relative overflow-hidden">
-        {profile.photoUrls[0] ? (
-          <Image
-            src={profile.photoUrls[0]}
-            alt={profile.displayName}
-            fill
-            className="object-cover"
-          />
-        ) : null}
+        <ProfilePlaceholder seed={matchId} width={600} height={800} className="w-full h-full" />
         <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-transparent" />
         <div className="absolute bottom-0 inset-x-0 p-8">
           <h1 className="font-headline text-5xl text-ivory mb-2">

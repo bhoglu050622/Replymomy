@@ -20,7 +20,7 @@ export default async function MatchDetailPage({
       member_id, mommy_id, member_response, mommy_response,
       member_responded, mommy_responded, match_intro,
       mommy_profile:profiles!matches_mommy_id_fkey(
-        display_name, date_of_birth, location_city, bio, desires, photo_urls, mommy_tier
+        display_name, date_of_birth, location_city, bio, desires, mommy_tier
       )
     `)
     .eq("id", matchId)
@@ -48,7 +48,6 @@ export default async function MatchDetailPage({
     location_city: string | null;
     bio: string | null;
     desires: string[] | null;
-    photo_urls: string[] | null;
     mommy_tier: string | null;
   };
 
@@ -71,7 +70,6 @@ export default async function MatchDetailPage({
         city: profile?.location_city ?? "",
         bio: profile?.bio ?? "",
         desires: profile?.desires ?? [],
-        photoUrls: profile?.photo_urls ?? [],
         tier: profile?.mommy_tier ?? "",
       }}
     />

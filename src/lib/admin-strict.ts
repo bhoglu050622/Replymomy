@@ -4,19 +4,12 @@ import type { User } from "@supabase/supabase-js";
  * Strict admin (allowlisted email + email/password identity only):
  * - Explicit opt-in: ADMIN_ENFORCE_EMAIL=true
  * - Explicit opt-out: ADMIN_ENFORCE_EMAIL=false (overrides everything below)
- * - Vercel production: VERCEL_ENV=production
- * - Self-hosted production (e.g. Hostinger): NODE_ENV=production and no VERCEL_ENV,
- *   so Vercel preview (VERCEL_ENV=preview) stays non-strict.
+ * - Production (e.g. Hostinger): NODE_ENV=production enables strict unless opted out above
  */
 export function isAdminStrictEnforcement(): boolean {
   if (process.env.ADMIN_ENFORCE_EMAIL === "false") return false;
   if (process.env.ADMIN_ENFORCE_EMAIL === "true") return true;
-  if (process.env.VERCEL_ENV === "production") return true;
-  // Self-hosted (Hostinger, etc.): production Node without Vercel env
-  if (process.env.NODE_ENV === "production" && !process.env.VERCEL_ENV) {
-    return true;
-  }
-  return false;
+  return process.env.NODE_ENV === "production";
 }
 
 export function getAdminAllowedEmail(): string {
