@@ -48,6 +48,11 @@ ht = ht.replace("PassengerMinInstances 1\n", "");
 if (!ht.includes("v8-pool-size")) {
   ht = ht.replace(/SetEnv NODE_OPTIONS "([^"]+)"/, 'SetEnv NODE_OPTIONS "$1 --v8-pool-size=0"');
 }
+// Ensure --env-file loads runtime env vars (SFTP creds, API keys not baked at build time)
+const ENV_FILE = "/home/u228387150/domains/replymommy.com/public_html/.builds/config/.env";
+if (!ht.includes("env-file")) {
+  ht = ht.replace(/SetEnv NODE_OPTIONS "([^"]+)"/, `SetEnv NODE_OPTIONS "$1 --env-file=${ENV_FILE}"`);
+}
 // Ensure UV_THREADPOOL_SIZE=1 (reduces libuv pool threads from 4 to 1)
 if (!ht.includes("UV_THREADPOOL_SIZE")) {
   ht = ht.replace("SetEnv TOKIO_WORKER_THREADS 2", "SetEnv TOKIO_WORKER_THREADS 2\nSetEnv UV_THREADPOOL_SIZE 1");
