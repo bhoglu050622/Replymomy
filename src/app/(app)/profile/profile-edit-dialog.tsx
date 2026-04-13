@@ -18,21 +18,27 @@ const SUGGESTED_DESIRES = [
 
 interface Props {
   initialName: string;
+  initialHeadline: string;
   initialBio: string;
   initialDesires: string[];
   initialPhotoUrls: string[];
+  initialLocation: string;
 }
 
 export function ProfileEditDialog({
   initialName,
+  initialHeadline,
   initialBio,
   initialDesires,
   initialPhotoUrls,
+  initialLocation,
 }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(initialName);
+  const [headline, setHeadline] = useState(initialHeadline);
   const [bio, setBio] = useState(initialBio);
+  const [location, setLocation] = useState(initialLocation);
   const [desires, setDesires] = useState(initialDesires);
   const [photoUrls, setPhotoUrls] = useState(initialPhotoUrls);
   const [saving, setSaving] = useState(false);
@@ -50,11 +56,13 @@ export function ProfileEditDialog({
   const hasUnsavedChanges = useCallback(() => {
     return (
       name !== initialName ||
+      headline !== initialHeadline ||
       bio !== initialBio ||
+      location !== initialLocation ||
       JSON.stringify(desires.sort()) !== JSON.stringify(initialDesires.sort()) ||
       JSON.stringify(photoUrls) !== JSON.stringify(initialPhotoUrls)
     );
-  }, [name, bio, desires, photoUrls, initialName, initialBio, initialDesires, initialPhotoUrls]);
+  }, [name, headline, bio, location, desires, photoUrls, initialName, initialHeadline, initialBio, initialLocation, initialDesires, initialPhotoUrls]);
 
   // Warn about unsaved changes when leaving page
   useEffect(() => {
@@ -84,7 +92,9 @@ export function ProfileEditDialog({
     setOpen(false);
     // Reset to initial values
     setName(initialName);
+    setHeadline(initialHeadline);
     setBio(initialBio);
+    setLocation(initialLocation);
     setDesires(initialDesires);
     setPhotoUrls(initialPhotoUrls);
   }
@@ -148,7 +158,9 @@ export function ProfileEditDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           display_name: name,
+          headline,
           bio,
+          location_city: location,
           desires,
           photo_urls: photoUrls,
         }),
@@ -274,6 +286,31 @@ export function ProfileEditDialog({
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                className="h-11 bg-obsidian border-champagne/30 text-ivory rounded-full px-5"
+              />
+            </div>
+
+            {/* Headline */}
+            <div>
+              <label className="text-label text-ivory/50 mb-2 block">
+                Headline <span className="text-ivory/30">(shown on your card)</span>
+              </label>
+              <Input
+                value={headline}
+                onChange={(e) => setHeadline(e.target.value.slice(0, 80))}
+                placeholder="Art collector. Tokyo & NYC."
+                className="h-11 bg-obsidian border-champagne/30 text-ivory rounded-full px-5"
+              />
+              <div className="text-right text-label text-ivory/30 mt-1">{headline.length}/80</div>
+            </div>
+
+            {/* Location */}
+            <div>
+              <label className="text-label text-ivory/50 mb-2 block">City</label>
+              <Input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Mumbai, New York, London..."
                 className="h-11 bg-obsidian border-champagne/30 text-ivory rounded-full px-5"
               />
             </div>

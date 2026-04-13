@@ -39,9 +39,11 @@ export default async function ProfilePage() {
         </div>
         <ProfileEditDialog
           initialName={profile?.display_name ?? ""}
+          initialHeadline={profile?.headline ?? ""}
           initialBio={profile?.bio ?? ""}
           initialDesires={profile?.desires ?? []}
           initialPhotoUrls={profile?.photo_urls ?? []}
+          initialLocation={profile?.location_city ?? ""}
         />
       </div>
 
@@ -66,6 +68,21 @@ export default async function ProfilePage() {
           </div>
         ))}
       </div>
+
+      {/* Name + Headline */}
+      {(profile?.display_name || profile?.headline) && (
+        <div className="mb-8">
+          {profile?.display_name && (
+            <h2 className="font-headline text-3xl text-ivory mb-1">{profile.display_name}</h2>
+          )}
+          {profile?.headline && (
+            <p className="text-body-md text-champagne/70">{profile.headline}</p>
+          )}
+          {profile?.location_city && (
+            <p className="text-body-sm text-ivory/40 mt-1">{profile.location_city}</p>
+          )}
+        </div>
+      )}
 
       {/* Bio */}
       <div className="mb-8">

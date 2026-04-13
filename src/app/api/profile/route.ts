@@ -59,6 +59,20 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
     }
 
+    // Advance onboarding status: pending_profile → pending_preferences
+    const { data: userRecord } = await supabase
+      .from("users")
+      .select("status")
+      .eq("id", user!.id)
+      .single();
+
+    if (userRecord?.status === "pending_profile") {
+      await supabase
+        .from("users")
+        .update({ status: "pending_preferences" })
+        .eq("id", user!.id);
+    }
+
     return NextResponse.json({ success: true, profile });
   } catch (err) {
     if (err instanceof z.ZodError) {
