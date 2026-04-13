@@ -231,6 +231,19 @@ export default function AdminDashboardPage() {
           </div>
           <ArrowRight className="size-4 text-ivory/20 group-hover:text-champagne/50 transition-colors" />
         </Link>
+        <Link
+          href="/admin/investors"
+          className="group flex items-center justify-between p-5 rounded-2xl bg-smoke/80 border border-champagne/[0.08] hover:border-champagne/25 transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <TrendingUp className="size-5 text-champagne/60 group-hover:text-champagne transition-colors" />
+            <div>
+              <div className="text-sm font-medium text-ivory">View Investors</div>
+              <div className="text-xs text-ivory/40">Review investor interest submissions</div>
+            </div>
+          </div>
+          <ArrowRight className="size-4 text-ivory/20 group-hover:text-champagne/50 transition-colors" />
+        </Link>
       </div>
 
       {/* Storage Health */}

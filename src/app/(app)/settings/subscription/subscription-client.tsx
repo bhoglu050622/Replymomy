@@ -194,11 +194,11 @@ export function SubscriptionClient({ currentTier, browsedCount = 0 }: Props) {
           <div className="px-7 pt-7 pb-5 border-b border-champagne/[0.08]">
             <div className="text-label text-champagne mb-1">Upgrading to {tierName}</div>
             <h2 className="text-display-md text-ivory">
-              Build with us.{" "}
-              <span className="italic text-champagne">Together.</span>
+              Thank you for helping us build the{" "}
+              <span className="italic text-champagne">best curated experience.</span>
             </h2>
             <p className="text-body-sm text-ivory/50 mt-2 leading-relaxed">
-              We&apos;re selectively onboarding people who are serious about finding real connections — and who want to help shape this platform. Your upgrade directly funds the next feature.
+              Every upgrade goes directly into making ReplyMommy more exclusive, more curated, and more worth your time. You&apos;re not just a subscriber — you&apos;re a founding member who shapes what this becomes.
             </p>
           </div>
 

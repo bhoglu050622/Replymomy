@@ -246,7 +246,7 @@ function PhotoGrid({
 
   // 5-photo flat grid
   return (
-    <div className="grid grid-cols-5 gap-2">
+    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
       {Array.from({ length: 5 }).map((_, i) => (
         <button
           key={i}

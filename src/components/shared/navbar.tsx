@@ -136,7 +136,13 @@ export function Navbar() {
             })}
           </div>
 
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-5">
+            <Link
+              href="/investors"
+              className="text-xs text-ivory/38 hover:text-ivory/70 transition-colors tracking-wide"
+            >
+              Investors
+            </Link>
             <Link href="/apply">
               <GoldCtaButton className="h-10 px-6 text-xs">
                 Request Invitation

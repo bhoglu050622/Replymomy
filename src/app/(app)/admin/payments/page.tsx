@@ -173,7 +173,7 @@ function PaymentRow({
   readonly?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between px-6 py-4 border-b border-champagne/[0.06] last:border-0 hover:bg-champagne/[0.02] transition-colors gap-4">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-4 border-b border-champagne/[0.06] last:border-0 hover:bg-champagne/[0.02] transition-colors gap-3">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap mb-0.5">
           <span className="text-sm font-medium text-ivory truncate">
@@ -193,7 +193,7 @@ function PaymentRow({
         <div className="text-xs text-ivory/20 mt-0.5">
           {new Date(p.created_at).toLocaleString()}
           {p.approved_at && (
-            <span className="ml-2">
+            <span className="ml-2 block sm:inline">
               · {p.status === "approved" ? "approved" : "rejected"}{" "}
               {new Date(p.approved_at).toLocaleString()}
             </span>
@@ -201,7 +201,7 @@ function PaymentRow({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-2 sm:shrink-0">
         {!readonly && p.status === "pending" ? (
           <>
             <Button
@@ -209,7 +209,7 @@ function PaymentRow({
               size="xs"
               disabled={!!acting}
               onClick={onApprove}
-              className="rounded-full text-xs"
+              className="rounded-full text-xs flex-1 sm:flex-none"
             >
               {acting === p.id + "approve" ? (
                 <div className="size-3 rounded-full border-2 border-obsidian/40 border-t-obsidian animate-spin" />
@@ -222,7 +222,7 @@ function PaymentRow({
               size="xs"
               disabled={!!acting}
               onClick={onReject}
-              className="rounded-full text-xs text-ivory/40 hover:text-red-400"
+              className="rounded-full text-xs flex-1 sm:flex-none text-ivory/40 hover:text-red-400"
             >
               {acting === p.id + "reject" ? (
                 <div className="size-3 rounded-full border-2 border-ivory/20 border-t-ivory/60 animate-spin" />

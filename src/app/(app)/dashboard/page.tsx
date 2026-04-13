@@ -164,7 +164,7 @@ export default async function DashboardPage() {
           <h2 className="text-display-md text-ivory">Icon of the Week</h2>
         </div>
         <div
-          className="relative h-64 rounded-2xl overflow-hidden border border-champagne/30"
+          className="relative h-48 sm:h-64 rounded-2xl overflow-hidden border border-champagne/30"
           style={{
             backgroundImage: "url('/spotlight-bg.jpg')",
             backgroundSize: "cover",
@@ -176,7 +176,7 @@ export default async function DashboardPage() {
           <div className="relative h-full flex items-center px-10">
             <div>
               <div className="text-label text-champagne mb-3">This Week</div>
-              <h3 className="font-headline text-5xl text-ivory mb-2">
+              <h3 className="font-headline text-3xl sm:text-5xl text-ivory mb-2">
                 {(spotlight?.profiles as { display_name?: string } | null)?.display_name ?? "TBA"}
               </h3>
               <p className="text-body-md text-ivory/70 mb-4 max-w-md">

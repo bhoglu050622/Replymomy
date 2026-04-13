@@ -146,7 +146,7 @@ export default async function UserProfilePage({
 
           {/* Free items */}
           {freeItems.length > 0 && (
-            <div className="grid grid-cols-3 gap-3 mb-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
               {freeItems.map((item) => (
                 <div key={item.id} className="aspect-square rounded-xl overflow-hidden border border-champagne/20">
                   <Image src={item.url} alt="" fill className="object-cover" sizes="(max-width: 768px) 33vw, 200px" />
