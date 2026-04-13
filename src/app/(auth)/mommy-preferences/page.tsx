@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
 import { GoldCtaButton } from "@/components/shared/gold-cta-button";
 import { cn } from "@/lib/utils";
 const MEMBER_TIERS = [
@@ -26,8 +25,6 @@ export default function MommyPreferencesPage() {
   const [ageMin, setAgeMin] = useState(28);
   const [ageMax, setAgeMax] = useState(50);
   const [tiers, setTiers] = useState<string[]>([]);
-  const [cities, setCities] = useState<string[]>([]);
-  const [cityInput, setCityInput] = useState("");
   const [maxMatches, setMaxMatches] = useState(3);
   const [responseTime, setResponseTime] = useState("24h");
   const [loading, setLoading] = useState(false);
@@ -36,28 +33,7 @@ export default function MommyPreferencesPage() {
   function toggleTier(v: string) {
     setTiers((p) => p.includes(v) ? p.filter((x) => x !== v) : [...p, v]);
   }
-  function addCity(value: string) {
-    const trimmed = value.trim();
-    if (trimmed && !cities.includes(trimmed)) {
-      setCities((p) => [...p, trimmed]);
-    }
-    setCityInput("");
-  }
-
-  function handleCityKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      addCity(cityInput);
-    } else if (e.key === "Backspace" && !cityInput && cities.length > 0) {
-      setCities((p) => p.slice(0, -1));
-    }
-  }
-
-  function removeCity(city: string) {
-    setCities((p) => p.filter((c) => c !== city));
-  }
-
-  async function handleSubmit(e: FormEvent) {
+async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -69,8 +45,7 @@ export default function MommyPreferencesPage() {
         body: JSON.stringify({
           preferred_age_min: ageMin,
           preferred_age_max: ageMax,
-          preferred_locations: cities,
-          preferred_member_tiers: tiers.length > 0 ? tiers : ["pro", "unlimited"],
+preferred_member_tiers: tiers.length > 0 ? tiers : ["pro", "unlimited"],
           max_active_matches: maxMatches,
           response_commitment: responseTime,
         }),
@@ -156,39 +131,6 @@ export default function MommyPreferencesPage() {
                 <div className="text-[10px] text-current/60 mt-0.5">{t.desc}</div>
               </button>
             ))}
-          </div>
-        </div>
-
-        {/* Available cities */}
-        <div>
-          <label className="text-label text-ivory/50 mb-3 block">
-            Your cities <span className="text-ivory/30">(type and press Enter)</span>
-          </label>
-          <div className="min-h-[44px] flex flex-wrap gap-2 p-3 rounded-2xl bg-smoke border border-champagne/20 focus-within:border-champagne/50 transition-colors">
-            {cities.map((c) => (
-              <span
-                key={c}
-                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-champagne text-obsidian text-body-sm"
-              >
-                {c}
-                <button
-                  type="button"
-                  onClick={() => removeCity(c)}
-                  className="hover:opacity-70 transition-opacity"
-                >
-                  <X className="size-3" />
-                </button>
-              </span>
-            ))}
-            <input
-              type="text"
-              value={cityInput}
-              onChange={(e) => setCityInput(e.target.value)}
-              onKeyDown={handleCityKeyDown}
-              onBlur={() => addCity(cityInput)}
-              placeholder={cities.length === 0 ? "Mumbai, London, Dubai..." : "Add a city..."}
-              className="flex-1 min-w-[120px] bg-transparent text-ivory text-body-sm outline-none placeholder:text-ivory/30"
-            />
           </div>
         </div>
 
