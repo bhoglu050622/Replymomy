@@ -1,25 +1,13 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/supabase/require-auth";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdminApi } from "@/lib/supabase/require-admin-api";
 import { MEDIA_CONFIG } from "@/lib/media/config";
 
 // GET /api/admin/storage-health
 // Returns media storage metrics and upgrade-recommended flag for the admin dashboard.
 export async function GET() {
-  const { user, supabase: userClient, response } = await requireAuth();
-  if (response) return response;
-
-  // Admin check
-  const { data: userRecord } = await userClient
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  if (userRecord?.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  const supabase = createAdminClient();
+  const result = await requireAdminApi();
+  if ("error" in result) return result.error;
+  const { admin: supabase } = result;
 
   // Live assets
   const { data: liveRows } = await supabase

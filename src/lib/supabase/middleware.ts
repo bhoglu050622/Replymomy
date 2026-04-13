@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { passesStrictAdminSession } from "@/lib/admin-strict";
 
 export async function updateSession(request: NextRequest) {
   const supabaseResponse = NextResponse.next({ request });
@@ -90,7 +91,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Admin routes: always block non-admins, even if DB query fails
+  // Admin UI: block non-admins; in production, only allowlisted email + email identity
   if (user && pathname.startsWith("/admin") && !pathname.startsWith("/api/")) {
     try {
       const { data: adminCheck } = await supabase
@@ -99,6 +100,9 @@ export async function updateSession(request: NextRequest) {
         .eq("id", user.id)
         .single();
       if (adminCheck?.role !== "admin") {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+      if (!passesStrictAdminSession(user)) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
     } catch {

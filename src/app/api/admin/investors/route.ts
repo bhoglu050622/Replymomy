@@ -1,27 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireAuth } from "@/lib/supabase/require-auth";
-import { createAdminClient } from "@/lib/supabase/admin";
-
-async function requireAdmin() {
-  const { user, supabase, response } = await requireAuth();
-  if (response) return { error: response };
-
-  const { data: userRecord } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user!.id)
-    .single();
-
-  if (userRecord?.role !== "admin") {
-    return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
-  }
-
-  return { user: user!, admin: createAdminClient() };
-}
+import { requireAdminApi } from "@/lib/supabase/require-admin-api";
 
 export async function GET() {
-  const result = await requireAdmin();
+  const result = await requireAdminApi();
   if ("error" in result) return result.error;
   const { admin } = result;
 
@@ -40,7 +22,7 @@ const patchSchema = z.object({
 });
 
 export async function PATCH(req: Request) {
-  const result = await requireAdmin();
+  const result = await requireAdminApi();
   if ("error" in result) return result.error;
   const { admin } = result;
 

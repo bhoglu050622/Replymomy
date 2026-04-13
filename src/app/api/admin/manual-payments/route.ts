@@ -1,25 +1,13 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/supabase/require-auth";
-import { createAdminClient } from "@/lib/supabase/admin";
-
-async function requireAdmin() {
-  const { user, supabase, response } = await requireAuth();
-  if (response) return { user: null, response };
-  const { data } = await supabase.from("users").select("role").eq("id", user!.id).single();
-  if (data?.role !== "admin") {
-    return { user: null, response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
-  }
-  return { user, response: null };
-}
+import { requireAdminApi } from "@/lib/supabase/require-admin-api";
 
 // GET /api/admin/manual-payments — list all (default: pending first)
 export async function GET() {
-  const { response } = await requireAdmin();
-  if (response) return response;
+  const result = await requireAdminApi();
+  if ("error" in result) return result.error;
+  const { admin } = result;
 
-  const supabase = createAdminClient();
-
-  const { data, error } = await supabase
+  const { data, error } = await admin
     .from("manual_payments")
     .select(`
       id,
@@ -46,8 +34,9 @@ export async function GET() {
 
 // PATCH /api/admin/manual-payments — approve or reject
 export async function PATCH(req: Request) {
-  const { user, response } = await requireAdmin();
-  if (response) return response;
+  const result = await requireAdminApi();
+  if ("error" in result) return result.error;
+  const { user, admin } = result;
 
   const { id, action, notes } = await req.json() as {
     id: string;
@@ -59,10 +48,8 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Invalid" }, { status: 400 });
   }
 
-  const supabase = createAdminClient();
-
   // Fetch the payment to get user_id + tier
-  const { data: payment, error: fetchErr } = await supabase
+  const { data: payment, error: fetchErr } = await admin
     .from("manual_payments")
     .select("user_id, tier, status")
     .eq("id", id)
@@ -76,19 +63,19 @@ export async function PATCH(req: Request) {
   }
 
   // Update payment status
-  await supabase
+  await admin
     .from("manual_payments")
     .update({
       status: action === "approve" ? "approved" : "rejected",
       approved_at: new Date().toISOString(),
-      approved_by: user!.id,
+      approved_by: user.id,
       notes: notes ?? null,
     })
     .eq("id", id);
 
   // On approval: upgrade user tier + ensure status is active
   if (action === "approve") {
-    await supabase
+    await admin
       .from("users")
       .update({
         member_tier: payment.tier,

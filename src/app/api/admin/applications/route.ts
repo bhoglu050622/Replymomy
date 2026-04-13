@@ -1,28 +1,17 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/supabase/require-auth";
-import { createAdminClient } from "@/lib/supabase/admin";
-
-async function requireAdmin() {
-  const { user, supabase, response } = await requireAuth();
-  if (response) return { user: null, response };
-  const { data } = await supabase.from("users").select("role").eq("id", user!.id).single();
-  if (data?.role !== "admin") {
-    return { user: null, response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
-  }
-  return { user, response: null };
-}
+import { requireAdminApi } from "@/lib/supabase/require-admin-api";
 
 export async function GET(req: Request) {
-  const { response } = await requireAdmin();
-  if (response) return response;
+  const result = await requireAdminApi();
+  if ("error" in result) return result.error;
+  const { admin } = result;
 
   const { searchParams } = new URL(req.url);
   const type = (searchParams.get("type") ?? "mommy") as "mommy" | "member";
 
-  const supabase = createAdminClient();
   const table = type === "member" ? "member_applications" : "mommy_applications";
 
-  const { data, error } = await supabase
+  const { data, error } = await admin
     .from(table)
     .select("*")
     .order("created_at", { ascending: false });
@@ -32,27 +21,27 @@ export async function GET(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  const { user, response } = await requireAdmin();
-  if (response) return response;
+  const result = await requireAdminApi();
+  if ("error" in result) return result.error;
+  const { user, admin } = result;
 
   const { id, action, type = "mommy" } = await req.json();
   if (!id || !["approve", "reject"].includes(action)) {
     return NextResponse.json({ error: "Invalid" }, { status: 400 });
   }
 
-  const supabase = createAdminClient();
   const table = type === "member" ? "member_applications" : "mommy_applications";
 
   if (action === "reject") {
-    await supabase
+    await admin
       .from(table)
-      .update({ status: "rejected", reviewed_by: user!.id, reviewed_at: new Date().toISOString() })
+      .update({ status: "rejected", reviewed_by: user.id, reviewed_at: new Date().toISOString() })
       .eq("id", id);
     return NextResponse.json({ success: true });
   }
 
   // Fetch application details for email
-  const { data: application } = await supabase
+  const { data: application } = await admin
     .from(table)
     .select("email, full_name")
     .eq("id", id)
@@ -63,18 +52,18 @@ export async function PATCH(req: Request) {
   const code = `${codePrefix}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const targetRole = type === "member" ? "member" : "mommy";
 
-  const { error: codeErr } = await supabase
+  const { error: codeErr } = await admin
     .from("invitation_codes")
-    .insert({ code, target_role: targetRole, max_uses: 1, created_by: user!.id });
+    .insert({ code, target_role: targetRole, max_uses: 1, created_by: user.id });
 
   if (codeErr) return NextResponse.json({ error: "Failed to generate code" }, { status: 500 });
 
-  await supabase
+  await admin
     .from(table)
     .update({
       status: "approved",
       invitation_code: code,
-      reviewed_by: user!.id,
+      reviewed_by: user.id,
       reviewed_at: new Date().toISOString(),
     })
     .eq("id", id);
