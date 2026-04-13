@@ -83,14 +83,14 @@ export async function GET() {
     city: p.location_city,
     desires: p.desires,
     photoUrls: p.photo_urls,
-    role: (p.users as { role: string } | null)?.role,
-    tier: (p.users as { member_tier?: string; mommy_tier?: string } | null)?.member_tier
-      ?? (p.users as { member_tier?: string; mommy_tier?: string } | null)?.mommy_tier,
+    role: (p.users as unknown as { role: string } | null)?.role,
+    tier: (p.users as unknown as { member_tier?: string; mommy_tier?: string } | null)?.member_tier
+      ?? (p.users as unknown as { member_tier?: string; mommy_tier?: string } | null)?.mommy_tier,
     conversations: (matchesByProfile[p.user_id] ?? []).map((m) => {
       const isAsMember = m.member_id === p.user_id;
       const otherParty = isAsMember
-        ? (m.mommy as { id: string; profiles: { display_name: string } | null } | null)
-        : (m.member as { id: string; profiles: { display_name: string } | null } | null);
+        ? (m.mommy as unknown as { id: string; profiles: { display_name: string } | null } | null)
+        : (m.member as unknown as { id: string; profiles: { display_name: string } | null } | null);
       const lastMsg = lastMessages[m.id];
       return {
         matchId: m.id,

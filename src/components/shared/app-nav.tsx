@@ -12,6 +12,7 @@ import {
   Sparkles,
   ShieldCheck,
   BookOpen,
+  Compass,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUserStore } from "@/stores/user-store";
@@ -19,6 +20,7 @@ import { SignOutButton } from "@/components/shared/sign-out-button";
 
 const MEMBER_NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: Sparkles },
+  { href: "/discover", label: "Discover", icon: Compass },
   { href: "/matches", label: "Matches", icon: Heart },
   { href: "/chat", label: "Chat", icon: MessageCircle },
   { href: "/gifts", label: "Gifts", icon: Gift },
@@ -29,6 +31,7 @@ const MEMBER_NAV_ITEMS = [
 
 const MOMMY_NAV_ITEMS = [
   { href: "/mommy-dashboard", label: "Dashboard", icon: Sparkles },
+  { href: "/discover", label: "Discover", icon: Compass },
   { href: "/matches", label: "Matches", icon: Heart },
   { href: "/chat", label: "Chat", icon: MessageCircle },
   { href: "/mommy-dashboard/earnings", label: "Earnings", icon: Crown },
