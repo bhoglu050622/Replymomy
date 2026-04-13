@@ -1,7 +1,8 @@
 // Runs after `next build` on Hostinger's server.
 // Patches the Passenger .htaccess to cap workers at 1 so multiple processes
 // never race to bind port 3000, which causes 503s.
-import { existsSync, readFileSync, writeFileSync } from "fs";
+// Also removes restart.txt which triggers cascading restarts if left in place.
+import { existsSync, readFileSync, writeFileSync, unlinkSync } from "fs";
 
 const HTACCESS = "/home/u228387150/domains/replymommy.com/public_html/.htaccess";
 
@@ -24,3 +25,10 @@ content = content.replace(
 
 writeFileSync(HTACCESS, content);
 console.log("Patched .htaccess with PassengerMaxPoolSize 1");
+
+// Remove restart.txt to prevent cascading restarts after deploy
+const RESTART_TXT = "/home/u228387150/domains/replymommy.com/nodejs/tmp/restart.txt";
+if (existsSync(RESTART_TXT)) {
+  unlinkSync(RESTART_TXT);
+  console.log("Removed restart.txt");
+}
