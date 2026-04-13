@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Camera, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { GoldCtaButton } from "@/components/shared/gold-cta-button";
@@ -30,10 +28,8 @@ export default function MommyProfilePage() {
   const [headline, setHeadline] = useState("");
   const [bio, setBio] = useState("");
   const [specialties, setSpecialties] = useState<string[]>([]);
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
 
   function toggleSpecialty(s: string) {
     setSpecialties((prev) =>
@@ -45,41 +41,8 @@ export default function MommyProfilePage() {
     );
   }
 
-  async function handlePhotoClick(idx: number) {
-    if (photoUrls[idx]) {
-      setPhotoUrls((prev) => prev.filter((_, i) => i !== idx));
-      return;
-    }
-
-    setUploadingIdx(idx);
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) { setUploadingIdx(null); return; }
-      try {
-        const fd = new FormData();
-        fd.append("file", file);
-        const res = await fetch("/api/upload", { method: "POST", body: fd });
-        const data = await res.json();
-        if (data.url) {
-          setPhotoUrls((prev) => {
-            const next = [...prev];
-            next[idx] = data.url;
-            return next;
-          });
-        }
-      } finally {
-        setUploadingIdx(null);
-      }
-    };
-    input.click();
-  }
-
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (photoUrls.length < 1) { setError("Add at least one photo."); return; }
     if (specialties.length < 1) { setError("Select at least one specialty."); return; }
     setLoading(true);
     setError("");
@@ -93,7 +56,7 @@ export default function MommyProfilePage() {
           bio,
           headline,
           desires: specialties,
-          photo_urls: photoUrls,
+          photo_urls: [],
         }),
       });
 
@@ -126,55 +89,6 @@ export default function MommyProfilePage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Photos — up to 8 */}
-        <div>
-          <label className="text-label text-ivory/50 mb-3 block">
-            Photos <span className="text-ivory/30">(up to 8 — first is your cover)</span>
-          </label>
-          <div className="grid grid-cols-4 gap-2">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => handlePhotoClick(i)}
-                disabled={uploadingIdx === i || (!photoUrls[i] && i > photoUrls.length)}
-                className={cn(
-                  "aspect-[3/4] rounded-xl border-2 border-dashed flex items-center justify-center transition-colors relative overflow-hidden",
-                  photoUrls[i]
-                    ? "border-champagne bg-champagne/10"
-                    : i === photoUrls.length
-                      ? "border-champagne/30 hover:border-champagne/60"
-                      : "border-champagne/10 opacity-40"
-                )}
-              >
-                {photoUrls[i] ? (
-                  <>
-                    <Image
-                      src={photoUrls[i]}
-                      alt=""
-                      fill
-                      className="object-cover rounded-xl"
-                      sizes="(max-width: 768px) 33vw, 200px"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-obsidian/60 opacity-0 hover:opacity-100 transition-opacity rounded-xl">
-                      <X className="size-4 text-ivory" />
-                    </div>
-                    {i === 0 && (
-                      <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-champagne text-obsidian text-[9px] font-bold uppercase tracking-wider">
-                        Cover
-                      </div>
-                    )}
-                  </>
-                ) : uploadingIdx === i ? (
-                  <div className="size-4 rounded-full border-2 border-champagne/40 border-t-champagne animate-spin" />
-                ) : (
-                  <Camera className="size-4 text-champagne/40" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Display name */}
         <div>
           <label className="text-label text-ivory/50 mb-2 block">Display Name</label>
@@ -246,7 +160,7 @@ export default function MommyProfilePage() {
 
         <GoldCtaButton
           type="submit"
-          disabled={loading || !displayName || photoUrls.length === 0 || specialties.length === 0}
+          disabled={loading || !displayName || specialties.length === 0}
           className="w-full"
         >
           {loading ? "Saving..." : "Continue"}

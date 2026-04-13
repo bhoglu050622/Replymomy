@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Camera, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { GoldCtaButton } from "@/components/shared/gold-cta-button";
@@ -25,10 +24,8 @@ export default function CreateProfilePage() {
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [interests, setInterests] = useState<string[]>([]);
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
 
   const wordCount = bio.trim().split(/\s+/).filter(Boolean).length;
 
@@ -40,38 +37,6 @@ export default function CreateProfilePage() {
           ? [...prev, d]
           : prev
     );
-  }
-
-  async function handlePhotoClick(idx: number) {
-    if (photoUrls[idx]) {
-      setPhotoUrls((prev) => prev.filter((_, i) => i !== idx));
-      return;
-    }
-
-    setUploadingIdx(idx);
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) { setUploadingIdx(null); return; }
-      try {
-        const fd = new FormData();
-        fd.append("file", file);
-        const res = await fetch("/api/upload", { method: "POST", body: fd });
-        const data = await res.json();
-        if (data.url) {
-          setPhotoUrls((prev) => {
-            const next = [...prev];
-            next[idx] = data.url;
-            return next;
-          });
-        }
-      } finally {
-        setUploadingIdx(null);
-      }
-    };
-    input.click();
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -86,7 +51,7 @@ export default function CreateProfilePage() {
           display_name: displayName,
           bio,
           desires: interests,
-          photo_urls: photoUrls,
+          photo_urls: [],
         }),
       });
 
@@ -116,48 +81,6 @@ export default function CreateProfilePage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Photos */}
-        <div>
-          <label className="text-label text-ivory/50 mb-3 block">
-            Photos (max 3)
-          </label>
-          <div className="grid grid-cols-3 gap-3">
-            {[0, 1, 2].map((i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => handlePhotoClick(i)}
-                disabled={uploadingIdx === i}
-                className={cn(
-                  "aspect-[3/4] rounded-2xl border-2 border-dashed flex items-center justify-center transition-colors relative overflow-hidden",
-                  photoUrls[i]
-                    ? "border-champagne bg-champagne/10"
-                    : "border-champagne/20 hover:border-champagne/50"
-                )}
-              >
-                {photoUrls[i] ? (
-                  <>
-                    <Image
-                      src={photoUrls[i]}
-                      alt="Upload"
-                      fill
-                      className="object-cover rounded-2xl"
-                      sizes="(max-width: 768px) 33vw, 200px"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-obsidian/60 opacity-0 hover:opacity-100 transition-opacity">
-                      <X className="size-5 text-ivory" />
-                    </div>
-                  </>
-                ) : uploadingIdx === i ? (
-                  <div className="size-5 rounded-full border-2 border-champagne/40 border-t-champagne animate-spin" />
-                ) : (
-                  <Camera className="size-5 text-champagne/40" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Display name */}
         <div>
           <label className="text-label text-ivory/50 mb-2 block">
@@ -226,7 +149,7 @@ export default function CreateProfilePage() {
         )}
         <GoldCtaButton
           type="submit"
-          disabled={loading || photoUrls.length === 0 || interests.length !== 3 || wordCount > 60}
+          disabled={loading || interests.length !== 3 || wordCount > 60}
           className="w-full"
         >
           {loading ? "Saving..." : "Continue"}
