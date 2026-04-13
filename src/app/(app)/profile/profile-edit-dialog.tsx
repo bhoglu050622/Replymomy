@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const SUGGESTED_DESIRES = [
   "Travel", "Fine Dining", "Motorsport", "Aviation",
@@ -109,25 +110,29 @@ export function ProfileEditDialog({
       return;
     }
 
-    setUploadingIdx(idx);
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) { setUploadingIdx(null); return; }
+      if (!file) return; // user cancelled — no spinner
+      setUploadingIdx(idx);
       try {
         const fd = new FormData();
         fd.append("file", file);
         const res = await fetch("/api/upload", { method: "POST", body: fd });
         const data = await res.json();
-        if (data.url) {
+        if (res.ok && data.url) {
           setPhotoUrls((prev) => {
             const next = [...prev];
             next[idx] = data.url;
             return next;
           });
+        } else {
+          toast.error(data.error ?? "Upload failed. Try again.");
         }
+      } catch {
+        toast.error("Upload failed. Try again.");
       } finally {
         setUploadingIdx(null);
       }
