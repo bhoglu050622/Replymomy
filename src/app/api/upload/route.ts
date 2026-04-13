@@ -85,7 +85,14 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("[api/upload] primary upload failed:", err);
     if (!cloudinaryConfigured) {
-      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+      const detail =
+        process.env.NODE_ENV === "development" && err instanceof Error
+          ? err.message
+          : undefined;
+      return NextResponse.json(
+        { error: "Upload failed", ...(detail ? { detail } : {}) },
+        { status: 500 }
+      );
     }
     try {
       const [main, thumb] = await Promise.all([
@@ -96,7 +103,14 @@ export async function POST(req: Request) {
       thumbUrl = thumb.secureUrl;
     } catch (fallbackErr) {
       console.error("[api/upload] cloudinary fallback failed:", fallbackErr);
-      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+      const detail =
+        process.env.NODE_ENV === "development" && fallbackErr instanceof Error
+          ? fallbackErr.message
+          : undefined;
+      return NextResponse.json(
+        { error: "Upload failed", ...(detail ? { detail } : {}) },
+        { status: 500 }
+      );
     }
   }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/supabase/require-auth";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 const schema = z.object({
   matchId: z.string(),
@@ -61,6 +62,10 @@ export async function POST(req: Request) {
         .from("matches")
         .update({ status: "mutual" })
         .eq("id", matchId);
+
+      const posthog = getPostHogClient();
+      posthog.capture({ distinctId: match.member_id, event: "mutual_match_created", properties: { match_id: matchId } });
+      posthog.capture({ distinctId: match.mommy_id, event: "mutual_match_created", properties: { match_id: matchId } });
 
       // Send mutual match emails (non-blocking)
       if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== "re_placeholder") {

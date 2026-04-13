@@ -44,3 +44,4 @@ client_secret_*.json
 *.jpeg
 .claude/settings.json
 .claude/scheduled_tasks.lock
+.env.local

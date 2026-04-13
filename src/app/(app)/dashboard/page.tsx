@@ -168,7 +168,12 @@ export default async function DashboardPage() {
         <div
           className="relative h-48 sm:h-64 rounded-2xl overflow-hidden border border-champagne/30"
           style={{
-            backgroundImage: "url('/spotlight-bg.jpg')",
+            // Pure CSS backdrop (optional: run scripts/generate-assets.mjs for /spotlight-bg.jpg)
+            backgroundImage: [
+              "linear-gradient(to right, rgba(10,10,12,0.88) 0%, transparent 55%)",
+              "radial-gradient(ellipse 120% 90% at 85% 15%, rgba(180, 90, 110, 0.35) 0%, transparent 55%)",
+              "radial-gradient(ellipse 100% 120% at 0% 100%, #2a0812 0%, #4A0E1A 42%, #120508 100%)",
+            ].join(", "),
             backgroundSize: "cover",
             backgroundPosition: "center 30%",
             backgroundColor: "#4A0E1A",

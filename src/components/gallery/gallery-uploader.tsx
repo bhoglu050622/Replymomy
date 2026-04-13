@@ -39,10 +39,22 @@ export function GalleryUploader() {
         const fd = new FormData();
         fd.append("file", file);
         const res = await fetch("/api/upload", { method: "POST", body: fd });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const msg =
+            typeof data.detail === "string"
+              ? `${data.error ?? "Upload failed"}: ${data.detail}`
+              : (data.error as string) ?? "Upload failed";
+          toast.error(msg);
+          return;
+        }
         if (data.url) {
           await saveItem(data.url);
+        } else {
+          toast.error("Upload failed");
         }
+      } catch {
+        toast.error("Upload failed. Try again.");
       } finally {
         setUploading(false);
       }
@@ -56,9 +68,18 @@ export function GalleryUploader() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url, is_premium: true, token_cost: 10 }),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      toast.error(
+        typeof data.error === "string" ? data.error : "Could not add photo to gallery"
+      );
+      return;
+    }
     if (data.item) {
       setItems((prev) => [data.item, ...prev]);
+      toast.success("Photo added");
+    } else {
+      toast.error("Could not add photo to gallery");
     }
   }
 

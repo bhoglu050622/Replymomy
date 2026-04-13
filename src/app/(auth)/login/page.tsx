@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { GoldCtaButton } from "@/components/shared/gold-cta-button";
 import { createClient } from "@/lib/supabase/client";
+import posthog from "posthog-js";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function LoginPage() {
     setError("");
 
     const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -28,6 +29,11 @@ export default function LoginPage() {
       setError(authError.message);
       setLoading(false);
       return;
+    }
+
+    if (data.user) {
+      posthog.identify(data.user.id, { email: data.user.email });
+      posthog.capture("user_logged_in", { method: "email" });
     }
 
     router.push("/dashboard");

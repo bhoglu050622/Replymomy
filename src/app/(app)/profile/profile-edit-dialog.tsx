@@ -139,7 +139,11 @@ export function ProfileEditDialog({
             return next;
           });
         } else {
-          toast.error(data.error ?? "Upload failed. Try again.");
+          const msg =
+            typeof data.detail === "string"
+              ? `${data.error ?? "Upload failed"}: ${data.detail}`
+              : (data.error as string) ?? "Upload failed. Try again.";
+          toast.error(msg);
         }
       } catch {
         toast.error("Upload failed. Try again.");

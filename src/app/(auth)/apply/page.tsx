@@ -15,6 +15,7 @@ import { GoldCtaButton } from "@/components/shared/gold-cta-button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import posthog from "posthog-js";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -256,6 +257,7 @@ function ApplyPageInner() {
   // mommy:  0=agreement 1=details 2=story
 
   function nextStep() {
+    posthog.capture("application_step_completed", { step, role });
     setStep((s) => (s + 1) as Step);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -313,6 +315,7 @@ function ApplyPageInner() {
         toast.error(data.error ?? "Failed to submit. Please try again.");
         return;
       }
+      posthog.capture("application_submitted", { role, city: form.city });
       router.push(data.redirect ?? (role === "member" ? "/create-profile" : "/mommy-profile"));
     } catch {
       toast.error("Something went wrong. Please try again.");

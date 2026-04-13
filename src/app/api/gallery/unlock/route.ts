@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/supabase/require-auth";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 const schema = z.object({
   galleryItemId: z.string().optional(),
@@ -41,6 +42,16 @@ export async function POST(req: Request) {
       }
       return NextResponse.json({ error: "Unlock failed" }, { status: 400 });
     }
+
+    getPostHogClient().capture({
+      distinctId: user!.id,
+      event: "gallery_unlocked",
+      properties: {
+        unlock_type: data.unlockType,
+        token_cost: tokenCost,
+        owner_id: data.ownerId,
+      },
+    });
 
     return NextResponse.json({ success: true, ...data });
   } catch (err) {

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { DODO_PRODUCTS, REGIONAL_PRICES } from "@/lib/dodo/prices";
 import { useRegionalPrices } from "@/hooks/use-regional-price";
 import { cn } from "@/lib/utils";
+import posthog from "posthog-js";
 
 // ─── Plan config ─────────────────────────────────────────────────────────────
 
@@ -377,7 +378,10 @@ export function SubscriptionClient({ currentTier, browsedCount = 0 }: Props) {
                 <Button
                   variant="gold"
                   className="w-full h-11 rounded-full text-xs"
-                  onClick={() => setUpgradeTarget(tier.id!)}
+                  onClick={() => {
+                    posthog.capture("upgrade_clicked", { tier: tier.id, tier_name: tier.name });
+                    setUpgradeTarget(tier.id!);
+                  }}
                   disabled={!!loading}
                 >
                   Upgrade to {tier.name}

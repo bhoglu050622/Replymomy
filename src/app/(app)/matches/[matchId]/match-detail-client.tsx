@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ExpiryCountdown } from "@/components/matches/expiry-countdown";
 import { IcebreakerDialog } from "@/components/matches/icebreaker-dialog";
 import Image from "next/image";
+import posthog from "posthog-js";
 
 interface Props {
   matchId: string;
@@ -55,6 +56,12 @@ export function MatchDetailClient({
       if (!res.ok) {
         toast.error(data.error ?? "Something went wrong.");
         return;
+      }
+
+      if (action === "accepted") {
+        posthog.capture("match_accepted", { match_id: matchId, is_mutual: data.isMutual });
+      } else {
+        posthog.capture("match_declined", { match_id: matchId });
       }
 
       if (data.isMutual) {

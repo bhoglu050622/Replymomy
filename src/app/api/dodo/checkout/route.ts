@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/supabase/require-auth";
 import { isConfigured } from "@/lib/env";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 const schema = z.object({
   productId: z.string(),
@@ -48,6 +49,16 @@ export async function POST(req: Request) {
       },
       return_url: `${siteUrl}/join-confirmed?tier=${body.tier ?? ""}`,
       cancel_url: `${siteUrl}/settings/subscription`,
+    });
+
+    getPostHogClient().capture({
+      distinctId: user!.id,
+      event: "checkout_initiated",
+      properties: {
+        mode: body.mode,
+        tier: body.tier ?? null,
+        token_amount: body.tokenAmount ?? null,
+      },
     });
 
     return NextResponse.json({ url: session.checkout_url, session_id: session.session_id });

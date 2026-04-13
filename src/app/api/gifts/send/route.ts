@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/supabase/require-auth";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 const schema = z.object({
   giftId: z.string(),
@@ -49,6 +50,18 @@ export async function POST(req: Request) {
         message: data.message ?? null,
         paid_with_tokens: true,
         amount_cents: gift.price_cents,
+      });
+
+      getPostHogClient().capture({
+        distinctId: user!.id,
+        event: "gift_sent",
+        properties: {
+          gift_id: data.giftId,
+          recipient_id: data.recipientId,
+          paid_with: "tokens",
+          token_cost: gift.token_cost,
+          amount_cents: gift.price_cents,
+        },
       });
 
       return NextResponse.json({ success: true, paidWith: "tokens" });

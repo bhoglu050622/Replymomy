@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Webhook } from "standardwebhooks";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isConfigured } from "@/lib/env";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(req: Request) {
   if (!isConfigured.dodoWebhook) {
@@ -54,6 +55,14 @@ export async function POST(req: Request) {
           p_reason: "token_purchase",
         });
       }
+      getPostHogClient().capture({
+        distinctId: userId,
+        event: "payment_succeeded",
+        properties: {
+          payment_id: data.payment_id ?? null,
+          token_amount: tokenAmount || null,
+        },
+      });
       break;
     }
 
@@ -64,6 +73,11 @@ export async function POST(req: Request) {
         await supabase.from("users").update({ member_tier: tier }).eq("id", userId);
       }
       // Concierge chat created on first message — no activation needed
+      getPostHogClient().capture({
+        distinctId: userId,
+        event: "subscription_activated",
+        properties: { tier: tier ?? null, subscription_id: data.subscription_id ?? null },
+      });
       break;
     }
 
@@ -80,6 +94,11 @@ export async function POST(req: Request) {
     case "subscription.expired": {
       if (!userId) break;
       await supabase.from("users").update({ member_tier: null }).eq("id", userId);
+      getPostHogClient().capture({
+        distinctId: userId,
+        event: "subscription_cancelled",
+        properties: { reason: type, subscription_id: data.subscription_id ?? null },
+      });
       break;
     }
   }

@@ -1,5 +1,17 @@
 import type { NextConfig } from "next";
+import type { RemotePattern } from "next/dist/shared/lib/image-config";
 import path from "path";
+
+function remotePatternFromUrl(raw: string | undefined): RemotePattern | null {
+  if (!raw?.trim()) return null;
+  try {
+    const u = new URL(raw.trim());
+    if (u.protocol !== "https:" || !u.hostname) return null;
+    return { protocol: "https", hostname: u.hostname, pathname: "/**" };
+  } catch {
+    return null;
+  }
+}
 
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
@@ -16,9 +28,14 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "res.cloudinary.com" },
-      { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "replymommy.com" },
+      { protocol: "https", hostname: "res.cloudinary.com", pathname: "/**" },
+      { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
+      { protocol: "https", hostname: "replymommy.com", pathname: "/**" },
+      // User media from Hostinger — hostname must match HOSTINGER_MEDIA_URL or next/image blocks the URL
+      ...((): RemotePattern[] => {
+        const fromEnv = remotePatternFromUrl(process.env.HOSTINGER_MEDIA_URL);
+        return fromEnv ? [fromEnv] : [];
+      })(),
     ],
   },
   async headers() {
