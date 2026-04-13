@@ -57,10 +57,9 @@ export async function POST(req: Request) {
     const isDeclined = userResponse === "declined";
 
     if (isMutual) {
-      const streamChannelId = `match-${matchId}`;
       await supabase
         .from("matches")
-        .update({ status: "mutual", stream_channel_id: streamChannelId })
+        .update({ status: "mutual" })
         .eq("id", matchId);
 
       // Send mutual match emails (non-blocking)
@@ -112,7 +111,6 @@ export async function POST(req: Request) {
         matchId,
         newStatus: "mutual",
         isMutual: true,
-        streamChannelId,
       });
     }
 
@@ -128,7 +126,6 @@ export async function POST(req: Request) {
       matchId,
       newStatus: isDeclined ? "declined" : "pending",
       isMutual: false,
-      streamChannelId: null,
     });
   } catch (err) {
     if (err instanceof z.ZodError) {

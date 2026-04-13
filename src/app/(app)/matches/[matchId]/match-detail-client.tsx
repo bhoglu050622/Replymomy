@@ -58,7 +58,7 @@ export function MatchDetailClient({
       }
 
       if (data.isMutual) {
-        router.push(`/chat/${data.streamChannelId}`);
+        router.push(`/chat/${data.matchId}`);
       } else {
         router.push("/matches");
       }

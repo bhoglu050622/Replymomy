@@ -1,89 +1,109 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  Chat,
-  Channel,
-  Window,
-  MessageList,
-  MessageInput,
-  Thread,
-} from "stream-chat-react";
-import { StreamChat } from "stream-chat";
-import "stream-chat-react/dist/css/v2/index.css";
+import { useEffect, useRef, useState } from "react";
+import { Send } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { formatDistanceToNow } from "date-fns";
 
-interface Props {
-  userId: string;
+interface Message {
+  id: string;
+  sender_id: string;
+  content: string | null;
+  created_at: string;
 }
 
+interface Props { userId: string }
+
 export function ConciergeChat({ userId }: Props) {
-  const [client, setClient] = useState<StreamChat | null>(null);
-  const [channel, setChannel] = useState<ReturnType<StreamChat["channel"]> | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const supabase = createClient();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const chatId = `concierge-${userId}`;
 
   useEffect(() => {
-    let chatClient: StreamChat | null = null;
+    supabase
+      .from("messages")
+      .select("id, sender_id, content, created_at")
+      .eq("chat_id", chatId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: true })
+      .limit(60)
+      .then(({ data }) => setMessages(data ?? []));
 
-    async function init() {
-      try {
-        const tokenRes = await fetch("/api/chat/token");
-        if (!tokenRes.ok) throw new Error("Token fetch failed");
-        const { token } = await tokenRes.json();
+    const channel = supabase
+      .channel(`concierge:${userId}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `chat_id=eq.${chatId}`,
+      }, (p) => setMessages((prev) => [...prev, p.new as Message]))
+      .subscribe();
 
-        const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
-        if (!apiKey || apiKey === "your-stream-api-key") {
-          setError("Chat not configured.");
-          return;
-        }
-
-        chatClient = StreamChat.getInstance(apiKey);
-        await chatClient.connectUser({ id: userId }, token);
-
-        const ch = chatClient.channel("messaging", `concierge-${userId}`);
-        await ch.watch();
-
-        setClient(chatClient);
-        setChannel(ch);
-      } catch (e) {
-        console.error("[ConciergeChat]", e);
-        setError("Could not connect to your liaison. Try refreshing.");
-      }
-    }
-
-    init();
-
-    return () => {
-      chatClient?.disconnectUser();
-    };
+    return () => { supabase.removeChannel(channel); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-80 text-ivory/40 text-body-sm">
-        {error}
-      </div>
-    );
-  }
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-  if (!client || !channel) {
-    return (
-      <div className="flex items-center justify-center h-80 text-ivory/40 text-body-sm">
-        Connecting to your liaison...
-      </div>
-    );
+  async function send() {
+    if (!input.trim() || sending) return;
+    const text = input.trim();
+    setInput("");
+    setSending(true);
+    await supabase.from("messages").insert({
+      chat_id: chatId,
+      sender_id: userId,
+      content: text,
+    });
+    setSending(false);
   }
 
   return (
-    <div className="h-[480px]" style={{ colorScheme: "dark" }}>
-      <Chat client={client} theme="str-chat__theme-dark">
-        <Channel channel={channel}>
-          <Window>
-            <MessageList />
-            <MessageInput />
-          </Window>
-          <Thread />
-        </Channel>
-      </Chat>
+    <div className="flex flex-col h-[420px] rounded-2xl border border-champagne/20 overflow-hidden bg-smoke">
+      <div className="px-4 py-3 border-b border-champagne/10 text-xs text-ivory/40 font-medium tracking-widest uppercase">
+        Liaison Chat
+      </div>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        {messages.length === 0 && (
+          <p className="text-center text-body-sm text-ivory/30 pt-8">Your liaison will respond here.</p>
+        )}
+        {messages.map((msg) => {
+          const isOwn = msg.sender_id === userId;
+          return (
+            <div key={msg.id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[75%] px-3 py-2 rounded-xl text-sm ${
+                isOwn
+                  ? "bg-champagne text-obsidian rounded-br-sm"
+                  : "bg-ivory/10 text-ivory border border-champagne/10 rounded-bl-sm"
+              }`}>
+                {msg.content}
+                <p className={`text-[10px] mt-0.5 ${isOwn ? "text-obsidian/50" : "text-ivory/30"}`}>
+                  {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+        <div ref={bottomRef} />
+      </div>
+      <div className="px-4 py-3 border-t border-champagne/10 flex gap-2">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") send(); }}
+          placeholder="Message your liaison..."
+          className="flex-1 bg-ivory/5 border border-champagne/20 text-ivory rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-champagne/40 placeholder:text-ivory/20"
+        />
+        <Button variant="gold" size="icon" onClick={send} disabled={!input.trim() || sending} className="rounded-xl shrink-0">
+          <Send className="size-4" />
+        </Button>
+      </div>
     </div>
   );
 }

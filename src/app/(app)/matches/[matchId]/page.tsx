@@ -16,7 +16,7 @@ export default async function MatchDetailPage({
   const { data: match } = await supabase
     .from("matches")
     .select(`
-      id, status, expires_at, match_score, stream_channel_id,
+      id, status, expires_at, match_score,
       member_id, mommy_id, member_response, mommy_response,
       member_responded, mommy_responded, match_intro,
       mommy_profile:profiles!matches_mommy_id_fkey(
@@ -61,7 +61,7 @@ export default async function MatchDetailPage({
       matchId={matchId}
       status={match.status}
       expiresAt={match.expires_at}
-      streamChannelId={match.stream_channel_id}
+      streamChannelId={match.status === "mutual" ? match.id : null}
       alreadyResponded={!!alreadyResponded}
       isMember={isMember}
       matchIntro={(match as unknown as { match_intro: string | null }).match_intro ?? null}

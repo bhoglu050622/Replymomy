@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { Webhook } from "standardwebhooks";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { activateConcierge } from "@/lib/stream/concierge";
 import { isConfigured } from "@/lib/env";
 
 export async function POST(req: Request) {
@@ -64,12 +63,7 @@ export async function POST(req: Request) {
       if (tier) {
         await supabase.from("users").update({ member_tier: tier }).eq("id", userId);
       }
-      // Activate concierge for Principal tier
-      if (tier === "black_card") {
-        void activateConcierge(userId).catch((err) => {
-          console.error("[dodo/webhook] concierge activation failed", err);
-        });
-      }
+      // Concierge chat created on first message — no activation needed
       break;
     }
 

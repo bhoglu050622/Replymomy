@@ -1,0 +1,58 @@
+import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/supabase/require-auth";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+// GET /api/chat — list all mutual matches with last message preview
+export async function GET() {
+  const { user, response } = await requireAuth();
+  if (response) return response;
+
+  const admin = createAdminClient();
+
+  // Mutual matches for this user
+  const { data: matches, error } = await admin
+    .from("matches")
+    .select(`
+      id, created_at,
+      member:users!matches_member_id_fkey(id, profiles(display_name, photo_url)),
+      mommy:users!matches_mommy_id_fkey(id, profiles(display_name, photo_url))
+    `)
+    .or(`member_id.eq.${user!.id},mommy_id.eq.${user!.id}`)
+    .eq("status", "mutual")
+    .order("created_at", { ascending: false });
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!matches?.length) return NextResponse.json({ chats: [] });
+
+  // Fetch last message for each match in one query
+  const chatIds = matches.map((m) => `match-${m.id}`);
+  const { data: lastMsgs } = await admin
+    .from("messages")
+    .select("chat_id, content, created_at, sender_id")
+    .in("chat_id", chatIds)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false });
+
+  // Group: keep only latest per chat_id
+  const latestByChat: Record<string, typeof lastMsgs extends (infer T)[] | null ? T : never> = {};
+  for (const msg of lastMsgs ?? []) {
+    if (!latestByChat[msg.chat_id]) latestByChat[msg.chat_id] = msg;
+  }
+
+  const chats = matches.map((m) => {
+    const isMe = (m.member as { id: string }).id === user!.id;
+    const other = isMe ? m.mommy : m.member;
+    const otherProfile = (other as { profiles: { display_name: string; photo_url: string | null } | null })?.profiles;
+    const last = latestByChat[`match-${m.id}`];
+
+    return {
+      matchId: m.id,
+      otherName: otherProfile?.display_name ?? "Match",
+      otherPhoto: otherProfile?.photo_url ?? null,
+      lastMessage: last?.content ?? null,
+      lastMessageAt: last?.created_at ?? m.created_at,
+    };
+  }).sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
+
+  return NextResponse.json({ chats });
+}

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
-import { StreamProvider } from "@/components/providers/stream-provider";
 import { UserStoreHydrator } from "@/components/shared/user-store-hydrator";
 import { AppNav, MobileNav, SidebarFooter } from "@/components/shared/app-nav";
 import { PageTransition } from "@/components/shared/page-transition";
@@ -11,7 +10,7 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <StreamProvider>
+    <>
     <UserStoreHydrator />
     <div className="min-h-screen bg-obsidian text-ivory flex">
       {/* Skip to content for keyboard/screen reader users */}
@@ -42,6 +41,6 @@ export default function AppLayout({
         <MobileNav />
       </div>
     </div>
-    </StreamProvider>
+    </>
   );
 }
