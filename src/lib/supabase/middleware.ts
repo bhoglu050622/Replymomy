@@ -90,8 +90,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Logged in: enforce onboarding gate
-  if (user && !isPublic) {
+  // Logged in: enforce onboarding gate (skip for API routes — they handle their own auth)
+  if (user && !isPublic && !pathname.startsWith("/api/")) {
     try {
       const { data: userRecord } = await supabase
         .from("users")
