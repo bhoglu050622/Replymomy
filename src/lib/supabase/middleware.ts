@@ -95,22 +95,33 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Admin UI: block non-admins; in production, only allowlisted email + email identity
-  if (user && pathname.startsWith("/admin") && !pathname.startsWith("/api/")) {
+  // Admin routes (UI + API): only the allowlisted email/password identity may proceed.
+  const isAdminUiRoute = user && pathname.startsWith("/admin") && !pathname.startsWith("/api/");
+  const isAdminApiRoute = user && pathname.startsWith("/api/admin");
+
+  if (isAdminUiRoute || isAdminApiRoute) {
     try {
       const { data: adminCheck } = await supabase
         .from("users")
         .select("role")
-        .eq("id", user.id)
+        .eq("id", user!.id)
         .single();
-      if (adminCheck?.role !== "admin") {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
-      }
-      if (!passesStrictAdminSession(user)) {
-        return NextResponse.redirect(new URL("/admin-login", request.url));
+
+      const isAdmin = adminCheck?.role === "admin";
+      const passesSession = passesStrictAdminSession(user);
+
+      if (!isAdmin || !passesSession) {
+        if (isAdminApiRoute) {
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+        return NextResponse.redirect(
+          new URL(isAdmin ? "/admin-login" : "/dashboard", request.url)
+        );
       }
     } catch {
-      // Can't verify role — deny access
+      if (isAdminApiRoute) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
       return NextResponse.redirect(new URL("/admin-login", request.url));
     }
   }

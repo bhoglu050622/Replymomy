@@ -1,15 +1,16 @@
 import type { User } from "@supabase/supabase-js";
 
 /**
- * Strict admin (allowlisted email + email/password identity only):
- * - Explicit opt-in: ADMIN_ENFORCE_EMAIL=true
- * - Explicit opt-out: ADMIN_ENFORCE_EMAIL=false (overrides everything below)
- * - Production (e.g. Hostinger): NODE_ENV=production enables strict unless opted out above
+ * Strict admin enforcement is ALWAYS on.
+ * Only the allowlisted email signed in via email/password may access /admin.
+ * Google OAuth and any other identity provider are blocked unconditionally.
+ *
+ * To temporarily disable (e.g. emergency local debugging only):
+ *   ADMIN_ENFORCE_EMAIL=false
  */
 export function isAdminStrictEnforcement(): boolean {
   if (process.env.ADMIN_ENFORCE_EMAIL === "false") return false;
-  if (process.env.ADMIN_ENFORCE_EMAIL === "true") return true;
-  return process.env.NODE_ENV === "production";
+  return true;
 }
 
 export function getAdminAllowedEmail(): string {
