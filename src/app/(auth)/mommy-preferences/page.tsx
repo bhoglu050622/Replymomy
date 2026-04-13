@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
+import { X } from "lucide-react";
 import { GoldCtaButton } from "@/components/shared/gold-cta-button";
 import { cn } from "@/lib/utils";
-
-const CITIES = ["NYC", "Miami", "LA", "London", "Paris", "Dubai", "Tokyo", "Singapore", "Sydney"];
 const MEMBER_TIERS = [
   { value: "pro", label: "Pro", desc: "1 match/day" },
   { value: "unlimited", label: "Unlimited", desc: "All access" },
@@ -28,6 +27,7 @@ export default function MommyPreferencesPage() {
   const [ageMax, setAgeMax] = useState(50);
   const [tiers, setTiers] = useState<string[]>([]);
   const [cities, setCities] = useState<string[]>([]);
+  const [cityInput, setCityInput] = useState("");
   const [maxMatches, setMaxMatches] = useState(3);
   const [responseTime, setResponseTime] = useState("24h");
   const [loading, setLoading] = useState(false);
@@ -35,8 +35,25 @@ export default function MommyPreferencesPage() {
   function toggleTier(v: string) {
     setTiers((p) => p.includes(v) ? p.filter((x) => x !== v) : [...p, v]);
   }
-  function toggleCity(v: string) {
-    setCities((p) => p.includes(v) ? p.filter((x) => x !== v) : [...p, v]);
+  function addCity(value: string) {
+    const trimmed = value.trim();
+    if (trimmed && !cities.includes(trimmed)) {
+      setCities((p) => [...p, trimmed]);
+    }
+    setCityInput("");
+  }
+
+  function handleCityKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addCity(cityInput);
+    } else if (e.key === "Backspace" && !cityInput && cities.length > 0) {
+      setCities((p) => p.slice(0, -1));
+    }
+  }
+
+  function removeCity(city: string) {
+    setCities((p) => p.filter((c) => c !== city));
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -132,23 +149,34 @@ export default function MommyPreferencesPage() {
 
         {/* Available cities */}
         <div>
-          <label className="text-label text-ivory/50 mb-3 block">Your cities</label>
-          <div className="flex flex-wrap gap-2">
-            {CITIES.map((c) => (
-              <button
+          <label className="text-label text-ivory/50 mb-3 block">
+            Your cities <span className="text-ivory/30">(type and press Enter)</span>
+          </label>
+          <div className="min-h-[44px] flex flex-wrap gap-2 p-3 rounded-2xl bg-smoke border border-champagne/20 focus-within:border-champagne/50 transition-colors">
+            {cities.map((c) => (
+              <span
                 key={c}
-                type="button"
-                onClick={() => toggleCity(c)}
-                className={cn(
-                  "px-4 py-2 rounded-full text-body-sm border transition-all",
-                  cities.includes(c)
-                    ? "bg-champagne text-obsidian border-champagne"
-                    : "bg-smoke text-ivory/70 border-champagne/20 hover:border-champagne/50"
-                )}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-champagne text-obsidian text-body-sm"
               >
                 {c}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => removeCity(c)}
+                  className="hover:opacity-70 transition-opacity"
+                >
+                  <X className="size-3" />
+                </button>
+              </span>
             ))}
+            <input
+              type="text"
+              value={cityInput}
+              onChange={(e) => setCityInput(e.target.value)}
+              onKeyDown={handleCityKeyDown}
+              onBlur={() => addCity(cityInput)}
+              placeholder={cities.length === 0 ? "Mumbai, London, Dubai..." : "Add a city..."}
+              className="flex-1 min-w-[120px] bg-transparent text-ivory text-body-sm outline-none placeholder:text-ivory/30"
+            />
           </div>
         </div>
 
