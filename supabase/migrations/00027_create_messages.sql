@@ -1,7 +1,7 @@
 create table messages (
   id uuid primary key default gen_random_uuid(),
   chat_id text not null,         -- 'match-{matchId}' or 'concierge-{userId}'
-  sender_id uuid not null references users(id) on delete cascade,
+  sender_id uuid not null references public.users(id) on delete cascade,
   content text,
   attachments jsonb not null default '[]',
   reactions jsonb not null default '{}',
