@@ -3,6 +3,7 @@ import { Logo } from "@/components/shared/logo";
 import { UserStoreHydrator } from "@/components/shared/user-store-hydrator";
 import { AppNav, MobileNav, SidebarFooter } from "@/components/shared/app-nav";
 import { PageTransition } from "@/components/shared/page-transition";
+import { OnboardingTour } from "@/components/shared/onboarding-tour";
 
 export default function AppLayout({
   children,
@@ -12,6 +13,7 @@ export default function AppLayout({
   return (
     <>
     <UserStoreHydrator />
+    <OnboardingTour />
     <div className="min-h-screen bg-obsidian text-ivory flex">
       {/* Skip to content for keyboard/screen reader users */}
       <a

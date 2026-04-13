@@ -13,6 +13,7 @@ import {
   Activity,
   CreditCard,
   TrendingUp,
+  BarChart2,
   Menu,
   X,
 } from "lucide-react";
@@ -27,6 +28,7 @@ const NAV_ITEMS = [
   { href: "/admin/payouts", label: "Payouts", icon: Wallet, exact: false },
   { href: "/admin/invitations", label: "Invitations", icon: Mail, exact: false },
   { href: "/admin/investors", label: "Investors", icon: TrendingUp, exact: false },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart2, exact: false },
   { href: "/admin/activity", label: "Activity Log", icon: Activity, exact: false },
 ];
 

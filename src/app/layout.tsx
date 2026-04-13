@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { cormorantGaramond, inter, playfairDisplay } from "@/lib/fonts";
 import { Toaster } from "sonner";
 import { GrainOverlay } from "@/components/animations/grain-overlay";
+import { PostHogProvider } from "@/components/shared/posthog-provider";
+import { PostHogPageView } from "@/components/shared/posthog-pageview";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -202,20 +204,23 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.unicorn.studio" />
       </head>
       <body className="min-h-full flex flex-col bg-obsidian text-ivory antialiased">
-        <GrainOverlay />
-        {children}
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              background: "#1A1A1A",
-              border: "1px solid rgba(201, 168, 76, 0.2)",
-              color: "#F5F0E8",
-              borderRadius: "1rem",
-              fontSize: "0.875rem",
-            },
-          }}
-        />
+        <PostHogProvider>
+          <PostHogPageView />
+          <GrainOverlay />
+          {children}
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              style: {
+                background: "#1A1A1A",
+                border: "1px solid rgba(201, 168, 76, 0.2)",
+                color: "#F5F0E8",
+                borderRadius: "1rem",
+                fontSize: "0.875rem",
+              },
+            }}
+          />
+        </PostHogProvider>
       </body>
     </html>
   );

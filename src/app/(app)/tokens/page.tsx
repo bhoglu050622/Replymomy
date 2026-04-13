@@ -6,11 +6,19 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/stores/user-store";
 import { TOKEN_PACKS } from "@/lib/dodo/prices";
+import { useRegionalPrices } from "@/hooks/use-regional-price";
 
 export default function TokensPage() {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const tokenBalance = useUserStore((s) => s.tokenBalance);
+  const { prices } = useRegionalPrices();
+
+  function tokenPrice(id: string) {
+    if (id === "tokens_5") return prices.tokens_5;
+    if (id === "tokens_12") return prices.tokens_12;
+    return prices.tokens_30;
+  }
 
   async function purchase(pack: typeof TOKEN_PACKS[number]) {
     setLoading(pack.id);
@@ -69,7 +77,7 @@ export default function TokensPage() {
             <div className="text-label text-champagne mb-3">{pack.label}</div>
             <div className="font-headline text-5xl text-ivory mb-2">{pack.tokens}</div>
             <div className="text-label text-ivory/40 mb-1">tokens</div>
-            <div className="font-headline text-2xl text-champagne mt-4">${pack.price}</div>
+            <div className="font-headline text-2xl text-champagne mt-4">{tokenPrice(pack.id)}</div>
             {"savings" in pack && pack.savings && (
               <div className="text-label text-rose mt-1">{pack.savings}</div>
             )}

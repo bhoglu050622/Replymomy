@@ -75,17 +75,17 @@ export const TOKEN_PACKS = [
 // India gets ₹499/₹1,499. Global gets $7.99/$24.99. Other regions priced by PPP.
 export const REGIONAL_PRICES: Record<
   string,
-  { pro: string; unlimited: string; tokens_5: string; currency: string }
+  { pro: string; unlimited: string; tokens_5: string; tokens_12: string; tokens_30: string; currency: string }
 > = {
-  IN:      { pro: "₹499",      unlimited: "₹1,499",    tokens_5: "₹199",    currency: "INR" },
-  NP:      { pro: "Rs 699",    unlimited: "Rs 2,099",  tokens_5: "Rs 269",  currency: "NPR" },
-  PK:      { pro: "Rs 1,799",  unlimited: "Rs 5,499",  tokens_5: "Rs 549",  currency: "PKR" },
-  BD:      { pro: "৳699",      unlimited: "৳2,199",    tokens_5: "৳219",    currency: "BDT" },
-  ID:      { pro: "Rp 49K",    unlimited: "Rp 149K",   tokens_5: "Rp 14.9K", currency: "IDR" },
-  PH:      { pro: "₱449",      unlimited: "₱1,399",    tokens_5: "₱139",    currency: "PHP" },
-  MY:      { pro: "RM99",      unlimited: "RM299",     tokens_5: "RM29",    currency: "MYR" },
-  VN:      { pro: "₫ 649K",    unlimited: "₫ 1.99M",  tokens_5: "₫ 199K", currency: "VND" },
-  DEFAULT: { pro: "$7.99",     unlimited: "$24.99",    tokens_5: "$5",      currency: "USD" },
+  IN:      { pro: "₹499",      unlimited: "₹1,499",    tokens_5: "₹199",     tokens_12: "₹399",    tokens_30: "₹799",    currency: "INR" },
+  NP:      { pro: "Rs 699",    unlimited: "Rs 2,099",  tokens_5: "Rs 269",   tokens_12: "Rs 549",  tokens_30: "Rs 1,099", currency: "NPR" },
+  PK:      { pro: "Rs 1,799",  unlimited: "Rs 5,499",  tokens_5: "Rs 549",   tokens_12: "Rs 1,099", tokens_30: "Rs 2,199", currency: "PKR" },
+  BD:      { pro: "৳699",      unlimited: "৳2,199",    tokens_5: "৳219",     tokens_12: "৳449",    tokens_30: "৳899",    currency: "BDT" },
+  ID:      { pro: "Rp 49K",    unlimited: "Rp 149K",   tokens_5: "Rp 14.9K", tokens_12: "Rp 29K",  tokens_30: "Rp 59K",  currency: "IDR" },
+  PH:      { pro: "₱449",      unlimited: "₱1,399",    tokens_5: "₱139",     tokens_12: "₱279",    tokens_30: "₱549",    currency: "PHP" },
+  MY:      { pro: "RM99",      unlimited: "RM299",     tokens_5: "RM29",     tokens_12: "RM59",    tokens_30: "RM119",   currency: "MYR" },
+  VN:      { pro: "₫ 649K",    unlimited: "₫ 1.99M",  tokens_5: "₫ 199K",  tokens_12: "₫ 399K",  tokens_30: "₫ 799K",  currency: "VND" },
+  DEFAULT: { pro: "$7.99",     unlimited: "$24.99",    tokens_5: "$5",       tokens_12: "$9.99",   tokens_30: "$19.99",  currency: "USD" },
 };
 
 // PRICE_SENSITIVE_COUNTRIES — show "Locally priced" badge

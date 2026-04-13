@@ -137,7 +137,7 @@ export default function GiftsPage() {
                   {g.name}
                 </div>
                 <div className="text-label text-champagne">
-                  ${g.price} or {g.tokens} tokens
+                  {g.tokens} tokens
                 </div>
               </button>
             ))}
