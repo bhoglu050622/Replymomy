@@ -9,6 +9,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+  serverExternalPackages: ["ssh2", "ssh2-sftp-client"],
   turbopack: {
     root: path.join(__dirname),
   },
@@ -16,6 +18,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "replymommy.com" },
     ],
   },
   async headers() {
