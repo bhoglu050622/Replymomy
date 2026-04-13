@@ -7,9 +7,8 @@ import { cn } from "@/lib/utils";
 
 const CITIES = ["NYC", "Miami", "LA", "London", "Paris", "Dubai", "Tokyo", "Singapore", "Sydney"];
 const MEMBER_TIERS = [
-  { value: "gold", label: "Gold", desc: "Founding members" },
-  { value: "platinum", label: "Platinum", desc: "Most popular" },
-  { value: "black_card", label: "Black Card", desc: "Ultra premium" },
+  { value: "pro", label: "Pro", desc: "1 match/day" },
+  { value: "unlimited", label: "Unlimited", desc: "All access" },
 ];
 const MAX_MATCHES = [
   { value: 1, label: "1", desc: "Exclusive focus" },
@@ -52,7 +51,7 @@ export default function MommyPreferencesPage() {
           preferred_age_min: ageMin,
           preferred_age_max: ageMax,
           preferred_locations: cities,
-          preferred_member_tiers: tiers.length > 0 ? tiers : ["gold", "platinum", "black_card"],
+          preferred_member_tiers: tiers.length > 0 ? tiers : ["pro", "unlimited"],
           max_active_matches: maxMatches,
           response_commitment: responseTime,
         }),

@@ -51,44 +51,30 @@ export default function MommyProfilePage() {
       return;
     }
 
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-
-    if (!cloudName || !uploadPreset) {
-      const url = prompt("Enter image URL (dev mode):");
-      if (url) setPhotoUrls((prev) => [...prev, url]);
-      return;
-    }
-
     setUploadingIdx(idx);
-    try {
-      const formData = new FormData();
-      formData.append("upload_preset", uploadPreset);
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.onchange = async (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (!file) { setUploadingIdx(null); return; }
-        formData.append("file", file);
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-          { method: "POST", body: formData }
-        );
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) { setUploadingIdx(null); return; }
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
         const data = await res.json();
-        if (data.secure_url) {
+        if (data.url) {
           setPhotoUrls((prev) => {
             const next = [...prev];
-            next[idx] = data.secure_url;
+            next[idx] = data.url;
             return next;
           });
         }
+      } finally {
         setUploadingIdx(null);
-      };
-      input.click();
-    } catch {
-      setUploadingIdx(null);
-    }
+      }
+    };
+    input.click();
   }
 
   async function handleSubmit(e: FormEvent) {

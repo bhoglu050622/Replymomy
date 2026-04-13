@@ -137,12 +137,11 @@ export function Navbar() {
           </div>
 
           <div className="hidden md:block">
-            <GoldCtaButton
-              className="h-10 px-6 text-xs"
-              onClick={() => document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth" })}
-            >
-              Request Invitation
-            </GoldCtaButton>
+            <Link href="/apply">
+              <GoldCtaButton className="h-10 px-6 text-xs">
+                Request Invitation
+              </GoldCtaButton>
+            </Link>
           </div>
 
           <button
@@ -205,14 +204,11 @@ export function Navbar() {
               ease: [0.16, 1, 0.3, 1],
             }}
           >
-            <GoldCtaButton
-              onClick={() => {
-                setOpen(false);
-                document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              Request Invitation
-            </GoldCtaButton>
+            <Link href="/apply" onClick={() => setOpen(false)}>
+              <GoldCtaButton>
+                Request Invitation
+              </GoldCtaButton>
+            </Link>
           </motion.div>
         </div>
 

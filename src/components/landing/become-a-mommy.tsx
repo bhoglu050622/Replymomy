@@ -1,15 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import { motion, AnimatePresence } from "motion/react";
-import { DollarSign, Shield, Star, ChevronRight, Camera, X, Check } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import Link from "next/link";
+import { motion } from "motion/react";
+import { DollarSign, Shield, Star, ArrowRight } from "lucide-react";
 import { GoldCtaButton } from "@/components/shared/gold-cta-button";
 import { LuxuryScrollTrigger } from "@/components/animations/luxury-scroll-trigger";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 const PERKS = [
   {
@@ -29,108 +24,7 @@ const PERKS = [
   },
 ];
 
-type Step = 1 | 2 | 3;
-
 export function BecomeAMommy() {
-  const [step, setStep] = useState<Step>(1);
-  const [state, setState] = useState<"idle" | "success">("idle");
-
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [age, setAge] = useState("");
-  const [city, setCity] = useState("");
-  const [instagram, setInstagram] = useState("");
-
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
-  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
-
-  const [motivation, setMotivation] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  async function handlePhotoClick(idx: number) {
-    if (photoUrls[idx]) {
-      setPhotoUrls((prev) => prev.filter((_, i) => i !== idx));
-      return;
-    }
-
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-
-    if (!cloudName || !uploadPreset) {
-      const url = prompt("Enter image URL (dev mode):");
-      if (url) setPhotoUrls((prev) => [...prev, url]);
-      return;
-    }
-
-    setUploadingIdx(idx);
-    try {
-      const formData = new FormData();
-      formData.append("upload_preset", uploadPreset);
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.onchange = async (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (!file) {
-          setUploadingIdx(null);
-          return;
-        }
-        formData.append("file", file);
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-          { method: "POST", body: formData }
-        );
-        const data = await res.json();
-        if (data.secure_url) {
-          setPhotoUrls((prev) => {
-            const next = [...prev];
-            next[idx] = data.secure_url;
-            return next;
-          });
-        }
-        setUploadingIdx(null);
-      };
-      input.click();
-    } catch {
-      setUploadingIdx(null);
-    }
-  }
-
-  async function handleSubmit() {
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/mommy/apply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          full_name: fullName,
-          age: parseInt(age),
-          instagram: instagram || undefined,
-          city,
-          motivation,
-          photo_urls: photoUrls,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error ?? "Failed to submit.");
-        setSubmitting(false);
-        return;
-      }
-      setState("success");
-    } catch {
-      toast.error("Something went wrong.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  const canProceedStep1 =
-    fullName.trim() && email.includes("@") && parseInt(age) >= 18 && city.trim();
-  const canProceedStep2 = photoUrls.length >= 1;
-  const canSubmit = motivation.trim().length >= 20;
-
   return (
     <section
       id="become-a-mommy"
@@ -153,7 +47,6 @@ export function BecomeAMommy() {
       </div>
 
       <div className="relative z-10 container mx-auto">
-        {/* Section header with ornamental divider */}
         <LuxuryScrollTrigger>
           <div className="text-center mb-16">
             <div className="flex items-center justify-center gap-4 mb-5">
@@ -226,288 +119,70 @@ export function BecomeAMommy() {
             </motion.div>
           </div>
 
-          {/* Right — application form */}
-          <div className="relative">
-            <AnimatePresence mode="wait">
-              {state === "success" ? (
-                <motion.div
-                  key="success"
-                  className="flex flex-col items-center justify-center py-16 text-center gap-6"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <div className="size-16 rounded-full bg-champagne/10 border border-champagne/30 flex items-center justify-center">
-                    <Check className="size-7 text-champagne" />
-                  </div>
-                  <div>
-                    <h3 className="text-display-md text-ivory mb-2">
-                      Request received.
-                    </h3>
-                    <p className="text-body-md text-ivory/50 max-w-xs">
-                      We review every application personally. Expect a response within 48 hours.
-                    </p>
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="form"
-                  className="luxury-glass-deep p-5 sm:p-8 rounded-3xl relative overflow-hidden"
-                  style={{
-                    boxShadow:
-                      "0 0 0 1px rgba(232,194,123,0.11), 0 24px 64px rgba(0,0,0,0.42)",
-                  }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  {/* Corner ornament */}
-                  <div
-                    className="absolute top-0 right-0 overflow-hidden rounded-tr-3xl pointer-events-none"
-                    style={{ width: 88, height: 88 }}
-                  >
-                    <div className="absolute top-0 right-0 w-px h-14 bg-gradient-to-b from-champagne/28 to-transparent" />
-                    <div className="absolute top-0 right-0 h-px w-14 bg-gradient-to-l from-champagne/28 to-transparent" />
-                  </div>
+          {/* Right — CTA */}
+          <motion.div
+            className="relative"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <div
+              className="luxury-glass-deep p-8 rounded-3xl relative overflow-hidden"
+              style={{
+                boxShadow: "0 0 0 1px rgba(232,194,123,0.11), 0 24px 64px rgba(0,0,0,0.42)",
+              }}
+            >
+              {/* Corner ornament */}
+              <div
+                className="absolute top-0 right-0 overflow-hidden rounded-tr-3xl pointer-events-none"
+                style={{ width: 88, height: 88 }}
+              >
+                <div className="absolute top-0 right-0 w-px h-14 bg-gradient-to-b from-champagne/28 to-transparent" />
+                <div className="absolute top-0 right-0 h-px w-14 bg-gradient-to-l from-champagne/28 to-transparent" />
+              </div>
 
-                  {/* Step indicator */}
-                  <div className="flex items-center gap-2 mb-8">
-                    {([1, 2, 3] as Step[]).map((s) => (
-                      <div key={s} className="flex items-center gap-2">
-                        <div
-                          className={cn(
-                            "size-7 rounded-full flex items-center justify-center text-label border transition-all",
-                            step === s
-                              ? "bg-champagne text-obsidian border-champagne"
-                              : step > s
-                                ? "bg-champagne/20 text-champagne border-champagne/30"
-                                : "bg-smoke text-ivory/30 border-champagne/10"
-                          )}
-                        >
-                          {step > s ? <Check className="size-3" /> : s}
-                        </div>
-                        {s < 3 && (
-                          <div
-                            className={cn(
-                              "h-px w-8 transition-all",
-                              step > s ? "bg-champagne/40" : "bg-champagne/10"
-                            )}
-                          />
-                        )}
-                      </div>
-                    ))}
-                    <span className="ml-2 text-label text-ivory/38">
-                      {step === 1
-                        ? "Identity"
-                        : step === 2
-                          ? "Photo selection"
-                          : "Your story"}
-                    </span>
-                  </div>
+              <div className="space-y-6">
+                <div>
+                  <div className="text-label text-champagne mb-2">Founding Mommies</div>
+                  <h3 className="text-display-md text-ivory leading-tight">
+                    Date on your{" "}
+                    <span className="italic text-champagne">own terms.</span>
+                  </h3>
+                  <p className="text-body-sm text-ivory/50 mt-3 leading-relaxed">
+                    A 5-minute application. We review every submission personally
+                    and respond within 48 hours.
+                  </p>
+                </div>
 
-                  <AnimatePresence mode="wait">
-                    {/* Step 1 */}
-                    {step === 1 && (
-                      <motion.div
-                        key="step1"
-                        className="space-y-4"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div className="col-span-2">
-                            <label className="text-label text-ivory/38 mb-1.5 block">
-                              Full Name
-                            </label>
-                            <Input
-                              value={fullName}
-                              onChange={(e) => setFullName(e.target.value)}
-                              placeholder="Your name"
-                              className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-label text-ivory/38 mb-1.5 block">
-                              Email
-                            </label>
-                            <Input
-                              type="email"
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
-                              placeholder="you@email.com"
-                              className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-label text-ivory/38 mb-1.5 block">
-                              Age
-                            </label>
-                            <Input
-                              type="number"
-                              value={age}
-                              onChange={(e) => setAge(e.target.value)}
-                              placeholder="Age"
-                              min="18"
-                              max="65"
-                              className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-label text-ivory/38 mb-1.5 block">
-                              City
-                            </label>
-                            <Input
-                              value={city}
-                              onChange={(e) => setCity(e.target.value)}
-                              placeholder="Your city"
-                              className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-label text-ivory/38 mb-1.5 block">
-                              Instagram{" "}
-                              <span className="text-ivory/20">(optional)</span>
-                            </label>
-                            <Input
-                              value={instagram}
-                              onChange={(e) => setInstagram(e.target.value)}
-                              placeholder="@handle"
-                              className="h-11 bg-obsidian/50 border-champagne/20 text-ivory rounded-full px-5"
-                            />
-                          </div>
-                        </div>
-                        <GoldCtaButton
-                          className="w-full mt-4"
-                          disabled={!canProceedStep1}
-                          onClick={() => setStep(2)}
-                        >
-                          Continue <ChevronRight className="size-4 ml-1" />
-                        </GoldCtaButton>
-                      </motion.div>
-                    )}
+                <ul className="space-y-2.5">
+                  {["Free to apply", "Full control over visibility", "Reviewed by humans, not bots"].map((item) => (
+                    <li key={item} className="flex items-center gap-2.5 text-body-sm text-ivory/60">
+                      <span className="size-1.5 rounded-full bg-champagne shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
 
-                    {/* Step 2 */}
-                    {step === 2 && (
-                      <motion.div
-                        key="step2"
-                        className="space-y-5"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <div>
-                          <p className="text-body-sm text-ivory/48 mb-4">
-                            Add 1–5 photos. Your first photo is your introduction.
-                          </p>
-                          <div className="grid grid-cols-5 gap-2">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <button
-                                key={i}
-                                type="button"
-                                onClick={() => handlePhotoClick(i)}
-                                disabled={
-                                  uploadingIdx === i ||
-                                  (!photoUrls[i] && i > photoUrls.length)
-                                }
-                                className={cn(
-                                  "aspect-square rounded-xl border-2 border-dashed flex items-center justify-center transition-colors relative overflow-hidden",
-                                  photoUrls[i]
-                                    ? "border-champagne"
-                                    : i === photoUrls.length
-                                      ? "border-champagne/30 hover:border-champagne/60"
-                                      : "border-champagne/10 opacity-40"
-                                )}
-                              >
-                                {photoUrls[i] ? (
-                                  <>
-                                    <Image
-                                      src={photoUrls[i]}
-                                      alt=""
-                                      fill
-                                      className="object-cover rounded-xl"
-                                      sizes="(max-width: 768px) 33vw, 150px"
-                                    />
-                                    <div className="absolute inset-0 flex items-center justify-center bg-obsidian/60 opacity-0 hover:opacity-100 transition-opacity">
-                                      <X className="size-3 text-ivory" />
-                                    </div>
-                                  </>
-                                ) : uploadingIdx === i ? (
-                                  <div className="size-3.5 rounded-full border-2 border-champagne/40 border-t-champagne animate-spin" />
-                                ) : (
-                                  <Camera className="size-4 text-champagne/30" />
-                                )}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => setStep(1)}
-                            className="px-5 py-2.5 rounded-full border border-champagne/20 text-ivory/48 text-body-sm hover:text-ivory transition-colors"
-                          >
-                            Back
-                          </button>
-                          <GoldCtaButton
-                            className="flex-1"
-                            disabled={!canProceedStep2}
-                            onClick={() => setStep(3)}
-                          >
-                            Continue <ChevronRight className="size-4 ml-1" />
-                          </GoldCtaButton>
-                        </div>
-                      </motion.div>
-                    )}
+                <p className="text-[11px] text-ivory/30 leading-relaxed">
+                  <span className="text-champagne/50">*</span>{" "}
+                  Anyone who identifies outside of male — woman, non-binary, femme,
+                  or any expression of femininity — belongs here as a Mommy.{" "}
+                  <span className="italic text-champagne/50">Slay your feminine energy.</span>
+                </p>
 
-                    {/* Step 3 */}
-                    {step === 3 && (
-                      <motion.div
-                        key="step3"
-                        className="space-y-5"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <div>
-                          <label className="text-label text-ivory/38 mb-2 block">
-                            Your story{" "}
-                            <span className="text-ivory/20">(min 20 characters)</span>
-                          </label>
-                          <Textarea
-                            value={motivation}
-                            onChange={(e) => setMotivation(e.target.value)}
-                            placeholder="Tell us a little about yourself and what kind of connections you're looking for..."
-                            rows={5}
-                            className="bg-obsidian/50 border-champagne/20 text-ivory rounded-2xl p-4"
-                          />
-                          <div className="text-right text-label text-ivory/22 mt-1">
-                            {motivation.length} chars
-                          </div>
-                        </div>
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => setStep(2)}
-                            className="px-5 py-2.5 rounded-full border border-champagne/20 text-ivory/48 text-body-sm hover:text-ivory transition-colors"
-                          >
-                            Back
-                          </button>
-                          <GoldCtaButton
-                            className="flex-1"
-                            disabled={!canSubmit || submitting}
-                            onClick={handleSubmit}
-                          >
-                            {submitting ? "Submitting..." : "Request Invitation"}
-                          </GoldCtaButton>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                <Link href="/apply?role=mommy" className="block">
+                  <GoldCtaButton className="w-full">
+                    Submit your application <ArrowRight className="size-4 ml-1" />
+                  </GoldCtaButton>
+                </Link>
+
+                <p className="text-center text-[11px] text-ivory/25">
+                  By applying you agree to our community standards.
+                </p>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

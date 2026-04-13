@@ -10,10 +10,28 @@ import {
   TrendingUp,
   ArrowRight,
   Clock,
+  HardDrive,
+  AlertTriangle,
+  CreditCard,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+interface StorageHealth {
+  totalLiveAssets: number;
+  totalLiveBytes: number;
+  totalSoftDeleted: number;
+  pendingPurgeBytes: number;
+  uploadsLast24h: number;
+  uploadsLast7d: number;
+  bytesLast7d: number;
+  topUploaders: Array<{ userId: string; bytes: number }>;
+  thresholds: {
+    storageUsedPct: number;
+    upgradeRecommended: boolean;
+  };
+}
 
 interface Stats {
   totalUsers: number;
@@ -92,10 +110,18 @@ function statusColor(status: string) {
   return "text-ivory/40 bg-ivory/5";
 }
 
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
+}
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [health, setHealth] = useState<StorageHealth | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/stats")
@@ -105,6 +131,10 @@ export default function AdminDashboardPage() {
       })
       .then((d) => { if (d) setStats(d); })
       .finally(() => setLoading(false));
+
+    fetch("/api/admin/storage-health")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d) setHealth(d); });
   }, [router]);
 
   return (
@@ -188,6 +218,92 @@ export default function AdminDashboardPage() {
           </div>
           <ArrowRight className="size-4 text-ivory/20 group-hover:text-champagne/50 transition-colors" />
         </Link>
+        <Link
+          href="/admin/payments"
+          className="group flex items-center justify-between p-5 rounded-2xl bg-smoke/80 border border-champagne/[0.08] hover:border-champagne/25 transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <CreditCard className="size-5 text-champagne/60 group-hover:text-champagne transition-colors" />
+            <div>
+              <div className="text-sm font-medium text-ivory">Approve Payments</div>
+              <div className="text-xs text-ivory/40">Review GPay upgrades &amp; activate tiers</div>
+            </div>
+          </div>
+          <ArrowRight className="size-4 text-ivory/20 group-hover:text-champagne/50 transition-colors" />
+        </Link>
+      </div>
+
+      {/* Storage Health */}
+      <div className="mb-10">
+        <div className="flex items-center gap-2 mb-4">
+          <HardDrive className="size-4 text-champagne/60" />
+          <h2 className="text-sm font-semibold text-ivory">Storage Health</h2>
+        </div>
+
+        {health?.thresholds.upgradeRecommended && (
+          <div className="mb-4 flex items-start gap-3 p-4 rounded-2xl bg-burgundy/20 border border-burgundy/40">
+            <AlertTriangle className="size-4 text-burgundy-300 shrink-0 mt-0.5" />
+            <div>
+              <div className="text-label text-burgundy-300 mb-0.5">Consider upgrading</div>
+              <p className="text-body-sm text-ivory/70">
+                Media storage is at {health.thresholds.storageUsedPct.toFixed(0)}% of the free-tier limit (25 GB).
+                Upgrade Cloudinary before reaching 100% to avoid upload failures.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="p-5 rounded-2xl bg-smoke/80 border border-champagne/[0.08]">
+            <div className="text-label text-ivory/40 mb-1">Live Assets</div>
+            <div className="font-headline text-3xl text-ivory">{health?.totalLiveAssets ?? "—"}</div>
+            <div className="text-xs text-ivory/30 mt-0.5">{health ? formatBytes(health.totalLiveBytes) : ""}</div>
+          </div>
+          <div className="p-5 rounded-2xl bg-smoke/80 border border-champagne/[0.08]">
+            <div className="text-label text-ivory/40 mb-1">Uploads (24h)</div>
+            <div className="font-headline text-3xl text-ivory">{health?.uploadsLast24h ?? "—"}</div>
+          </div>
+          <div className="p-5 rounded-2xl bg-smoke/80 border border-champagne/[0.08]">
+            <div className="text-label text-ivory/40 mb-1">Uploads (7d)</div>
+            <div className="font-headline text-3xl text-ivory">{health?.uploadsLast7d ?? "—"}</div>
+            <div className="text-xs text-ivory/30 mt-0.5">{health ? formatBytes(health.bytesLast7d) : ""}</div>
+          </div>
+          <div className="p-5 rounded-2xl bg-smoke/80 border border-champagne/[0.08]">
+            <div className="text-label text-ivory/40 mb-1">Pending Purge</div>
+            <div className="font-headline text-3xl text-ivory">{health?.totalSoftDeleted ?? "—"}</div>
+            <div className="text-xs text-ivory/30 mt-0.5">{health ? formatBytes(health.pendingPurgeBytes) : ""}</div>
+          </div>
+        </div>
+
+        {/* Storage bar */}
+        {health && (
+          <div className="p-5 rounded-2xl bg-smoke/80 border border-champagne/[0.08]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-label text-ivory/40">Cloudinary storage used</span>
+              <span className="text-label text-ivory/60">
+                {formatBytes(health.totalLiveBytes)} / 25 GB
+                {" "}({health.thresholds.storageUsedPct.toFixed(1)}%)
+              </span>
+            </div>
+            <div className="w-full h-2 bg-champagne/10 rounded-full">
+              <div
+                className={`h-2 rounded-full transition-all ${
+                  health.thresholds.storageUsedPct >= 70
+                    ? "bg-red-400"
+                    : health.thresholds.storageUsedPct >= 50
+                    ? "bg-amber-400"
+                    : "bg-champagne"
+                }`}
+                style={{ width: `${Math.min(100, health.thresholds.storageUsedPct)}%` }}
+              />
+            </div>
+            <div className="flex items-center gap-4 mt-2 text-xs text-ivory/20">
+              <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-champagne inline-block" /> Safe (&lt;50%)</span>
+              <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-amber-400 inline-block" /> Watch (50–70%)</span>
+              <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-red-400 inline-block" /> Upgrade (&gt;70%)</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Recent data tables */}

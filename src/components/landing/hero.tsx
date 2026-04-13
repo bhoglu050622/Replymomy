@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Link from "next/link";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -69,8 +70,6 @@ export function Hero() {
     { scope: sectionRef, dependencies: [reduced] }
   );
 
-  const scrollToWaitlist = () =>
-    document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth" });
   const scrollToMembership = () =>
     document.getElementById("membership")?.scrollIntoView({ behavior: "smooth" });
 
@@ -152,9 +151,11 @@ export function Hero() {
               whileTap={{ scale: 0.97 }}
               transition={{ type: "spring", stiffness: 320, damping: 22 }}
             >
-              <GoldCtaButton className="h-12 px-8 text-xs w-full sm:w-auto" onClick={scrollToWaitlist}>
-                Request Invitation <ArrowDownRight className="size-4" />
-              </GoldCtaButton>
+              <Link href="/apply">
+                <GoldCtaButton className="h-12 px-8 text-xs w-full sm:w-auto">
+                  Request Invitation <ArrowDownRight className="size-4" />
+                </GoldCtaButton>
+              </Link>
             </motion.div>
 
             <Button

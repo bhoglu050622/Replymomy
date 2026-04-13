@@ -1,11 +1,29 @@
 // DodoPayments product IDs — populated by scripts/setup-dodo-products.mjs
 export const DODO_PRODUCTS = {
+  // Active tiers (shown in UI)
+  pro: {
+    productId: process.env.DODO_PRODUCT_PRO ?? "",
+    name: "Pro",
+    tier: "pro" as const,
+    tokens: 10,
+    matches: 1,  // 1 curated match/day
+    price: 8,
+  },
+  unlimited: {
+    productId: process.env.DODO_PRODUCT_UNLIMITED ?? "",
+    name: "Unlimited",
+    tier: "unlimited" as const,
+    tokens: 50,
+    matches: -1, // unlimited curated matches
+    price: 25,
+  },
+  // Legacy tiers — kept for existing subscribers; not shown in UI
   gold: {
     productId: process.env.DODO_PRODUCT_GOLD ?? "",
     name: "Patron",
     tier: "gold" as const,
     tokens: 50,
-    matches: 3,
+    matches: 1,
     price: 99,
   },
   platinum: {
@@ -13,7 +31,7 @@ export const DODO_PRODUCTS = {
     name: "Fellow",
     tier: "platinum" as const,
     tokens: 150,
-    matches: 7,
+    matches: 2,
     price: 299,
   },
   black_card: {
@@ -53,29 +71,33 @@ export const TOKEN_PACKS = [
   },
 ];
 
-// Regional price display (UI only — DodoPayments handles actual billing currency)
+// Regional price display (UI only — DodoPayments handles actual billing currency via PPP)
+// India gets ₹499/₹1,499. Global gets $7.99/$24.99. Other regions priced by PPP.
 export const REGIONAL_PRICES: Record<
   string,
-  { gold: string; platinum: string; black_card: string; tokens_5: string; currency: string }
+  { pro: string; unlimited: string; tokens_5: string; currency: string }
 > = {
-  IN: { gold: "₹1,999", platinum: "₹5,999", black_card: "₹19,999", tokens_5: "₹199", currency: "INR" },
-  NP: { gold: "Rs 2,699", platinum: "Rs 7,999", black_card: "Rs 26,999", tokens_5: "Rs 269", currency: "NPR" },
-  PK: { gold: "Rs 5,599", platinum: "Rs 16,999", black_card: "Rs 55,999", tokens_5: "Rs 549", currency: "PKR" },
-  BD: { gold: "৳2,199", platinum: "৳6,599", black_card: "৳21,999", tokens_5: "৳219", currency: "BDT" },
-  ID: { gold: "Rp 149K", platinum: "Rp 449K", black_card: "Rp 1.49M", tokens_5: "Rp 14.9K", currency: "IDR" },
-  PH: { gold: "₱1,399", platinum: "₱4,199", black_card: "₱13,999", tokens_5: "₱139", currency: "PHP" },
-  MY: { gold: "RM299", platinum: "RM899", black_card: "RM2,999", tokens_5: "RM29", currency: "MYR" },
-  VN: { gold: "₫ 1.99M", platinum: "₫ 5.99M", black_card: "₫ 19.9M", tokens_5: "₫ 199K", currency: "VND" },
-  DEFAULT: { gold: "$99", platinum: "$299", black_card: "$999", tokens_5: "$5", currency: "USD" },
+  IN:      { pro: "₹499",      unlimited: "₹1,499",    tokens_5: "₹199",    currency: "INR" },
+  NP:      { pro: "Rs 699",    unlimited: "Rs 2,099",  tokens_5: "Rs 269",  currency: "NPR" },
+  PK:      { pro: "Rs 1,799",  unlimited: "Rs 5,499",  tokens_5: "Rs 549",  currency: "PKR" },
+  BD:      { pro: "৳699",      unlimited: "৳2,199",    tokens_5: "৳219",    currency: "BDT" },
+  ID:      { pro: "Rp 49K",    unlimited: "Rp 149K",   tokens_5: "Rp 14.9K", currency: "IDR" },
+  PH:      { pro: "₱449",      unlimited: "₱1,399",    tokens_5: "₱139",    currency: "PHP" },
+  MY:      { pro: "RM99",      unlimited: "RM299",     tokens_5: "RM29",    currency: "MYR" },
+  VN:      { pro: "₫ 649K",    unlimited: "₫ 1.99M",  tokens_5: "₫ 199K", currency: "VND" },
+  DEFAULT: { pro: "$7.99",     unlimited: "$24.99",    tokens_5: "$5",      currency: "USD" },
 };
 
 // PRICE_SENSITIVE_COUNTRIES — show "Locally priced" badge
 export const PRICE_SENSITIVE = new Set(["IN", "NP", "PK", "BD", "ID", "PH", "MY", "VN"]);
 
-// MEMBER_PRICES kept for profile/display compatibility
+// MEMBER_PRICES for profile/display compatibility
 export const MEMBER_PRICES = {
-  gold: { name: "Patron", amount: 99, tokens: 50, matches: 3 },
-  platinum: { name: "Fellow", amount: 299, tokens: 150, matches: 7 },
+  pro:        { name: "Pro",       amount: 8,   tokens: 10,  matches: 1  },
+  unlimited:  { name: "Unlimited", amount: 25,  tokens: 50,  matches: -1 },
+  // Legacy — kept for existing subscribers
+  gold:       { name: "Patron",    amount: 99,  tokens: 50,  matches: 1  },
+  platinum:   { name: "Fellow",    amount: 299, tokens: 150, matches: 2  },
   black_card: { name: "Principal", amount: 999, tokens: 500, matches: -1 },
 } as const;
 

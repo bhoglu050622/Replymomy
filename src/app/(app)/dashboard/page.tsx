@@ -17,7 +17,7 @@ export default async function DashboardPage() {
   // Fetch user record
   const { data: userRecord } = await supabase
     .from("users")
-    .select("token_balance, member_tier, role")
+    .select("token_balance, member_tier, role, profiles_browsed_count")
     .eq("id", authUser!.id)
     .single();
 
@@ -88,10 +88,16 @@ export default async function DashboardPage() {
   }
 
   const tierLabels: Record<string, string> = {
+    pro: "Pro",
+    unlimited: "Unlimited",
+    // Legacy
     gold: "Gold",
     platinum: "Platinum",
     black_card: "Black Card",
   };
+
+  const browsedCount = userRecord?.profiles_browsed_count ?? 0;
+  const isFreeMember = userRecord?.role === "member" && !userRecord?.member_tier;
 
   return (
     <div className="px-6 lg:px-12 py-10 lg:py-16">
@@ -215,6 +221,29 @@ export default async function DashboardPage() {
           <span className="text-label text-ivory/30">
             {tierLabels[userRecord.member_tier] ?? userRecord.member_tier} Member
           </span>
+        </div>
+      )}
+
+      {isFreeMember && (
+        <div className="mt-6 p-4 rounded-2xl bg-smoke border border-champagne/10 flex items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="text-label text-ivory/40 mb-1">Profile Views</div>
+            <div className="text-body-sm text-ivory/60 mb-2">
+              {browsedCount} / 20 free profiles viewed
+            </div>
+            <div className="w-full h-1 bg-champagne/10 rounded-full">
+              <div
+                className="h-1 bg-champagne rounded-full transition-all"
+                style={{ width: `${Math.min(100, (browsedCount / 20) * 100)}%` }}
+              />
+            </div>
+          </div>
+          <Link
+            href="/settings/subscription"
+            className="text-label text-champagne hover:underline shrink-0"
+          >
+            Upgrade
+          </Link>
         </div>
       )}
 

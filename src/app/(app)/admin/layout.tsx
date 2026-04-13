@@ -11,6 +11,7 @@ import {
   Wallet,
   Mail,
   Activity,
+  CreditCard,
   Menu,
   X,
 } from "lucide-react";
@@ -21,6 +22,7 @@ const NAV_ITEMS = [
   { href: "/admin/crm/users", label: "Users CRM", icon: Users, exact: false },
   { href: "/admin/crm/applicants", label: "Applicants CRM", icon: ClipboardList, exact: false },
   { href: "/admin/applications", label: "Applications", icon: FileCheck, exact: false },
+  { href: "/admin/payments", label: "Payments", icon: CreditCard, exact: false },
   { href: "/admin/payouts", label: "Payouts", icon: Wallet, exact: false },
   { href: "/admin/invitations", label: "Invitations", icon: Mail, exact: false },
   { href: "/admin/activity", label: "Activity Log", icon: Activity, exact: false },

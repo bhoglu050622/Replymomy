@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button";
 import { useStreamChatContext } from "@/components/providers/stream-provider";
 import type { Channel, LocalMessage } from "stream-chat";
 import { formatDistanceToNow } from "date-fns";
+import { MEDIA_CONFIG } from "@/lib/media/config";
+
+type PendingAttachment = { assetId: string; url: string; thumbUrl: string | null };
 
 const REACTIONS = ["❤️", "🔥", "👍", "😂", "😮", "🙏"];
 
@@ -39,7 +42,7 @@ export default function ChannelPage({
   const [showReactions, setShowReactions] = useState<string | null>(null);
 
   // Image attachment state
-  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [attachedImages, setAttachedImages] = useState<PendingAttachment[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -127,6 +130,16 @@ export default function ChannelPage({
   async function deleteMessage(messageId: string) {
     if (!channel) return;
     try {
+      // Soft-delete any tracked media assets attached to this message
+      const msg = messages.find((m) => m.id === messageId);
+      if (msg?.attachments?.length) {
+        for (const att of msg.attachments) {
+          const assetId = (att as Record<string, unknown>).asset_id as string | undefined;
+          if (assetId) {
+            fetch(`/api/media/delete?assetId=${assetId}`, { method: "DELETE" }).catch(() => {});
+          }
+        }
+      }
       await client!.deleteMessage(messageId);
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
       toast.success("Message deleted");
@@ -195,87 +208,85 @@ export default function ChannelPage({
 
   // Image upload handlers
   function handleImageClick() {
+    if (attachedImages.length >= MEDIA_CONFIG.MAX_ATTACHMENTS) {
+      toast.error(`Maximum ${MEDIA_CONFIG.MAX_ATTACHMENTS} attachments per message`);
+      return;
+    }
     fileInputRef.current?.click();
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = "";
 
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be less than 5MB");
+    if (attachedImages.length >= MEDIA_CONFIG.MAX_ATTACHMENTS) {
+      toast.error(`Maximum ${MEDIA_CONFIG.MAX_ATTACHMENTS} attachments per message`);
       return;
     }
 
     setUploadingImage(true);
-
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-
-    if (!cloudName || !uploadPreset) {
-      // Dev mode: use FileReader to get base64
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAttachedImage(reader.result as string);
-        setUploadingImage(false);
-      };
-      reader.readAsDataURL(file);
-      return;
-    }
-
     try {
-      const formData = new FormData();
-      formData.append("upload_preset", uploadPreset);
-      formData.append("file", file);
+      const form = new FormData();
+      form.append("file", file);
+      form.append("chatId", channelId);
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-        { method: "POST", body: formData }
-      );
+      const res = await fetch("/api/media/upload", { method: "POST", body: form });
       const data = await res.json();
 
-      if (data.secure_url) {
-        setAttachedImage(data.secure_url);
-      } else {
-        toast.error("Failed to upload image");
+      if (!res.ok) {
+        toast.error(data.error ?? "Upload failed");
+        return;
       }
+
+      setAttachedImages((prev) => [
+        ...prev,
+        { assetId: data.assetId, url: data.url, thumbUrl: data.thumbUrl ?? null },
+      ]);
     } catch {
-      toast.error("Failed to upload image");
+      toast.error("Upload failed");
     } finally {
       setUploadingImage(false);
     }
   }
 
-  function removeAttachedImage() {
-    setAttachedImage(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+  function removeAttachedImage(assetId: string) {
+    setAttachedImages((prev) => prev.filter((a) => a.assetId !== assetId));
   }
 
-  async function sendImageMessage() {
-    if (!attachedImage || !channel || sending) return;
+  async function sendWithAttachments() {
+    if (!channel || sending || (attachedImages.length === 0 && !input.trim())) return;
 
     setSending(true);
     try {
-      await channel.sendMessage({
+      const streamMsg = await channel.sendMessage({
         text: input.trim() || "",
-        attachments: [
-          {
-            type: "image",
-            image_url: attachedImage,
-            fallback: "Image",
-          },
-        ],
+        attachments: attachedImages.map((img) => ({
+          type: "image",
+          image_url: img.url,
+          thumb_url: img.thumbUrl ?? img.url,
+          asset_id: img.assetId, // stored in Stream payload for soft-delete lookup
+          fallback: "Image",
+        })),
       });
-      setInput("");
-      setAttachedImage(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+
+      // Fire-and-forget: link each asset to the confirmed Stream message ID
+      for (const img of attachedImages) {
+        fetch("/api/media/attach", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            assetId: img.assetId,
+            streamMessageId: streamMsg.message.id,
+            chatId: channelId,
+          }),
+        }).catch(() => {});
       }
+
+      setInput("");
+      setAttachedImages([]);
     } catch {
-      toast.error("Failed to send image");
+      toast.error("Failed to send");
     } finally {
       setSending(false);
     }
@@ -373,23 +384,26 @@ export default function ChannelPage({
                     // View mode
                     <>
                       <p className="leading-relaxed">{msg.text}</p>
-                      {/* Image attachments */}
+                      {/* Image attachments — show thumb, link to full */}
                       {msg.attachments && msg.attachments.length > 0 && (
-                        <div className="mt-2 space-y-2">
+                        <div className="mt-2 flex flex-wrap gap-1.5">
                           {msg.attachments.map((attachment, idx) =>
                             attachment.type === "image" && attachment.image_url ? (
-                              <div
+                              <a
                                 key={idx}
-                                className="relative rounded-xl overflow-hidden max-w-[200px]"
+                                href={attachment.image_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="relative rounded-xl overflow-hidden block"
                               >
                                 <Image
-                                  src={attachment.image_url}
+                                  src={(attachment as Record<string, unknown>).thumb_url as string ?? attachment.image_url}
                                   alt="Shared image"
-                                  width={200}
-                                  height={150}
+                                  width={160}
+                                  height={120}
                                   className="object-cover rounded-xl"
                                 />
-                              </div>
+                              </a>
                             ) : null
                           )}
                         </div>
@@ -521,25 +535,29 @@ export default function ChannelPage({
 
       {/* Input */}
       <div className="px-6 py-4 border-t border-champagne/10 bg-obsidian/95 backdrop-blur-xl shrink-0">
-        {/* Attached image preview */}
-        {attachedImage && (
-          <div className="mb-3 flex items-center gap-2">
-            <div className="relative">
-              <Image
-                src={attachedImage}
-                alt="Attached image"
-                width={60}
-                height={60}
-                className="rounded-lg object-cover"
-              />
-              <button
-                onClick={removeAttachedImage}
-                className="absolute -top-1 -right-1 size-5 bg-smoke border border-champagne/30 rounded-full flex items-center justify-center text-ivory/60 hover:text-ivory"
-              >
-                <X className="size-3" />
-              </button>
-            </div>
-            <span className="text-body-sm text-ivory/50">Image attached</span>
+        {/* Attached image previews */}
+        {attachedImages.length > 0 && (
+          <div className="mb-3 flex items-center gap-2 flex-wrap">
+            {attachedImages.map((img) => (
+              <div key={img.assetId} className="relative">
+                <Image
+                  src={img.thumbUrl ?? img.url}
+                  alt="Attached image"
+                  width={60}
+                  height={60}
+                  className="rounded-lg object-cover"
+                />
+                <button
+                  onClick={() => removeAttachedImage(img.assetId)}
+                  className="absolute -top-1 -right-1 size-5 bg-smoke border border-champagne/30 rounded-full flex items-center justify-center text-ivory/60 hover:text-ivory"
+                >
+                  <X className="size-3" />
+                </button>
+              </div>
+            ))}
+            <span className="text-body-sm text-ivory/50">
+              {attachedImages.length} / {MEDIA_CONFIG.MAX_ATTACHMENTS}
+            </span>
           </div>
         )}
 
@@ -557,7 +575,7 @@ export default function ChannelPage({
             size="icon"
             className="text-ivory/40 hover:text-champagne shrink-0"
             onClick={handleImageClick}
-            disabled={uploadingImage || !!attachedImage}
+            disabled={uploadingImage || attachedImages.length >= MEDIA_CONFIG.MAX_ATTACHMENTS}
           >
             {uploadingImage ? (
               <div className="size-4 border-2 border-champagne/40 border-t-champagne rounded-full animate-spin" />
@@ -580,14 +598,14 @@ export default function ChannelPage({
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                if (attachedImage) {
-                  sendImageMessage();
+                if (attachedImages.length > 0) {
+                  sendWithAttachments();
                 } else {
                   sendMessage();
                 }
               }
             }}
-            placeholder={attachedImage ? "Add a message (optional)..." : "Say something..."}
+            placeholder={attachedImages.length > 0 ? "Add a message (optional)..." : "Say something..."}
             rows={1}
             className="flex-1 bg-smoke border border-champagne/20 text-ivory rounded-2xl px-4 py-3 text-body-md resize-none focus:outline-none focus:border-champagne/50 transition-colors placeholder:text-ivory/30"
             style={{ minHeight: "48px", maxHeight: "120px" }}
@@ -596,8 +614,8 @@ export default function ChannelPage({
             variant="gold"
             size="icon"
             className="rounded-full shrink-0"
-            onClick={attachedImage ? sendImageMessage : sendMessage}
-            disabled={(!input.trim() && !attachedImage) || sending || !channel}
+            onClick={attachedImages.length > 0 ? sendWithAttachments : sendMessage}
+            disabled={(!input.trim() && attachedImages.length === 0) || sending || !channel}
           >
             <Send className="size-4" />
           </Button>

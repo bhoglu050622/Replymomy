@@ -9,9 +9,14 @@ export default async function SubscriptionPage() {
 
   const { data: userRecord } = await supabase
     .from("users")
-    .select("member_tier")
+    .select("member_tier, profiles_browsed_count")
     .eq("id", authUser!.id)
     .single();
 
-  return <SubscriptionClient currentTier={userRecord?.member_tier ?? null} />;
+  return (
+    <SubscriptionClient
+      currentTier={userRecord?.member_tier ?? null}
+      browsedCount={userRecord?.profiles_browsed_count ?? 0}
+    />
+  );
 }

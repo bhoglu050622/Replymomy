@@ -11,7 +11,10 @@ const schema = z.object({
   income_bracket: z.enum(["200k_500k", "500k_1m", "1m_plus"]),
   motivation: z.string().min(20).max(2000),
   photo_url: z.string().url().optional(),
+  photo_urls: z.array(z.string().url()).max(5).optional(),
   referral_source: z.string().max(200).optional(),
+  gender: z.string().max(100).optional(),
+  pronouns: z.string().max(50).optional(),
 });
 
 export async function POST(req: Request) {
@@ -53,7 +56,10 @@ export async function POST(req: Request) {
         income_bracket: body.income_bracket,
         motivation: body.motivation,
         photo_url: body.photo_url ?? null,
+        photo_urls: body.photo_urls ?? [],
         referral_source: body.referral_source ?? null,
+        gender: body.gender ?? null,
+        pronouns: body.pronouns ?? null,
         status: "pending",
       })
       .select("id")

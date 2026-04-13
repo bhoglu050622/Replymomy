@@ -2,6 +2,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { GalleryUnlockButton } from "./gallery-unlock-button";
+import { ProfileBrowseLimitWall } from "@/components/shared/profile-browse-limit-wall";
 
 export default async function UserProfilePage({
   params,
@@ -13,6 +14,31 @@ export default async function UserProfilePage({
   const {
     data: { user: authUser },
   } = await supabase.auth.getUser();
+
+  // Fetch viewer's record to enforce browse limit
+  const { data: viewer } = await supabase
+    .from("users")
+    .select("role, member_tier, profiles_browsed_count")
+    .eq("id", authUser!.id)
+    .single();
+
+  const isMember = viewer?.role === "member";
+  if (isMember) {
+    const tier = viewer?.member_tier ?? null;
+    // free tier = 20 profiles; any paid tier = unlimited browsing
+    const limit = tier === null ? 20 : -1;
+    const count = viewer?.profiles_browsed_count ?? 0;
+
+    if (limit !== -1 && count >= limit) {
+      return <ProfileBrowseLimitWall currentTier={tier} limit={limit} />;
+    }
+
+    // Increment counter. RLS policy allows users to update their own row.
+    await supabase
+      .from("users")
+      .update({ profiles_browsed_count: count + 1 })
+      .eq("id", authUser!.id);
+  }
 
   // Fetch profile
   const { data: profile } = await supabase

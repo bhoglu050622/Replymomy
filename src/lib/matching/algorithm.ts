@@ -121,13 +121,15 @@ export function selectDailyMatches(
 
 export function matchesPerDayForTier(tier: string | null): number {
   switch (tier) {
+    case "unlimited":
     case "black_card":
-      return 3;
+      return -1; // unlimited
     case "platinum":
       return 2;
+    case "pro":
     case "gold":
       return 1;
     default:
-      return 0;
+      return 0; // free tier — no curated matches
   }
 }

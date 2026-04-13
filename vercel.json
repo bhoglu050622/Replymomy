@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/weekly-spotlight",
       "schedule": "0 0 * * 1"
+    },
+    {
+      "path": "/api/cron/cleanup-media",
+      "schedule": "0 3 * * *"
     }
   ]
 }

@@ -10,6 +10,8 @@ const schema = z.object({
   city: z.string().min(2).max(100),
   motivation: z.string().min(20).max(2000),
   photo_urls: z.array(z.string().url()).min(1).max(5),
+  gender: z.string().max(100).optional(),
+  pronouns: z.string().max(50).optional(),
 });
 
 export async function POST(req: Request) {
@@ -50,6 +52,8 @@ export async function POST(req: Request) {
         city: body.city,
         motivation: body.motivation,
         photo_urls: body.photo_urls,
+        gender: body.gender ?? null,
+        pronouns: body.pronouns ?? null,
         status: "pending",
       })
       .select("id")
