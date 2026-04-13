@@ -15,7 +15,6 @@ const schema = z.object({
   preferred_age_max: z.number().int().min(18).max(80).optional(),
   preferred_interests: z.array(z.string()).optional(),
   preferred_locations: z.array(z.string()).optional(),
-  preferred_member_tiers: z.array(z.string()).optional(),
   max_active_matches: z.number().int().min(1).max(99).optional(),
   response_commitment: z.string().optional(),
   show_online_status: z.boolean().optional(),
@@ -45,17 +44,40 @@ export async function PUT(req: Request) {
 
   try {
     const data = schema.parse(await req.json());
+    const updatedAt = new Date().toISOString();
+    const row = { ...data, updated_at: updatedAt };
 
-    const { data: profile, error } = await supabase
+    const { data: existing } = await supabase
       .from("profiles")
-      .upsert(
-        { user_id: user!.id, ...data, updated_at: new Date().toISOString() },
-        { onConflict: "user_id" }
-      )
-      .select()
-      .single();
+      .select("user_id")
+      .eq("user_id", user!.id)
+      .maybeSingle();
+
+    const result = existing
+      ? await supabase
+          .from("profiles")
+          .update(row)
+          .eq("user_id", user!.id)
+          .select()
+          .single()
+      : await supabase
+          .from("profiles")
+          .upsert(
+            { user_id: user!.id, ...row },
+            { onConflict: "user_id" }
+          )
+          .select()
+          .single();
+
+    const { data: profile, error } = result;
 
     if (error) {
+      if (!existing && error.code === "23502") {
+        return NextResponse.json(
+          { error: "Complete your profile step before saving preferences." },
+          { status: 400 }
+        );
+      }
       return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
     }
 

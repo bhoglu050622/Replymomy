@@ -221,7 +221,7 @@ BEGIN
     location_city, location_country, photo_urls,
     headline, desires,
     preferred_age_min, preferred_age_max,
-    preferred_member_tiers, preferred_locations,
+    preferred_locations,
     max_active_matches, response_commitment
   ) VALUES (
     v_uid,
@@ -237,14 +237,13 @@ BEGIN
     'Art curator. Reluctant morning person. Always overdressed.',
     ARRAY['Arts & Culture', 'Travel', 'Fine Dining'],
     28, 50,
-    ARRAY['platinum', 'black_card'],
     ARRAY['Mumbai', 'London', 'Dubai', 'Paris'],
     3, '24h'
   )
   ON CONFLICT (user_id) DO UPDATE SET
     display_name = EXCLUDED.display_name, bio = EXCLUDED.bio,
     photo_urls = EXCLUDED.photo_urls, headline = EXCLUDED.headline,
-    desires = EXCLUDED.desires, preferred_member_tiers = EXCLUDED.preferred_member_tiers,
+    desires = EXCLUDED.desires,
     preferred_locations = EXCLUDED.preferred_locations;
 
   -- Gallery items (2 free, 3 premium)
@@ -307,7 +306,7 @@ BEGIN
     location_city, location_country, photo_urls,
     headline, desires,
     preferred_age_min, preferred_age_max,
-    preferred_member_tiers, preferred_locations,
+    preferred_locations,
     max_active_matches, response_commitment
   ) VALUES (
     v_uid,
@@ -323,14 +322,13 @@ BEGIN
     'Entrepreneur. Obsessed with good fabric and bad puns.',
     ARRAY['Fashion', 'Business', 'Fine Dining'],
     30, 55,
-    ARRAY['black_card'],
     ARRAY['Delhi', 'Dubai', 'Singapore', 'London', 'New York'],
     1, 'Same Day'
   )
   ON CONFLICT (user_id) DO UPDATE SET
     display_name = EXCLUDED.display_name, bio = EXCLUDED.bio,
     photo_urls = EXCLUDED.photo_urls, headline = EXCLUDED.headline,
-    desires = EXCLUDED.desires, preferred_member_tiers = EXCLUDED.preferred_member_tiers,
+    desires = EXCLUDED.desires,
     preferred_locations = EXCLUDED.preferred_locations;
 
   -- Gallery items
@@ -393,7 +391,7 @@ BEGIN
     location_city, location_country, photo_urls,
     headline, desires,
     preferred_age_min, preferred_age_max,
-    preferred_member_tiers, preferred_locations,
+    preferred_locations,
     max_active_matches, response_commitment
   ) VALUES (
     v_uid,
@@ -409,14 +407,13 @@ BEGIN
     'Wellness coach. Sun-chaser. Unapologetically selective.',
     ARRAY['Wellness', 'Adventure', 'Arts & Culture'],
     27, 48,
-    ARRAY['gold', 'platinum', 'black_card'],
     ARRAY['Los Angeles', 'New York', 'Miami', 'London'],
     5, '48h'
   )
   ON CONFLICT (user_id) DO UPDATE SET
     display_name = EXCLUDED.display_name, bio = EXCLUDED.bio,
     photo_urls = EXCLUDED.photo_urls, headline = EXCLUDED.headline,
-    desires = EXCLUDED.desires, preferred_member_tiers = EXCLUDED.preferred_member_tiers,
+    desires = EXCLUDED.desires,
     preferred_locations = EXCLUDED.preferred_locations;
 
   -- Gallery items
