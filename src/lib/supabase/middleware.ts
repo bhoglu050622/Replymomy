@@ -128,6 +128,11 @@ export async function updateSession(request: NextRequest) {
         const status = userRecord.status as string;
         const role = userRecord.role as string;
 
+        // Admin users belong in /admin — redirect away from the regular app
+        if (role === "admin" && !pathname.startsWith("/admin")) {
+          return NextResponse.redirect(new URL("/admin", request.url));
+        }
+
         const isMommy = role === "mommy";
         const statusToRoute: Record<string, string> = {
           pending_invite: "/invite",
